@@ -12,7 +12,6 @@ import ClientLeads from "./pages/ClientLeads";
 import ClientLeadDetail from "./pages/ClientLeadDetail";
 import ClientCalendar from "./pages/ClientCalendar";
 import ClientSettings from "./pages/ClientSettings";
-import ClientFeedback from "./pages/ClientFeedback";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminClients from "./pages/AdminClients";
 import AdminInvite from "./pages/AdminInvite";
@@ -41,7 +40,6 @@ const App = () => (
           <Route path="/client/leads/:id" element={<ClientLeadDetail />} />
           <Route path="/client/calendar" element={<ClientCalendar />} />
           <Route path="/client/settings" element={<ClientSettings />} />
-          <Route path="/client/feedback" element={<ClientFeedback />} />
           {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/clients" element={<AdminClients />} />

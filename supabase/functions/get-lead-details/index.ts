@@ -122,23 +122,33 @@ serve(async (req) => {
       return '';
     };
 
-    // Extract company name - try multiple possible field names
-    const companyName = 
-      getText(props['Company Name']) ||
-      getText(props.Name) || 
-      getText(props.Title) || 
-      (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
-      'Company Name Not Available';
-
-    // Calculate status based on age
-    const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
-    const dateAdded = props['Date Added']?.date?.start || page.created_time;
-    const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
-    
-    let calculatedStatus = notionStatus;
-    if (!notionStatus) {
-      calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
-    }
+      // Extract company name
+      const companyName = 
+        getText(props['Company Name']) ||
+        getText(props.Name) || 
+        getText(props.Title) || 
+        (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+        'Company Name Not Available';
+      
+      // Parse job openings if stored as JSON string
+      const parseJobOpenings = () => {
+        try {
+          const jobsText = getText(props['Job Openings']);
+          return jobsText ? JSON.parse(jobsText) : [];
+        } catch {
+          return [];
+        }
+      };
+      
+      // Calculate status based on age
+      const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
+      const dateAdded = props['Date Added']?.date?.start || page.created_time;
+      const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
+      
+      let calculatedStatus = notionStatus;
+      if (!notionStatus) {
+        calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
+      }
 
     // Transform to detailed format with ALL fields - using exact Notion property names
     const lead = {
@@ -169,6 +179,7 @@ serve(async (req) => {
       callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || null,
       recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || null,
       aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || null,
+      feedback: getText(props.Feedback) || null,
       
       // Job Information - using exact property names
       jobPostingTitle: getText(props['Title - Jobs']) || null,
@@ -188,7 +199,7 @@ serve(async (req) => {
       })(),
       
       // Metadata
-      dateAdded: props['Date Added']?.date?.start || page.created_time,
+      dateAdded: dateAdded,
       createdTime: page.created_time,
       lastEditedTime: page.last_edited_time,
     };
