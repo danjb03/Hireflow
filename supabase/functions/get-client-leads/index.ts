@@ -12,12 +12,22 @@ serve(async (req) => {
   }
 
   try {
+    // Get authorization header (check both cases)
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+    
+    if (!authHeader) {
+      console.error('No authorization header found');
+      throw new Error('Unauthorized: No authorization header');
+    }
+
+    console.log('Authorization header present');
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
@@ -25,8 +35,14 @@ serve(async (req) => {
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
-    if (authError || !user) {
-      throw new Error('Unauthorized');
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw new Error(`Unauthorized: ${authError.message}`);
+    }
+    
+    if (!user) {
+      console.error('No user found');
+      throw new Error('Unauthorized: No user found');
     }
 
     console.log('Fetching leads for user:', user.id);
