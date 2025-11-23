@@ -201,20 +201,7 @@ const AdminLeadDetail = () => {
   };
 
   const getLeadDescription = () => {
-    if (lead?.aiSummary) {
-      const firstLine = lead.aiSummary.split('\n').find(line => line.trim());
-      if (firstLine) return firstLine.replace(/^[•\-]\s*/, '');
-    }
-    
-    if (lead?.jobsOpen && lead?.industry) {
-      return `New callback lead interested in ${lead.industry.toLowerCase()} with ${lead.jobsOpen} open position${lead.jobsOpen !== '1' ? 's' : ''}`;
-    }
-    
-    if (lead?.industry) {
-      return `New callback lead in ${lead.industry.toLowerCase()}`;
-    }
-    
-    return "New callback lead requiring follow-up";
+    return "New lead generated. Be sure to contact the customer on the pre-agreed date and time for the callback suggested by us.";
   };
 
   if (loading) {
@@ -368,7 +355,7 @@ const AdminLeadDetail = () => {
             </div>
           </Card>
 
-          {/* Contact Details - Now at Top */}
+          {/* Contact Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-2xl">
