@@ -30,7 +30,22 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        setUser(session.user);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          await fetchLeads();
+        }
+      } else {
+        navigate("/login");
+      }
+    });
+
+    // Check current session
     checkAuth();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkAuth = async () => {
