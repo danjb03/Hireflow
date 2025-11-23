@@ -19,7 +19,6 @@ import {
   Briefcase,
   Users,
   FileText,
-  Mic,
   Linkedin,
   ExternalLink
 } from "lucide-react";
@@ -46,7 +45,6 @@ interface LeadDetail {
   callNotes: string | null;
   callbackDateTime: string | null;
   jobOpenings: Array<{ title: string; url: string; type?: string }>;
-  recordingTranscript: string | null;
   aiSummary: string | null;
   jobUrl: string | null;
   activeJobsUrl: string | null;
@@ -462,23 +460,6 @@ const ClientLeadDetail = () => {
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Recording Transcript */}
-            {lead.recordingTranscript && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mic className="h-5 w-5" />
-                    Recording Transcript
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed max-h-96 overflow-y-auto">
-                    {lead.recordingTranscript}
-                  </p>
                 </CardContent>
               </Card>
             )}

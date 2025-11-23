@@ -177,7 +177,6 @@ serve(async (req) => {
       // Interaction Details - Call Back Date and Time field contains callback notes
       callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || null,
       callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || null,
-      recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || null,
       aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || null,
       feedback: getText(props.Feedback) || null,
       
