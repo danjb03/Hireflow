@@ -106,6 +106,14 @@ serve(async (req) => {
     const page = await notionResponse.json();
     const props = page.properties;
 
+    // Log all available property names to help debug
+    console.log('Available Notion properties:', Object.keys(props));
+    
+    // Log sample of property structures
+    Object.keys(props).slice(0, 5).forEach(key => {
+      console.log(`Property "${key}" type:`, props[key]?.type);
+    });
+
     // Helper function to extract text from rich_text or title arrays
     const getText = (prop: any) => {
       if (!prop) return '';
@@ -176,6 +184,11 @@ serve(async (req) => {
     };
 
     console.log('Lead details fetched successfully');
+    console.log('Returning lead with fields:', Object.keys(lead));
+    console.log('Sample data - Company Name:', lead.companyName);
+    console.log('Sample data - Status:', lead.status);
+    console.log('Sample data - Has Call Notes:', !!lead.callNotes);
+    console.log('Sample data - Has AI Summary:', !!lead.aiSummary);
 
     return new Response(
       JSON.stringify({ lead }),
