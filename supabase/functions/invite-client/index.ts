@@ -29,7 +29,43 @@ serve(async (req) => {
       throw new Error('Email is required');
     }
 
+    if (!databaseId) {
+      throw new Error('Notion Database ID is required');
+    }
+
     console.log('Creating client account for:', email);
+
+    // Fetch Notion database name
+    const notionApiKey = Deno.env.get('NOTION_API_KEY');
+    if (!notionApiKey) {
+      throw new Error('NOTION_API_KEY not configured');
+    }
+
+    // Format database ID with hyphens if needed
+    const formattedDbId = databaseId.includes('-') 
+      ? databaseId 
+      : databaseId.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+
+    let databaseName = 'Client';
+    try {
+      const notionResponse = await fetch(
+        `https://api.notion.com/v1/databases/${formattedDbId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${notionApiKey}`,
+            'Notion-Version': '2022-06-28',
+          },
+        }
+      );
+
+      if (notionResponse.ok) {
+        const dbData = await notionResponse.json();
+        databaseName = dbData.title?.[0]?.plain_text || 'Client';
+        console.log('Fetched database name:', databaseName);
+      }
+    } catch (error) {
+      console.error('Failed to fetch database name:', error);
+    }
 
     // Generate temporary password
     const tempPassword = Math.random().toString(36).slice(-12) + "A1!";
@@ -48,18 +84,21 @@ serve(async (req) => {
 
     console.log('User created:', authData.user.id);
 
-    // Update profile with database ID if provided
-    if (databaseId && authData.user) {
+    // Update profile with database ID and initial password
+    if (authData.user) {
       const { error: updateError } = await supabaseAdmin
         .from("profiles")
-        .update({ notion_database_id: databaseId })
+        .update({ 
+          notion_database_id: formattedDbId,
+          initial_password: tempPassword
+        })
         .eq("id", authData.user.id);
 
       if (updateError) {
         console.error('Profile update error:', updateError);
         throw updateError;
       }
-      console.log('Profile updated with database ID');
+      console.log('Profile updated with database ID and password');
     }
 
     // Assign client role

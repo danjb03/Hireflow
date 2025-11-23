@@ -12,6 +12,7 @@ interface Client {
   id: string;
   email: string;
   notion_database_id: string | null;
+  initial_password: string | null;
   created_at: string;
 }
 
@@ -127,6 +128,9 @@ const AdminClients = () => {
       toast.success(`Password reset! New password: ${data.tempPassword}`, {
         duration: 10000,
       });
+      
+      // Reload clients to show updated password
+      await loadClients();
     } catch (error: any) {
       toast.error("Failed to reset password: " + error.message);
     } finally {
@@ -183,6 +187,30 @@ const AdminClients = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {client.initial_password && (
+                  <div className="bg-primary/10 border-2 border-primary p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Key className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-semibold text-primary">Account Credentials</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Email</p>
+                        <p className="font-medium">{client.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Password</p>
+                        <code className="block text-lg font-bold bg-background px-3 py-2 rounded border">
+                          {client.initial_password}
+                        </code>
+                      </div>
+                      <p className="text-xs text-muted-foreground italic">
+                        💡 Screenshot this to share with the client
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Notion Database ID:</span>
