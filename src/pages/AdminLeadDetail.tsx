@@ -539,7 +539,7 @@ const AdminLeadDetail = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {lead.jobsOpen && (
-                      <div className="bg-muted p-3 rounded-lg">
+                      <div>
                         <p className="text-sm font-medium text-muted-foreground">Open Positions</p>
                         <p className="text-2xl font-bold text-foreground">{lead.jobsOpen}</p>
                       </div>
