@@ -146,33 +146,33 @@ serve(async (req) => {
           const data = await notionResponse.json();
           console.log('Database', formattedDbId, 'returned', data.results.length, 'pages');
           
-          const leads = data.results.map((page: any) => {
-            const props = page.properties;
-            
-            // Extract company name from various possible fields
-            const companyName = 
-              getText(props.Name) || 
-              getText(props.Title) || 
-              getText(props['Company Name']) ||
-              (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
-              'Company Name Not Available';
-            
-            return {
-              id: page.id,
-              companyName,
-              contactName: getText(props['Contact Name']) || 'Not available',
-              status: props.Status?.select?.name || 'Unknown',
-              assignedClient: db.clientEmail,
-              assignedClientId: db.clientId,
-              industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
-              dateAdded: page.created_time,
-              companyWebsite: props['Company Website']?.url || '',
-              companiesLinkedIn: props['Companies Linkedin']?.url || '',
-              contactLinkedIn: props["Contact's Linkedin"]?.url || '',
-              title: getText(props.Title) || 'Not available',
-              phone: props.Phone?.phone_number || getText(props.Phone) || 'Not available',
-            };
-          });
+            const leads = data.results.map((page: any) => {
+              const props = page.properties;
+              
+              // Extract company name from various possible fields
+              const companyName = 
+                getText(props.Name) || 
+                getText(props.Title) || 
+                getText(props['Company Name']) ||
+                (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+                'Company Name Not Available';
+              
+              return {
+                id: page.id,
+                companyName,
+                contactName: getText(props['Contact Name']) || 'Not available',
+                status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
+                assignedClient: db.clientEmail,
+                assignedClientId: db.clientId,
+                industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
+                dateAdded: page.created_time,
+                companyWebsite: props['Company Website']?.url || '',
+                companiesLinkedIn: props['Companies Linkedin']?.url || '',
+                contactLinkedIn: props["Contact's Linkedin"]?.url || '',
+                title: getText(props.Title) || 'Not available',
+                phone: props.Phone?.phone_number || getText(props.Phone) || 'Not available',
+              };
+            });
           
           allLeads.push(...leads);
         } else {

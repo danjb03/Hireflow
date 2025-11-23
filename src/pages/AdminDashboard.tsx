@@ -141,10 +141,10 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Status Breakdown */}
+        {/* Stage Breakdown */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Leads by Status</CardTitle>
+            <CardTitle>Leads by Stage</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">

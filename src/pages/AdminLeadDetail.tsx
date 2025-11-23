@@ -153,15 +153,15 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: "Status updated successfully",
+        description: "Stage updated successfully",
       });
 
       loadLead();
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error updating stage:", error);
       toast({
         title: "Error",
-        description: "Failed to update status",
+        description: "Failed to update stage",
         variant: "destructive",
       });
     }
@@ -281,7 +281,7 @@ const AdminLeadDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Update Status</label>
+                <label className="text-sm font-medium">Update Stage</label>
                 <div className="flex gap-2">
                   <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                     <SelectTrigger>

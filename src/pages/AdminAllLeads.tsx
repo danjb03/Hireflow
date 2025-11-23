@@ -216,10 +216,10 @@ const AdminAllLeads = () => {
 
             <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Filter by stage" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="all">All Stages</SelectItem>
                 <SelectItem value="Approved">Approved</SelectItem>
                 <SelectItem value="Needs Work">Needs Work</SelectItem>
                 <SelectItem value="Rejected">Rejected</SelectItem>
@@ -272,7 +272,7 @@ const AdminAllLeads = () => {
                           <TableRow>
                             <TableHead>Client</TableHead>
                             <TableHead>Company Name</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Stage</TableHead>
                             <TableHead>Company Website</TableHead>
                             <TableHead>Company LinkedIn</TableHead>
                             <TableHead>Contact Name</TableHead>

@@ -115,7 +115,7 @@ serve(async (req) => {
     // Transform to detailed format with ALL fields
     const lead = {
       id: page.id,
-      status: props.Status?.select?.name || 'New',
+      status: props.STAGE?.select?.name || props.Status?.select?.name || 'New',
       companyName,
       
       // Company Information
