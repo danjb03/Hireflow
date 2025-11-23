@@ -96,28 +96,73 @@ serve(async (req) => {
     const page = await notionResponse.json();
     const props = page.properties;
 
-    // Transform to detailed format
+    // Helper function to extract text from rich_text or title arrays
+    const getText = (prop: any) => {
+      if (!prop) return '';
+      if (prop.title && prop.title[0]) return prop.title[0].plain_text;
+      if (prop.rich_text && prop.rich_text[0]) return prop.rich_text[0].plain_text;
+      return '';
+    };
+
+    // Extract company name - try multiple possible field names
+    const companyName = 
+      getText(props.Name) || 
+      getText(props.Title) || 
+      getText(props['Company Name']) ||
+      (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+      'Company Name Not Available';
+
+    // Transform to detailed format with ALL fields
     const lead = {
       id: page.id,
-      status: props.Status?.select?.name || 'Unknown',
-      companyName: props['Company Name']?.title?.[0]?.plain_text || 'N/A',
+      status: props.Status?.select?.name || 'New',
+      companyName,
+      
+      // Company Information
       companyWebsite: props['Company Website']?.url || '',
-      industry: props.Industry?.select?.name || 'N/A',
-      companySize: props['Company Size']?.select?.name || 'N/A',
-      employeeCount: props['Employee Count']?.number?.toString() || '',
-      location: props.Location?.rich_text?.[0]?.plain_text || '',
-      companyDescription: props['Company Description']?.rich_text?.[0]?.plain_text || '',
-      contactName: props['Contact Name']?.rich_text?.[0]?.plain_text || 'N/A',
-      jobTitle: props['Job Title']?.rich_text?.[0]?.plain_text || 'N/A',
+      companyLinkedIn: props['Companies LinkedIn']?.url || '',
+      industry: props.Industry?.select?.name || getText(props.Industry) || null,
+      companySize: props.Size?.select?.name || getText(props.Size) || null,
+      employeeCount: props['Employee Count']?.number?.toString() || null,
+      country: props.Country?.select?.name || getText(props.Country) || null,
+      location: getText(props['Address - Location']) || getText(props.Location) || null,
+      companyDescription: getText(props['Company Description']) || null,
+      founded: props.Founded?.date?.start || getText(props.Founded) || null,
+      
+      // Contact Details
+      contactName: getText(props['Contact Name']) || null,
+      jobTitle: getText(props.Title) || getText(props['Job Title']) || null,
       email: props.Email?.email || '',
       phone: props.Phone?.phone_number || '',
-      linkedInProfile: props['LinkedIn Profile']?.url || '',
-      callNotes: props['Call Notes']?.rich_text?.[0]?.plain_text || '',
-      jobOpenings: props['Job Openings']?.rich_text?.[0]?.plain_text
-        ? JSON.parse(props['Job Openings'].rich_text[0].plain_text)
-        : [],
-      recordingTranscript: props['Recording Transcript']?.rich_text?.[0]?.plain_text || '',
+      linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+      
+      // Interaction Details
+      callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || null,
+      callbackDateTime: props['Callback Date and Time']?.date?.start || null,
+      recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || null,
+      aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || null,
+      
+      // Job Information
+      jobPostingTitle: getText(props['Title - Jobs']) || null,
+      jobDescription: getText(props['Description - Jobs']) || null,
+      jobUrl: props['Url - Jobs']?.url || null,
+      activeJobsUrl: props['Find Active Job Openings']?.url || null,
+      jobsOpen: props['Jobs open']?.number?.toString() || getText(props['Jobs open']) || null,
+      
+      // Parse job openings if stored as JSON string
+      jobOpenings: (() => {
+        try {
+          const jobsText = getText(props['Job Openings']);
+          return jobsText ? JSON.parse(jobsText) : [];
+        } catch {
+          return [];
+        }
+      })(),
+      
+      // Metadata
       dateAdded: props['Date Added']?.date?.start || page.created_time,
+      createdTime: page.created_time,
+      lastEditedTime: page.last_edited_time,
     };
 
     console.log('Lead details fetched successfully');
