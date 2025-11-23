@@ -82,8 +82,13 @@ serve(async (req) => {
       for (const profile of allProfiles || []) {
         if (profile.notion_database_id) {
           try {
+            // Format database ID with hyphens if needed
+            const formattedDatabaseId = profile.notion_database_id.includes('-') 
+              ? profile.notion_database_id 
+              : profile.notion_database_id.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+            
             const notionResponse = await fetch(
-              `https://api.notion.com/v1/databases/${profile.notion_database_id}/query`,
+              `https://api.notion.com/v1/databases/${formattedDatabaseId}/query`,
               {
                 method: 'POST',
                 headers: {
@@ -144,8 +149,15 @@ serve(async (req) => {
 
     console.log('Fetching from Notion database:', profile.notion_database_id);
 
+    // Format database ID with hyphens if needed (Notion expects UUID format)
+    const formattedDatabaseId = profile.notion_database_id.includes('-') 
+      ? profile.notion_database_id 
+      : profile.notion_database_id.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+
+    console.log('Formatted database ID:', formattedDatabaseId);
+
     const notionResponse = await fetch(
-      `https://api.notion.com/v1/databases/${profile.notion_database_id}/query`,
+      `https://api.notion.com/v1/databases/${formattedDatabaseId}/query`,
       {
         method: 'POST',
         headers: {
