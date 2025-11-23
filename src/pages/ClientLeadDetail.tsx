@@ -98,12 +98,12 @@ const ClientLeadDetail = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "booked":
-        return "bg-success text-success-foreground";
-      case "in progress":
-        return "bg-warning text-warning-foreground";
-      case "contacted":
-        return "bg-info text-info-foreground";
+      case "approved":
+        return "bg-green-500/10 text-green-500 border-green-500/20";
+      case "needs work":
+        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      case "rejected":
+        return "bg-red-500/10 text-red-500 border-red-500/20";
       default:
         return "bg-muted text-muted-foreground";
     }

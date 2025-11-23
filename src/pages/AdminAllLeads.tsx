@@ -133,11 +133,9 @@ const AdminAllLeads = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Booked: "bg-green-500/10 text-green-500 border-green-500/20",
-      "In Progress": "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      Approved: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      Qualified: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+      'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
@@ -153,7 +151,7 @@ const AdminAllLeads = () => {
   }, {} as Record<string, Lead[]>);
 
   // Define status order
-  const statusOrder = ["No Stage", "Qualified", "Approved", "In Progress", "Booked", "Rejected"];
+  const statusOrder = ["Approved", "Needs Work", "Rejected"];
   const sortedStatuses = statusOrder.filter(status => groupedLeads[status]);
 
   return (
@@ -193,10 +191,8 @@ const AdminAllLeads = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Qualified">Qualified</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Booked">Booked</SelectItem>
                 <SelectItem value="Approved">Approved</SelectItem>
+                <SelectItem value="Needs Work">Needs Work</SelectItem>
                 <SelectItem value="Rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
