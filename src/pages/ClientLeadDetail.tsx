@@ -109,6 +109,23 @@ const ClientLeadDetail = () => {
     }
   };
 
+  const getLeadDescription = () => {
+    if (lead?.aiSummary) {
+      const firstLine = lead.aiSummary.split('\n').find(line => line.trim());
+      if (firstLine) return firstLine.replace(/^[•\-]\s*/, '');
+    }
+    
+    if (lead?.jobsOpen && lead?.industry) {
+      return `New callback lead interested in ${lead.industry.toLowerCase()} with ${lead.jobsOpen} open position${lead.jobsOpen !== '1' ? 's' : ''}`;
+    }
+    
+    if (lead?.industry) {
+      return `New callback lead in ${lead.industry.toLowerCase()}`;
+    }
+    
+    return "New callback lead requiring follow-up";
+  };
+
   if (isLoading) {
     return (
       <ClientLayout userEmail={user?.email}>
@@ -126,35 +143,124 @@ const ClientLeadDetail = () => {
   return (
     <ClientLayout userEmail={user?.email}>
       <div className="p-6 lg:p-8 space-y-6">
-        {/* Header */}
-        <div>
-          <Button variant="ghost" onClick={() => navigate("/client/leads")} className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Leads
-          </Button>
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">{lead.companyName}</h1>
-              {lead.companyWebsite && (
-                <a 
-                  href={lead.companyWebsite} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-primary hover:underline inline-flex items-center gap-1 mt-1"
-                >
-                  {lead.companyWebsite}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+        <Button variant="ghost" onClick={() => navigate("/client/leads")} className="mb-2">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Leads
+        </Button>
+
+        {/* Lead Hero Section */}
+        <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50">
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h1 className="text-4xl font-bold text-foreground">{lead.companyName}</h1>
+                  <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
+                </div>
+                {lead.companyWebsite && (
+                  <a 
+                    href={lead.companyWebsite} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mb-3"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {lead.companyWebsite}
+                  </a>
+                )}
+                <p className="text-muted-foreground text-lg mt-2">{getLeadDescription()}</p>
+              </div>
+            </div>
+
+            {/* Callback Schedule - Prominent Display */}
+            {lead.callbackDateTime && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <span className="text-2xl">📅</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {new Date(lead.callbackDateTime).toLocaleString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  {new Date(lead.callbackDateTime) < new Date() ? (
+                    <Badge variant="destructive" className="text-sm">Overdue</Badge>
+                  ) : (
+                    <Badge className="text-sm bg-green-500/10 text-green-500 border-green-500/20">Upcoming</Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Contact Details - Now at Top */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <User className="h-6 w-6" />
+              Contact Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {lead.contactName && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Name</p>
+                  <p className="text-foreground font-semibold text-lg">{lead.contactName}</p>
+                </div>
+              )}
+              {lead.jobTitle && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                  <p className="flex items-center gap-2 text-foreground font-medium">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                    {lead.jobTitle}
+                  </p>
+                </div>
+              )}
+              {lead.email && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Email</p>
+                  <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline font-medium break-all">
+                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    {lead.email}
+                  </a>
+                </div>
+              )}
+              {lead.phone && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                  <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline font-medium">
+                    <Phone className="h-4 w-4" />
+                    {lead.phone}
+                  </a>
+                </div>
               )}
             </div>
-            <Badge className={getStatusColor(lead.status)}>
-              {lead.status}
-            </Badge>
-          </div>
-        </div>
+            {lead.linkedInProfile && (
+              <div className="mt-4 pt-4 border-t">
+                <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline font-medium">
+                  <Linkedin className="h-5 w-5" />
+                  View LinkedIn Profile
+                </a>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Left Column - Company & Contact Info */}
+          {/* Left Column - Company Info */}
           <div className="space-y-6">
             {/* Company Information */}
             <Card>
@@ -234,62 +340,6 @@ const ClientLeadDetail = () => {
                 )}
               </CardContent>
             </Card>
-
-            {/* Contact Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Contact Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4">
-                  {lead.contactName && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Name</p>
-                      <p className="text-foreground font-medium">{lead.contactName}</p>
-                    </div>
-                  )}
-                  {lead.jobTitle && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                      <p className="flex items-center gap-1 text-foreground">
-                        <Briefcase className="h-4 w-4" />
-                        {lead.jobTitle}
-                      </p>
-                    </div>
-                  )}
-                  {lead.email && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Email</p>
-                      <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-primary hover:underline">
-                        <Mail className="h-4 w-4" />
-                        {lead.email}
-                      </a>
-                    </div>
-                  )}
-                  {lead.phone && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                      <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-primary hover:underline">
-                        <Phone className="h-4 w-4" />
-                        {lead.phone}
-                      </a>
-                    </div>
-                  )}
-                  {lead.linkedInProfile && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">LinkedIn Profile</p>
-                      <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
-                        <Linkedin className="h-4 w-4" />
-                        View Profile
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Column - Interaction Details */}
@@ -305,34 +355,6 @@ const ClientLeadDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Callback Schedule */}
-            {lead.callbackDateTime && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    📅 Callback Schedule
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-semibold text-foreground">
-                    {new Date(lead.callbackDateTime).toLocaleString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                  {new Date(lead.callbackDateTime) < new Date() && (
-                    <Badge variant="destructive" className="mt-2">Overdue</Badge>
-                  )}
-                  {new Date(lead.callbackDateTime) > new Date() && (
-                    <Badge variant="default" className="mt-2 bg-success text-success-foreground">Upcoming</Badge>
-                  )}
                 </CardContent>
               </Card>
             )}
