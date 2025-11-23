@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Mail, Database, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Mail, Database, Trash2, Key } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Client {
@@ -22,6 +22,7 @@ const AdminClients = () => {
   const [editingClient, setEditingClient] = useState<string | null>(null);
   const [databaseId, setDatabaseId] = useState("");
   const [deleteClient, setDeleteClient] = useState<Client | null>(null);
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAndLoadClients();
@@ -114,6 +115,25 @@ const AdminClients = () => {
     }
   };
 
+  const handleResetPassword = async (clientId: string, clientEmail: string) => {
+    setResettingPassword(clientId);
+    try {
+      const { data, error } = await supabase.functions.invoke("reset-client-password", {
+        body: { userId: clientId }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Password reset! New password: ${data.tempPassword}`, {
+        duration: 10000,
+      });
+    } catch (error: any) {
+      toast.error("Failed to reset password: " + error.message);
+    } finally {
+      setResettingPassword(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -193,15 +213,29 @@ const AdminClients = () => {
                     </Button>
                   </div>
                 ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditingClient(client.id);
-                      setDatabaseId(client.notion_database_id || "");
-                    }}
-                  >
-                    Update Database ID
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditingClient(client.id);
+                        setDatabaseId(client.notion_database_id || "");
+                      }}
+                    >
+                      Update Database ID
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleResetPassword(client.id, client.email)}
+                      disabled={resettingPassword === client.id}
+                    >
+                      {resettingPassword === client.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Key className="h-4 w-4 mr-2" />
+                      )}
+                      Reset Password
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
