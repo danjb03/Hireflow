@@ -10,13 +10,10 @@ import { Loader2, Users, Database, UserPlus, ArrowLeft, FileText, PlusCircle, Ba
 interface Stats {
   totalClients: number;
   totalLeads: number;
-  clientsWithDatabases: number;
   statusBreakdown: {
-    Qualified: number;
-    'In Progress': number;
-    Booked: number;
     Approved: number;
     Rejected: number;
+    'Needs Work': number;
   };
 }
 
@@ -25,13 +22,10 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState<Stats>({ 
     totalClients: 0, 
     totalLeads: 0, 
-    clientsWithDatabases: 0,
     statusBreakdown: {
-      Qualified: 0,
-      'In Progress': 0,
-      Booked: 0,
       Approved: 0,
       Rejected: 0,
+      'Needs Work': 0,
     }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -88,11 +82,9 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Booked: "bg-green-500/10 text-green-500 border-green-500/20",
-      "In Progress": "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      Approved: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      Qualified: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+      'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
@@ -123,7 +115,7 @@ const AdminDashboard = () => {
 
       <main className="container mx-auto p-4 md:p-6">
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
+        <div className="grid gap-4 md:grid-cols-2 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
@@ -131,16 +123,6 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalClients}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Databases</CardTitle>
-              <Database className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.clientsWithDatabases}</div>
             </CardContent>
           </Card>
 

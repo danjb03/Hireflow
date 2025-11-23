@@ -68,6 +68,12 @@ const Dashboard = () => {
     const adminCheck = roles?.some(r => r.role === "admin") || false;
     setIsAdmin(adminCheck);
     
+    // Redirect admins to admin dashboard
+    if (adminCheck) {
+      navigate("/admin");
+      return;
+    }
+    
     await fetchLeads();
   };
 

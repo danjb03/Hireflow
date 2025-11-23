@@ -64,16 +64,29 @@ serve(async (req) => {
       );
     }
 
-    // Get total clients
-    const { count: totalClients, error: clientsError } = await supabaseClient
+    // Get total clients (excluding admins)
+    const { data: allProfiles, error: clientsError } = await supabaseClient
       .from('profiles')
-      .select('*', { count: 'exact', head: true });
+      .select('id');
 
-    // Get clients with databases
-    const { count: clientsWithDatabases, error: dbError } = await supabaseClient
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .not('notion_database_id', 'is', null);
+    if (clientsError) {
+      console.error('Error fetching profiles:', clientsError);
+    }
+
+    // Filter out admin users
+    let totalClients = 0;
+    if (allProfiles) {
+      for (const profile of allProfiles) {
+        const { data: isAdminUser } = await supabaseClient.rpc('is_admin', {
+          _user_id: profile.id,
+        });
+        if (!isAdminUser) {
+          totalClients++;
+        }
+      }
+    }
+
+    console.log('Total non-admin clients:', totalClients);
 
     // Get all client databases
     const { data: clients, error: clientsFetchError } = await supabaseClient
@@ -83,11 +96,9 @@ serve(async (req) => {
 
     let totalLeads = 0;
     const statusCounts = {
-      Qualified: 0,
-      'In Progress': 0,
-      Booked: 0,
       Approved: 0,
       Rejected: 0,
+      'Needs Work': 0,
     };
 
     // Query main database
@@ -137,8 +148,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        totalClients: totalClients || 0,
-        clientsWithDatabases: clientsWithDatabases || 0,
+        totalClients,
         totalLeads,
         statusBreakdown: statusCounts,
       }),
