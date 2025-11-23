@@ -54,6 +54,7 @@ const AdminLeadDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [callbackDateTime, setCallbackDateTime] = useState("");
 
   useEffect(() => {
     checkAdminAndLoadData();
@@ -90,6 +91,14 @@ const AdminLeadDetail = () => {
 
       setLead(data.lead);
       setSelectedStatus(data.lead.status);
+      if (data.lead.callbackDateTime) {
+        // Convert to local datetime-local format
+        const date = new Date(data.lead.callbackDateTime);
+        const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 16);
+        setCallbackDateTime(localDateTime);
+      }
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -167,6 +176,37 @@ const AdminLeadDetail = () => {
     }
   };
 
+  const handleUpdateCallbackDateTime = async () => {
+    if (!callbackDateTime) return;
+
+    try {
+      const { error } = await supabase.functions.invoke("update-lead", {
+        body: { 
+          leadId: id, 
+          updates: { 
+            callbackDateTime: new Date(callbackDateTime).toISOString() 
+          } 
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Callback date updated successfully",
+      });
+
+      loadLead();
+    } catch (error) {
+      console.error("Error updating callback date:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update callback date",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteLead = async () => {
     try {
       const { error } = await supabase.functions.invoke("delete-lead", {
@@ -237,7 +277,7 @@ const AdminLeadDetail = () => {
         {/* Admin Actions */}
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-sm font-medium">Assign to Client</label>
               <div className="flex gap-2">
@@ -275,6 +315,21 @@ const AdminLeadDetail = () => {
                   </SelectContent>
                 </Select>
                 <Button onClick={handleUpdateStatus}>
+                  Update
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Callback Date & Time</label>
+              <div className="flex gap-2">
+                <input
+                  type="datetime-local"
+                  value={callbackDateTime}
+                  onChange={(e) => setCallbackDateTime(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+                <Button onClick={handleUpdateCallbackDateTime} disabled={!callbackDateTime}>
                   Update
                 </Button>
               </div>
