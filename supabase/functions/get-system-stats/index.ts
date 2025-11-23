@@ -135,7 +135,7 @@ serve(async (req) => {
 
           // Count by status
           data.results.forEach((page: any) => {
-            const status = page.properties['Status']?.select?.name;
+            const status = page.properties['STAGE']?.select?.name || page.properties['Status']?.select?.name;
             if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
               statusCounts[status as keyof typeof statusCounts]++;
             } else {

@@ -128,7 +128,7 @@ serve(async (req) => {
                 
                 return {
                   id: page.id,
-                  status: props.Status?.select?.name || 'Unknown',
+                  status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
                   companyName,
                   contactName: getText(props['Contact Name']) || 'Not available',
                   jobTitle: getText(props.Title) || getText(props['Job Title']) || 'Not available',
@@ -231,7 +231,7 @@ serve(async (req) => {
       
       return {
         id: page.id,
-        status: props.Status?.select?.name || 'Unknown',
+        status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
         companyName,
         contactName: getText(props['Contact Name']) || 'Not available',
         jobTitle: getText(props.Title) || getText(props['Job Title']) || 'Not available',

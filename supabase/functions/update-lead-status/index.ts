@@ -57,15 +57,15 @@ serve(async (req) => {
 
     if (!leadId || !status) {
       return new Response(
-        JSON.stringify({ error: 'Lead ID and status are required' }),
+        JSON.stringify({ error: 'Lead ID and stage are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const validStatuses = ['Qualified', 'In Progress', 'Booked', 'Approved', 'Rejected'];
+    const validStatuses = ['Approved', 'Needs Work', 'Rejected'];
     if (!validStatuses.includes(status)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid status value' }),
+        JSON.stringify({ error: 'Invalid stage value' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -80,7 +80,7 @@ serve(async (req) => {
       );
     }
 
-    // Update the status in Notion
+    // Update the stage in Notion
     const updateResponse = await fetch(`https://api.notion.com/v1/pages/${leadId}`, {
       method: 'PATCH',
       headers: {
@@ -90,7 +90,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         properties: {
-          'Status': {
+          'STAGE': {
             select: { name: status },
           },
         },
@@ -99,15 +99,15 @@ serve(async (req) => {
 
     if (!updateResponse.ok) {
       const errorData = await updateResponse.json();
-      console.error('Failed to update status in Notion:', errorData);
+      console.error('Failed to update stage in Notion:', errorData);
       return new Response(
-        JSON.stringify({ error: 'Failed to update lead status', details: errorData }),
+        JSON.stringify({ error: 'Failed to update lead stage', details: errorData }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const updatedLead = await updateResponse.json();
-    console.log('Lead status updated successfully:', leadId);
+    console.log('Lead stage updated successfully:', leadId);
 
     return new Response(
       JSON.stringify({ success: true, lead: updatedLead }),
