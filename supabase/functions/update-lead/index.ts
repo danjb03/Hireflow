@@ -84,6 +84,13 @@ serve(async (req) => {
     if (updates.industry) {
       properties['Industry'] = { select: { name: updates.industry } };
     }
+    if (updates.callbackDateTime) {
+      properties['Callback Date & Time'] = { 
+        date: { 
+          start: updates.callbackDateTime 
+        } 
+      };
+    }
 
     // Update the lead in Notion
     const updateResponse = await fetch(`https://api.notion.com/v1/pages/${leadId}`, {
