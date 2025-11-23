@@ -171,7 +171,8 @@ const ClientLeads = () => {
                   </div>
                   <CardTitle className="text-xl">{lead.companyName}</CardTitle>
                   <CardDescription className="font-medium">
-                    {lead.contactName} • {lead.jobTitle}
+                    {lead.contactName}
+                    {lead.jobTitle && lead.jobTitle !== 'Not available' && ` • ${lead.jobTitle}`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -200,10 +201,16 @@ const ClientLeads = () => {
                         <span className="truncate">{lead.location}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4 flex-shrink-0" />
-                      <span>{lead.industry} • {lead.companySize}</span>
-                    </div>
+                    {(lead.industry !== 'Not available' || lead.companySize !== 'Not available') && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Building2 className="h-4 w-4 flex-shrink-0" />
+                        <span>
+                          {lead.industry !== 'Not available' ? lead.industry : ''}
+                          {lead.industry !== 'Not available' && lead.companySize !== 'Not available' && ' • '}
+                          {lead.companySize !== 'Not available' ? lead.companySize : ''}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 flex-shrink-0" />
                       <span>{new Date(lead.dateAdded).toLocaleDateString()}</span>

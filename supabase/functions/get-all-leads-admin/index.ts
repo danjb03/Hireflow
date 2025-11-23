@@ -59,9 +59,8 @@ serve(async (req) => {
     const searchTerm = url.searchParams.get('search');
 
     const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    const mainDatabaseId = Deno.env.get('MAIN_NOTION_DATABASE_ID');
 
-    if (!notionApiKey || !mainDatabaseId) {
+    if (!notionApiKey) {
       console.error('Missing Notion configuration');
       return new Response(
         JSON.stringify({ error: 'Notion configuration not set up' }),
@@ -86,14 +85,30 @@ serve(async (req) => {
     // Fetch leads from main database and all client databases
     const allLeads = [];
     const databasesToQuery = [
-      { id: mainDatabaseId, clientEmail: 'Unassigned', clientId: null },
       ...clients.map(c => ({ id: c.notion_database_id, clientEmail: c.email, clientId: c.id })),
     ];
 
+    console.log('Querying databases:', databasesToQuery.length);
+
+    // Helper function to extract text from Notion properties
+    const getText = (prop: any) => {
+      if (!prop) return '';
+      if (prop.title && prop.title[0]) return prop.title[0].plain_text;
+      if (prop.rich_text && prop.rich_text[0]) return prop.rich_text[0].plain_text;
+      return '';
+    };
+
     for (const db of databasesToQuery) {
       try {
+        // Format database ID with hyphens if needed
+        const formattedDbId = db.id.includes('-') 
+          ? db.id 
+          : db.id.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+        
+        console.log('Querying database:', formattedDbId, 'for client:', db.clientEmail);
+
         const notionResponse = await fetch(
-          `https://api.notion.com/v1/databases/${db.id}/query`,
+          `https://api.notion.com/v1/databases/${formattedDbId}/query`,
           {
             method: 'POST',
             headers: {
@@ -109,22 +124,42 @@ serve(async (req) => {
 
         if (notionResponse.ok) {
           const data = await notionResponse.json();
-          const leads = data.results.map((page: any) => ({
-            id: page.id,
-            companyName: page.properties['Company Name']?.title?.[0]?.text?.content || 'N/A',
-            contactName: page.properties['Contact Name']?.rich_text?.[0]?.text?.content || 'N/A',
-            status: page.properties['Status']?.select?.name || 'N/A',
-            assignedClient: db.clientEmail,
-            assignedClientId: db.clientId,
-            industry: page.properties['Industry']?.select?.name || 'N/A',
-            dateAdded: page.created_time,
-          }));
+          console.log('Database', formattedDbId, 'returned', data.results.length, 'pages');
+          
+          const leads = data.results.map((page: any) => {
+            const props = page.properties;
+            
+            // Extract company name from various possible fields
+            const companyName = 
+              getText(props.Name) || 
+              getText(props.Title) || 
+              getText(props['Company Name']) ||
+              (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+              'Company Name Not Available';
+            
+            return {
+              id: page.id,
+              companyName,
+              contactName: getText(props['Contact Name']) || 'Not available',
+              status: props.Status?.select?.name || 'Unknown',
+              assignedClient: db.clientEmail,
+              assignedClientId: db.clientId,
+              industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
+              dateAdded: page.created_time,
+            };
+          });
+          
           allLeads.push(...leads);
+        } else {
+          const errorText = await notionResponse.text();
+          console.error('Notion API error for database', formattedDbId, ':', notionResponse.status, errorText);
         }
       } catch (error) {
         console.error(`Error fetching from database ${db.id}:`, error);
       }
     }
+
+    console.log('Total leads fetched:', allLeads.length);
 
     // Apply filters
     let filteredLeads = allLeads;

@@ -109,14 +109,35 @@ serve(async (req) => {
               console.log('Database', formattedDatabaseId, 'returned', notionData.results.length, 'leads');
               const leads = notionData.results.map((page: any) => {
                 const props = page.properties;
+                
+                // Helper to extract text
+                const getText = (prop: any) => {
+                  if (!prop) return '';
+                  if (prop.title && prop.title[0]) return prop.title[0].plain_text;
+                  if (prop.rich_text && prop.rich_text[0]) return prop.rich_text[0].plain_text;
+                  return '';
+                };
+                
+                // Extract company name
+                const companyName = 
+                  getText(props.Name) || 
+                  getText(props.Title) || 
+                  getText(props['Company Name']) ||
+                  (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+                  'Company Name Not Available';
+                
                 return {
                   id: page.id,
                   status: props.Status?.select?.name || 'Unknown',
-                  companyName: props['Company Name']?.title?.[0]?.plain_text || 'N/A',
-                  contactName: props['Contact Name']?.rich_text?.[0]?.plain_text || 'N/A',
-                  jobTitle: props['Job Title']?.rich_text?.[0]?.plain_text || 'N/A',
-                  industry: props.Industry?.select?.name || 'N/A',
-                  companySize: props['Company Size']?.select?.name || 'N/A',
+                  companyName,
+                  contactName: getText(props['Contact Name']) || 'Not available',
+                  jobTitle: getText(props.Title) || getText(props['Job Title']) || 'Not available',
+                  email: props.Email?.email || '',
+                  phone: props.Phone?.phone_number || '',
+                  linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+                  industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
+                  companySize: props.Size?.select?.name || getText(props.Size) || 'Not available',
+                  location: getText(props['Address - Location']) || getText(props.Location) || '',
                   dateAdded: props['Date Added']?.date?.start || page.created_time,
                 };
               });
@@ -192,14 +213,34 @@ serve(async (req) => {
     const leads = notionData.results.map((page: any) => {
       const props = page.properties;
       
+      // Helper to extract text
+      const getText = (prop: any) => {
+        if (!prop) return '';
+        if (prop.title && prop.title[0]) return prop.title[0].plain_text;
+        if (prop.rich_text && prop.rich_text[0]) return prop.rich_text[0].plain_text;
+        return '';
+      };
+      
+      // Extract company name
+      const companyName = 
+        getText(props.Name) || 
+        getText(props.Title) || 
+        getText(props['Company Name']) ||
+        (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
+        'Company Name Not Available';
+      
       return {
         id: page.id,
         status: props.Status?.select?.name || 'Unknown',
-        companyName: props['Company Name']?.title?.[0]?.plain_text || 'N/A',
-        contactName: props['Contact Name']?.rich_text?.[0]?.plain_text || 'N/A',
-        jobTitle: props['Job Title']?.rich_text?.[0]?.plain_text || 'N/A',
-        industry: props.Industry?.select?.name || 'N/A',
-        companySize: props['Company Size']?.select?.name || 'N/A',
+        companyName,
+        contactName: getText(props['Contact Name']) || 'Not available',
+        jobTitle: getText(props.Title) || getText(props['Job Title']) || 'Not available',
+        email: props.Email?.email || '',
+        phone: props.Phone?.phone_number || '',
+        linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+        industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
+        companySize: props.Size?.select?.name || getText(props.Size) || 'Not available',
+        location: getText(props['Address - Location']) || getText(props.Location) || '',
         dateAdded: props['Date Added']?.date?.start || page.created_time,
       };
     });
