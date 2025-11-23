@@ -94,9 +94,18 @@ serve(async (req) => {
     const databases = [mainDatabaseId, ...(clients?.map(c => c.notion_database_id) || [])];
 
     for (const dbId of databases) {
+      if (!dbId) continue;
+      
       try {
+        // Format database ID with hyphens if needed
+        const formattedDbId = dbId.includes('-') 
+          ? dbId 
+          : dbId.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+        
+        console.log(`Querying database: ${formattedDbId}`);
+        
         const notionResponse = await fetch(
-          `https://api.notion.com/v1/databases/${dbId}/query`,
+          `https://api.notion.com/v1/databases/${formattedDbId}/query`,
           {
             method: 'POST',
             headers: {
@@ -122,6 +131,7 @@ serve(async (req) => {
         }
       } catch (error) {
         console.error(`Error querying database ${dbId}:`, error);
+        // Continue to next database on error - don't break the entire stats function
       }
     }
 
