@@ -57,7 +57,14 @@ const ClientDashboard = () => {
       // Fetch all leads to calculate stats
       const { data, error } = await supabase.functions.invoke("get-client-leads");
 
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes('No Notion database configured')) {
+          toast.error('Your account is not yet configured. Please contact your administrator to set up your Notion database.');
+        } else {
+          toast.error("Failed to load dashboard data: " + error.message);
+        }
+        throw error;
+      }
 
       const leads = data.leads || [];
       
@@ -82,7 +89,7 @@ const ClientDashboard = () => {
       // Get recent leads (last 5)
       setRecentLeads(leads.slice(0, 5));
     } catch (error: any) {
-      toast.error("Failed to load dashboard data: " + error.message);
+      // Error already handled above
     } finally {
       setIsLoading(false);
     }

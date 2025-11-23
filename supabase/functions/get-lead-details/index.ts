@@ -61,8 +61,13 @@ serve(async (req) => {
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile?.notion_database_id) {
+    if (profileError) {
+      console.error('Profile error:', profileError);
       throw new Error('Failed to get user profile');
+    }
+
+    if (!profile?.notion_database_id) {
+      throw new Error('No Notion database configured for your account. Please contact your administrator.');
     }
 
     // Fetch specific page from Notion
