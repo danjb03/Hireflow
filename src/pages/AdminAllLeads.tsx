@@ -93,23 +93,43 @@ const AdminAllLeads = () => {
   const loadLeads = async () => {
     setLoading(true);
     try {
+      // Build query string for filters
       const params = new URLSearchParams();
       if (statusFilter) params.append("status", statusFilter);
       if (clientFilter) params.append("client", clientFilter);
       if (searchTerm) params.append("search", searchTerm);
+      
+      // Get the auth session to pass in headers
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+        return;
+      }
 
-      const { data, error } = await supabase.functions.invoke("get-all-leads-admin", {
-        method: "GET",
-      });
+      // Make direct fetch call to support query parameters
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-leads-admin?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to load leads" }));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
 
+      const data = await response.json();
       setLeads(data.leads || []);
     } catch (error) {
       console.error("Error loading leads:", error);
       toast({
         title: "Error",
-        description: "Failed to load leads",
+        description: error instanceof Error ? error.message : "Failed to load leads",
         variant: "destructive",
       });
     } finally {

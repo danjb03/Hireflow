@@ -24,6 +24,9 @@ verify_jwt = true
 [functions.update-lead]
 verify_jwt = true
 
+[functions.update-lead-feedback]
+verify_jwt = true
+
 [functions.delete-lead]
 verify_jwt = true
 
