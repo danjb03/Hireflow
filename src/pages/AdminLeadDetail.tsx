@@ -39,6 +39,7 @@ interface LeadData {
   activeJobsUrl: string | null;
   jobsOpen: string | null;
   dateAdded: string;
+  feedback: string | null;
 }
 
 interface Client {
@@ -618,6 +619,23 @@ const AdminLeadDetail = () => {
                   <CardContent>
                     <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed max-h-96 overflow-y-auto">
                       {lead.recordingTranscript}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Client Feedback */}
+              {lead.feedback && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Client Feedback
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
+                      {lead.feedback}
                     </p>
                   </CardContent>
                 </Card>

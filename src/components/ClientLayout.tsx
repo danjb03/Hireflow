@@ -12,8 +12,7 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X,
-  MessageSquare
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -39,7 +38,6 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
     { icon: Users, label: "Leads", path: "/client/leads" },
     { icon: Calendar, label: "Calendar", path: "/client/calendar" },
     { icon: Settings, label: "Settings", path: "/client/settings" },
-    { icon: MessageSquare, label: "Feedback", path: "/client/feedback" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

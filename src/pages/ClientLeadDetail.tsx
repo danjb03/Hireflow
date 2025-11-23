@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { 
   ArrowLeft, 
@@ -53,6 +54,7 @@ interface LeadDetail {
   jobPostingTitle: string | null;
   jobDescription: string | null;
   dateAdded: string;
+  feedback: string | null;
 }
 
 const ClientLeadDetail = () => {
@@ -61,6 +63,8 @@ const ClientLeadDetail = () => {
   const [lead, setLead] = useState<LeadDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -88,11 +92,35 @@ const ClientLeadDetail = () => {
       if (error) throw error;
 
       setLead(data.lead);
+      setFeedback(data.lead.feedback || "");
     } catch (error: any) {
       toast.error("Failed to load lead details: " + error.message);
       navigate("/client/leads");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedback.trim()) {
+      toast.error("Please enter feedback");
+      return;
+    }
+
+    try {
+      setIsSubmittingFeedback(true);
+      const { error } = await supabase.functions.invoke("update-lead-feedback", {
+        body: { leadId: id, feedback }
+      });
+
+      if (error) throw error;
+
+      toast.success("Feedback submitted successfully");
+      await fetchLeadDetail();
+    } catch (error: any) {
+      toast.error("Failed to submit feedback: " + error.message);
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -454,6 +482,39 @@ const ClientLeadDetail = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Feedback Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Your Feedback
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Share your feedback about this lead..."
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  rows={6}
+                  className="resize-none"
+                />
+                <Button 
+                  onClick={handleSubmitFeedback}
+                  disabled={isSubmittingFeedback || !feedback.trim()}
+                  className="w-full"
+                >
+                  {isSubmittingFeedback ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Feedback"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
