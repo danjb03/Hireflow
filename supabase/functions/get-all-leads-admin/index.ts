@@ -166,6 +166,11 @@ serve(async (req) => {
               assignedClientId: db.clientId,
               industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
               dateAdded: page.created_time,
+              companyWebsite: props['Company Website']?.url || '',
+              companiesLinkedIn: props['Companies Linkedin']?.url || '',
+              contactLinkedIn: props["Contact's Linkedin"]?.url || '',
+              title: getText(props.Title) || 'Not available',
+              phone: props.Phone?.phone_number || getText(props.Phone) || 'Not available',
             };
           });
           

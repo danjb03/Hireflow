@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Search, Loader2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ArrowLeft, Search, Loader2, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Lead {
@@ -19,6 +20,11 @@ interface Lead {
   assignedClientId: string | null;
   industry: string;
   dateAdded: string;
+  companyWebsite?: string;
+  companiesLinkedIn?: string;
+  contactLinkedIn?: string;
+  title?: string;
+  phone?: string;
 }
 
 interface Client {
@@ -136,6 +142,20 @@ const AdminAllLeads = () => {
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
+  // Group leads by status
+  const groupedLeads = leads.reduce((acc, lead) => {
+    const status = lead.status || "No Stage";
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(lead);
+    return acc;
+  }, {} as Record<string, Lead[]>);
+
+  // Define status order
+  const statusOrder = ["No Stage", "Qualified", "Approved", "In Progress", "Booked", "Rejected"];
+  const sortedStatuses = statusOrder.filter(status => groupedLeads[status]);
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
@@ -204,70 +224,131 @@ const AdminAllLeads = () => {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : (
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Industry</TableHead>
-                  <TableHead>Assigned Client</TableHead>
-                  <TableHead>Date Added</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leads.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No leads found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  leads.map((lead) => (
-                    <TableRow key={lead.id}>
-                      <TableCell className="font-medium">{lead.companyName}</TableCell>
-                      <TableCell>{lead.contactName}</TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
-                      </TableCell>
-                      <TableCell>{lead.industry}</TableCell>
-                      <TableCell>
-                        {lead.assignedClient === "Unassigned" ? (
-                          <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Assign to client" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {clients.map((client) => (
-                                <SelectItem key={client.id} value={client.id}>
-                                  {client.email}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <span className="text-sm">{lead.assignedClient}</span>
-                        )}
-                      </TableCell>
-                      <TableCell>{new Date(lead.dateAdded).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/admin/leads/${lead.id}`)}
-                        >
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+        ) : leads.length === 0 ? (
+          <Card className="p-8 text-center text-muted-foreground">
+            No leads found
           </Card>
+        ) : (
+          <div className="space-y-4">
+            {sortedStatuses.map((status) => (
+              <Collapsible key={status} defaultOpen={true}>
+                <Card>
+                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <ChevronDown className="h-5 w-5 transition-transform data-[state=closed]:-rotate-90" />
+                      <h2 className="text-lg font-semibold">{status}</h2>
+                      <Badge variant="secondary">{groupedLeads[status].length}</Badge>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Client</TableHead>
+                            <TableHead>Company Name</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Company Website</TableHead>
+                            <TableHead>Company LinkedIn</TableHead>
+                            <TableHead>Contact Name</TableHead>
+                            <TableHead>Contact LinkedIn</TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {groupedLeads[status].map((lead) => (
+                            <TableRow key={lead.id}>
+                              <TableCell>
+                                {lead.assignedClient === "Unassigned" ? (
+                                  <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
+                                    <SelectTrigger className="w-[180px]">
+                                      <SelectValue placeholder="Assign to client" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {clients.map((client) => (
+                                        <SelectItem key={client.id} value={client.id}>
+                                          {client.email}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                ) : (
+                                  <span className="text-sm">{lead.assignedClient}</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-medium">{lead.companyName}</TableCell>
+                              <TableCell>
+                                <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {lead.companyWebsite ? (
+                                  <a 
+                                    href={lead.companyWebsite} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    {new URL(lead.companyWebsite).hostname.replace('www.', '')}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {lead.companiesLinkedIn ? (
+                                  <a 
+                                    href={lead.companiesLinkedIn} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    LinkedIn
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>{lead.contactName}</TableCell>
+                              <TableCell>
+                                {lead.contactLinkedIn ? (
+                                  <a 
+                                    href={lead.contactLinkedIn} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    LinkedIn
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>{lead.title || 'N/A'}</TableCell>
+                              <TableCell>{lead.phone || 'N/A'}</TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/admin/leads/${lead.id}`)}
+                                >
+                                  View Details
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            ))}
+          </div>
         )}
       </div>
     </div>
