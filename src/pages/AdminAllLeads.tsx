@@ -131,6 +131,33 @@ const AdminAllLeads = () => {
     }
   };
 
+  // Helper function to safely parse and display URLs
+  const getDisplayUrl = (url: string | undefined): string | null => {
+    if (!url || url.trim() === '') return null;
+    
+    try {
+      // Add protocol if missing
+      const urlWithProtocol = url.startsWith('http://') || url.startsWith('https://') 
+        ? url 
+        : `https://${url}`;
+      
+      const parsedUrl = new URL(urlWithProtocol);
+      return parsedUrl.hostname.replace('www.', '');
+    } catch (error) {
+      // If URL parsing fails, just return the original string
+      return url.replace('www.', '').replace('http://', '').replace('https://', '');
+    }
+  };
+
+  // Helper function to ensure URL has protocol
+  const getFullUrl = (url: string | undefined): string | null => {
+    if (!url || url.trim() === '') return null;
+    
+    return url.startsWith('http://') || url.startsWith('https://') 
+      ? url 
+      : `https://${url}`;
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       Approved: "bg-green-500/10 text-green-500 border-green-500/20",
@@ -281,14 +308,14 @@ const AdminAllLeads = () => {
                                 <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
                               </TableCell>
                               <TableCell>
-                                {lead.companyWebsite ? (
+                                {lead.companyWebsite && getDisplayUrl(lead.companyWebsite) ? (
                                   <a 
-                                    href={lead.companyWebsite} 
+                                    href={getFullUrl(lead.companyWebsite) || '#'} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-primary hover:underline flex items-center gap-1"
                                   >
-                                    {new URL(lead.companyWebsite).hostname.replace('www.', '')}
+                                    {getDisplayUrl(lead.companyWebsite)}
                                     <ExternalLink className="h-3 w-3" />
                                   </a>
                                 ) : (
@@ -296,9 +323,9 @@ const AdminAllLeads = () => {
                                 )}
                               </TableCell>
                               <TableCell>
-                                {lead.companiesLinkedIn ? (
+                                {lead.companiesLinkedIn && getFullUrl(lead.companiesLinkedIn) ? (
                                   <a 
-                                    href={lead.companiesLinkedIn} 
+                                    href={getFullUrl(lead.companiesLinkedIn) || '#'} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-primary hover:underline flex items-center gap-1"
@@ -312,9 +339,9 @@ const AdminAllLeads = () => {
                               </TableCell>
                               <TableCell>{lead.contactName}</TableCell>
                               <TableCell>
-                                {lead.contactLinkedIn ? (
+                                {lead.contactLinkedIn && getFullUrl(lead.contactLinkedIn) ? (
                                   <a 
-                                    href={lead.contactLinkedIn} 
+                                    href={getFullUrl(lead.contactLinkedIn) || '#'} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-primary hover:underline flex items-center gap-1"
