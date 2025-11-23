@@ -232,6 +232,52 @@ const AdminLeadDetail = () => {
           Back to All Leads
         </Button>
 
+        {/* Admin Actions */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Assign to Client</label>
+              <div className="flex gap-2">
+                <Select value={selectedClient} onValueChange={setSelectedClient}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAssignClient} disabled={!selectedClient}>
+                  Assign
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Update Stage</label>
+              <div className="flex gap-2">
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="Needs Work">Needs Work</SelectItem>
+                    <SelectItem value="Rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleUpdateStatus}>
+                  Update
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
         {/* Lead Hero Section */}
         <Card className="mb-6 border-primary/20 bg-gradient-to-br from-card to-card/50">
           <CardContent className="pt-6">
@@ -309,52 +355,6 @@ const AdminLeadDetail = () => {
         </Card>
 
         <div className="grid gap-6">
-          {/* Admin Actions */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Assign to Client</label>
-                <div className="flex gap-2">
-                  <Select value={selectedClient} onValueChange={setSelectedClient}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={handleAssignClient} disabled={!selectedClient}>
-                    Assign
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Update Stage</label>
-                <div className="flex gap-2">
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Approved">Approved</SelectItem>
-                      <SelectItem value="Needs Work">Needs Work</SelectItem>
-                      <SelectItem value="Rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={handleUpdateStatus}>
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
           {/* Contact Details */}
           <Card>
             <CardHeader>
