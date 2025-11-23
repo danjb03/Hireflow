@@ -7,6 +7,11 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import LeadDetail from "./pages/LeadDetail";
+import ClientDashboard from "./pages/ClientDashboard";
+import ClientLeads from "./pages/ClientLeads";
+import ClientLeadDetail from "./pages/ClientLeadDetail";
+import ClientCalendar from "./pages/ClientCalendar";
+import ClientSettings from "./pages/ClientSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminClients from "./pages/AdminClients";
 import AdminInvite from "./pages/AdminInvite";
@@ -26,8 +31,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          {/* Legacy routes for backwards compatibility */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lead/:id" element={<LeadDetail />} />
+          {/* New client portal routes */}
+          <Route path="/client/dashboard" element={<ClientDashboard />} />
+          <Route path="/client/leads" element={<ClientLeads />} />
+          <Route path="/client/leads/:id" element={<ClientLeadDetail />} />
+          <Route path="/client/calendar" element={<ClientCalendar />} />
+          <Route path="/client/settings" element={<ClientSettings />} />
+          {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/clients" element={<AdminClients />} />
           <Route path="/admin/invite" element={<AdminInvite />} />

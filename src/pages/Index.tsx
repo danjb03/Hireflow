@@ -18,7 +18,10 @@ const Index = () => {
             Access your enriched recruitment leads in one secure, professional portal
           </p>
           <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/login")}>
+            <Button size="lg" onClick={() => navigate("/client/dashboard")}>
+              Client Portal
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/login")}>
               Sign In
             </Button>
           </div>

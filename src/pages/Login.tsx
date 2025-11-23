@@ -25,7 +25,7 @@ const Login = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
+            emailRedirectTo: `${window.location.origin}/client/dashboard`
           }
         });
 
@@ -35,15 +35,23 @@ const Login = () => {
         setIsSignUp(false);
         setPassword("");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
         
+        // Check if user is admin
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id);
+        
+        const isAdmin = roles?.some(r => r.role === "admin") || false;
+        
         toast.success("Logged in successfully!");
-        navigate("/dashboard");
+        navigate(isAdmin ? "/admin" : "/client/dashboard");
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
@@ -56,9 +64,9 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Lead Portal</CardTitle>
+          <CardTitle className="text-2xl font-bold">Hireflow</CardTitle>
           <CardDescription>
-            {isSignUp ? "Create an account to access your leads" : "Sign in to view your recruitment leads"}
+            {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
           </CardDescription>
         </CardHeader>
         <CardContent>
