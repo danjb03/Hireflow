@@ -50,6 +50,8 @@ interface LeadDetail {
   jobUrl: string | null;
   activeJobsUrl: string | null;
   jobsOpen: string | null;
+  jobPostingTitle: string | null;
+  jobDescription: string | null;
   dateAdded: string;
 }
 
@@ -354,7 +356,7 @@ const ClientLeadDetail = () => {
             )}
 
             {/* Job Openings */}
-            {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl) && (
+            {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -370,17 +372,34 @@ const ClientLeadDetail = () => {
                     </div>
                   )}
                   
+                  {lead.jobPostingTitle && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                      <p className="text-foreground font-medium">{lead.jobPostingTitle}</p>
+                    </div>
+                  )}
+                  
+                  {lead.jobDescription && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Job Description</p>
+                      <p className="text-foreground text-sm leading-relaxed">{lead.jobDescription}</p>
+                    </div>
+                  )}
+                  
                   {lead.jobOpenings && lead.jobOpenings.length > 0 && (
-                    <ul className="space-y-3">
-                      {lead.jobOpenings.map((job, index) => (
-                        <li key={index} className="border-l-2 border-primary pl-3">
-                          <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                            {job.title}
-                          </a>
-                          {job.type && <p className="text-sm text-muted-foreground">{job.type}</p>}
-                        </li>
-                      ))}
-                    </ul>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Available Positions</p>
+                      <ul className="space-y-3">
+                        {lead.jobOpenings.map((job, index) => (
+                          <li key={index} className="border-l-2 border-primary pl-3">
+                            <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                              {job.title}
+                            </a>
+                            {job.type && <p className="text-sm text-muted-foreground">{job.type}</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   
                   {lead.jobUrl && (
@@ -390,7 +409,7 @@ const ClientLeadDetail = () => {
                       rel="noopener noreferrer" 
                       className="text-primary hover:underline inline-flex items-center gap-1"
                     >
-                      View Job Posting
+                      View Job Posting URL
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
