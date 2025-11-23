@@ -47,6 +47,16 @@ serve(async (req) => {
 
     console.log('Password reset successful for user:', userId);
 
+    // Update profile with new password for reference
+    const { error: updateError } = await supabaseAdmin
+      .from("profiles")
+      .update({ initial_password: tempPassword })
+      .eq("id", userId);
+
+    if (updateError) {
+      console.error('Failed to update password in profile:', updateError);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 

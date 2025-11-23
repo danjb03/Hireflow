@@ -62,7 +62,25 @@ serve(async (req) => {
       throw new Error('NOTION_API_KEY not configured');
     }
 
-    // Try to query the database
+    // First, fetch database metadata to get the name
+    const dbMetadataResponse = await fetch(
+      `https://api.notion.com/v1/databases/${formattedDatabaseId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${notionApiKey}`,
+          'Notion-Version': '2022-06-28',
+        },
+      }
+    );
+
+    let databaseName = 'Notion Database';
+    if (dbMetadataResponse.ok) {
+      const dbMetadata = await dbMetadataResponse.json();
+      databaseName = dbMetadata.title?.[0]?.plain_text || 'Notion Database';
+      console.log('Fetched database name:', databaseName);
+    }
+
+    // Try to query the database to validate access
     const notionResponse = await fetch(
       `https://api.notion.com/v1/databases/${formattedDatabaseId}/query`,
       {
@@ -107,6 +125,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         valid: true, 
+        databaseName,
         pageCount: data.results?.length || 0,
         message: 'Database is accessible and properly configured'
       }),

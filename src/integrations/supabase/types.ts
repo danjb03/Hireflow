@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          initial_password: string | null
           notion_database_id: string | null
           updated_at: string
         }
@@ -26,6 +27,7 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          initial_password?: string | null
           notion_database_id?: string | null
           updated_at?: string
         }
@@ -33,6 +35,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          initial_password?: string | null
           notion_database_id?: string | null
           updated_at?: string
         }
