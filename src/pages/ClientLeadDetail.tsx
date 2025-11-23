@@ -29,22 +29,27 @@ interface LeadDetail {
   status: string;
   companyName: string;
   companyWebsite: string;
-  companyLinkedIn: string;
-  industry: string;
-  companySize: string;
-  employeeCount: string;
-  location: string;
-  companyDescription: string;
-  contactName: string;
-  jobTitle: string;
+  companyLinkedIn: string | null;
+  industry: string | null;
+  companySize: string | null;
+  employeeCount: string | null;
+  country: string | null;
+  location: string | null;
+  companyDescription: string | null;
+  founded: string | null;
+  contactName: string | null;
+  jobTitle: string | null;
   email: string;
   phone: string;
   linkedInProfile: string;
-  callNotes: string;
-  callbackDateTime: string;
-  jobOpenings: Array<{ title: string; url: string; type: string }>;
-  recordingTranscript: string;
-  aiSummary: string;
+  callNotes: string | null;
+  callbackDateTime: string | null;
+  jobOpenings: Array<{ title: string; url: string; type?: string }>;
+  recordingTranscript: string | null;
+  aiSummary: string | null;
+  jobUrl: string | null;
+  activeJobsUrl: string | null;
+  jobsOpen: string | null;
   dateAdded: string;
 }
 
@@ -159,21 +164,31 @@ const ClientLeadDetail = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Industry</p>
-                    <p className="text-foreground">{lead.industry}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Company Size</p>
-                    <p className="flex items-center gap-1 text-foreground">
-                      <Users className="h-4 w-4" />
-                      {lead.companySize}
-                    </p>
-                  </div>
+                  {lead.industry && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Industry</p>
+                      <p className="text-foreground">{lead.industry}</p>
+                    </div>
+                  )}
+                  {lead.companySize && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Company Size</p>
+                      <p className="flex items-center gap-1 text-foreground">
+                        <Users className="h-4 w-4" />
+                        {lead.companySize}
+                      </p>
+                    </div>
+                  )}
                   {lead.employeeCount && (
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Employee Count</p>
                       <p className="text-foreground">{lead.employeeCount}</p>
+                    </div>
+                  )}
+                  {lead.country && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Country</p>
+                      <p className="text-foreground">{lead.country}</p>
                     </div>
                   )}
                   {lead.location && (
@@ -183,6 +198,12 @@ const ClientLeadDetail = () => {
                         <MapPin className="h-4 w-4" />
                         {lead.location}
                       </p>
+                    </div>
+                  )}
+                  {lead.founded && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Founded</p>
+                      <p className="text-foreground">{lead.founded}</p>
                     </div>
                   )}
                   {lead.companyLinkedIn && (
@@ -222,17 +243,21 @@ const ClientLeadDetail = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Name</p>
-                    <p className="text-foreground font-medium">{lead.contactName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                    <p className="flex items-center gap-1 text-foreground">
-                      <Briefcase className="h-4 w-4" />
-                      {lead.jobTitle}
-                    </p>
-                  </div>
+                  {lead.contactName && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Name</p>
+                      <p className="text-foreground font-medium">{lead.contactName}</p>
+                    </div>
+                  )}
+                  {lead.jobTitle && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                      <p className="flex items-center gap-1 text-foreground">
+                        <Briefcase className="h-4 w-4" />
+                        {lead.jobTitle}
+                      </p>
+                    </div>
+                  )}
                   {lead.email && (
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Email</p>
@@ -292,8 +317,20 @@ const ClientLeadDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-lg font-semibold text-foreground">
-                    {new Date(lead.callbackDateTime).toLocaleString()}
+                    {new Date(lead.callbackDateTime).toLocaleString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
                   </p>
+                  {new Date(lead.callbackDateTime) < new Date() && (
+                    <Badge variant="destructive" className="mt-2">Overdue</Badge>
+                  )}
+                  {new Date(lead.callbackDateTime) > new Date() && (
+                    <Badge variant="default" className="mt-2 bg-success text-success-foreground">Upcoming</Badge>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -317,7 +354,7 @@ const ClientLeadDetail = () => {
             )}
 
             {/* Job Openings */}
-            {lead.jobOpenings && lead.jobOpenings.length > 0 && (
+            {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -325,17 +362,50 @@ const ClientLeadDetail = () => {
                     Job Openings
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {lead.jobOpenings.map((job, index) => (
-                      <li key={index} className="border-l-2 border-primary pl-3">
-                        <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                          {job.title}
-                        </a>
-                        {job.type && <p className="text-sm text-muted-foreground">{job.type}</p>}
-                      </li>
-                    ))}
-                  </ul>
+                <CardContent className="space-y-4">
+                  {lead.jobsOpen && (
+                    <div className="bg-muted p-3 rounded-lg">
+                      <p className="text-sm font-medium text-muted-foreground">Open Positions</p>
+                      <p className="text-2xl font-bold text-foreground">{lead.jobsOpen}</p>
+                    </div>
+                  )}
+                  
+                  {lead.jobOpenings && lead.jobOpenings.length > 0 && (
+                    <ul className="space-y-3">
+                      {lead.jobOpenings.map((job, index) => (
+                        <li key={index} className="border-l-2 border-primary pl-3">
+                          <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                            {job.title}
+                          </a>
+                          {job.type && <p className="text-sm text-muted-foreground">{job.type}</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  
+                  {lead.jobUrl && (
+                    <a 
+                      href={lead.jobUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      View Job Posting
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  
+                  {lead.activeJobsUrl && (
+                    <a 
+                      href={lead.activeJobsUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      Find Active Job Openings
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             )}
