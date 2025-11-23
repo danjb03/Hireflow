@@ -54,26 +54,36 @@ serve(async (req) => {
 
     console.log('Fetching lead details for:', leadId);
 
-    // Get user's Notion database ID from profile
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('notion_database_id')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError) {
-      console.error('Profile error:', profileError);
-      throw new Error('Failed to get user profile');
-    }
-
-    if (!profile?.notion_database_id) {
-      throw new Error('No Notion database configured for your account. Please contact your administrator.');
-    }
-
     // Fetch specific page from Notion
     const notionApiKey = Deno.env.get('NOTION_API_KEY');
     if (!notionApiKey) {
       throw new Error('NOTION_API_KEY not configured');
+    }
+
+    // Check if user is admin
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', {
+      _user_id: user.id,
+    });
+
+    console.log('User is admin:', isAdmin);
+
+    // Admins can view any lead, clients can only view leads from their database
+    if (!isAdmin) {
+      // For clients, verify they have access to this lead via their database
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('notion_database_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw new Error('Failed to get user profile');
+      }
+
+      if (!profile?.notion_database_id) {
+        throw new Error('No Notion database configured for your account. Please contact your administrator.');
+      }
     }
 
     const notionResponse = await fetch(
