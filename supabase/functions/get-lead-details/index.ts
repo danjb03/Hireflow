@@ -124,48 +124,48 @@ serve(async (req) => {
 
     // Extract company name - try multiple possible field names
     const companyName = 
+      getText(props['Company Name']) ||
       getText(props.Name) || 
       getText(props.Title) || 
-      getText(props['Company Name']) ||
       (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
       'Company Name Not Available';
 
-    // Transform to detailed format with ALL fields
+    // Transform to detailed format with ALL fields - using exact Notion property names
     const lead = {
       id: page.id,
       status: props.STAGE?.select?.name || props.Status?.select?.name || 'New',
       companyName,
       
-      // Company Information
+      // Company Information - using exact property names from Notion
       companyWebsite: props['Company Website']?.url || '',
-      companyLinkedIn: props['Companies LinkedIn']?.url || '',
+      companyLinkedIn: props['Companies Linkeidn']?.url || props['Companies LinkedIn']?.url || '',
       industry: props.Industry?.select?.name || getText(props.Industry) || null,
       companySize: props.Size?.select?.name || getText(props.Size) || null,
       employeeCount: props['Employee Count']?.number?.toString() || null,
       country: props.Country?.select?.name || getText(props.Country) || null,
-      location: getText(props['Address - Location']) || getText(props.Location) || null,
+      location: getText(props['Address - Locations']) || getText(props['Address - Location']) || getText(props.Location) || null,
       companyDescription: getText(props['Company Description']) || null,
       founded: props.Founded?.date?.start || getText(props.Founded) || null,
       
-      // Contact Details
+      // Contact Details - using exact property names
       contactName: getText(props['Contact Name']) || null,
       jobTitle: getText(props.Title) || getText(props['Job Title']) || null,
-      email: props.Email?.email || '',
-      phone: props.Phone?.phone_number || '',
-      linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+      email: props.Email?.email || getText(props.Email) || '',
+      phone: props.Phone?.phone_number || getText(props.Phone) || '',
+      linkedInProfile: props["Contact's Linkeidn"]?.url || props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
       
-      // Interaction Details
-      callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || null,
-      callbackDateTime: props['Callback Date and Time']?.date?.start || null,
+      // Interaction Details - Call Back Date and Time field contains callback notes
+      callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || null,
+      callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || null,
       recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || null,
       aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || null,
       
-      // Job Information
+      // Job Information - using exact property names
       jobPostingTitle: getText(props['Title - Jobs']) || null,
       jobDescription: getText(props['Description - Jobs']) || null,
       jobUrl: props['Url - Jobs']?.url || null,
       activeJobsUrl: props['Find Active Job Openings']?.url || null,
-      jobsOpen: props['Jobs open']?.number?.toString() || getText(props['Jobs open']) || null,
+      jobsOpen: props['Jobs open ']?.number?.toString() || props['Jobs open']?.number?.toString() || getText(props['Jobs open ']) || getText(props['Jobs open']) || null,
       
       // Parse job openings if stored as JSON string
       jobOpenings: (() => {
