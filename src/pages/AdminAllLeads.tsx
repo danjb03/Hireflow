@@ -136,13 +136,14 @@ const AdminAllLeads = () => {
       Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
       'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      Unknown: "bg-gray-500/10 text-gray-500 border-gray-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
   // Group leads by status
   const groupedLeads = leads.reduce((acc, lead) => {
-    const status = lead.status || "No Stage";
+    const status = lead.status || "Unknown";
     if (!acc[status]) {
       acc[status] = [];
     }
@@ -150,9 +151,10 @@ const AdminAllLeads = () => {
     return acc;
   }, {} as Record<string, Lead[]>);
 
-  // Define status order
-  const statusOrder = ["Approved", "Needs Work", "Rejected"];
-  const sortedStatuses = statusOrder.filter(status => groupedLeads[status]);
+  // Define status order - show all statuses that exist
+  const knownStatuses = ["Approved", "Needs Work", "Rejected", "Unknown"];
+  const allStatuses = [...new Set([...knownStatuses, ...Object.keys(groupedLeads)])];
+  const sortedStatuses = allStatuses.filter(status => groupedLeads[status]);
 
   return (
     <div className="min-h-screen bg-background p-8">

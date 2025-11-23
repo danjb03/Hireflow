@@ -14,6 +14,7 @@ interface Stats {
     Approved: number;
     Rejected: number;
     'Needs Work': number;
+    Unknown: number;
   };
 }
 
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
       Approved: 0,
       Rejected: 0,
       'Needs Work': 0,
+      Unknown: 0,
     }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -85,6 +87,7 @@ const AdminDashboard = () => {
       Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
       'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      Unknown: "bg-gray-500/10 text-gray-500 border-gray-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
