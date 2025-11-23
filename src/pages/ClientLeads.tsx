@@ -14,15 +14,39 @@ interface Lead {
   id: string;
   status: string;
   companyName: string;
-  contactName: string;
-  jobTitle: string;
-  email: string;
-  phone: string;
-  linkedInProfile: string;
-  industry: string;
-  companySize: string;
-  location: string;
   dateAdded: string;
+  
+  // Company Information
+  companyWebsite?: string;
+  companyLinkedIn?: string;
+  industry?: string;
+  companySize?: string;
+  employeeCount?: string;
+  country?: string;
+  location?: string;
+  companyDescription?: string;
+  founded?: string;
+  
+  // Contact Details
+  contactName?: string;
+  jobTitle?: string;
+  email?: string;
+  phone?: string;
+  linkedInProfile?: string;
+  
+  // Interaction Details
+  callNotes?: string;
+  callbackDateTime?: string;
+  recordingTranscript?: string;
+  aiSummary?: string;
+  
+  // Job Information
+  jobPostingTitle?: string;
+  jobDescription?: string;
+  jobUrl?: string;
+  activeJobsUrl?: string;
+  jobsOpen?: string;
+  jobOpenings?: any[];
 }
 
 const ClientLeads = () => {
@@ -172,7 +196,7 @@ const ClientLeads = () => {
                   <CardTitle className="text-xl">{lead.companyName}</CardTitle>
                   <CardDescription className="font-medium">
                     {lead.contactName}
-                    {lead.jobTitle && lead.jobTitle !== 'Not available' && ` • ${lead.jobTitle}`}
+                    {lead.jobTitle && ` • ${lead.jobTitle}`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -191,7 +215,14 @@ const ClientLeads = () => {
                   {lead.linkedInProfile && (
                     <div className="flex items-center gap-2 text-sm text-primary">
                       <Linkedin className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">LinkedIn Profile</span>
+                      <a 
+                        href={lead.linkedInProfile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate hover:underline"
+                      >
+                        LinkedIn Profile
+                      </a>
                     </div>
                   )}
                   <div className="pt-2 border-t space-y-2">
@@ -201,14 +232,24 @@ const ClientLeads = () => {
                         <span className="truncate">{lead.location}</span>
                       </div>
                     )}
-                    {(lead.industry !== 'Not available' || lead.companySize !== 'Not available') && (
+                    {lead.industry && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Building2 className="h-4 w-4 flex-shrink-0" />
                         <span>
-                          {lead.industry !== 'Not available' ? lead.industry : ''}
-                          {lead.industry !== 'Not available' && lead.companySize !== 'Not available' && ' • '}
-                          {lead.companySize !== 'Not available' ? lead.companySize : ''}
+                          {lead.industry}
+                          {lead.companySize && ` • ${lead.companySize}`}
                         </span>
+                      </div>
+                    )}
+                    {lead.aiSummary && (
+                      <div className="text-sm text-muted-foreground pt-2 border-t">
+                        <p className="font-medium mb-1">AI Summary:</p>
+                        <p className="line-clamp-2">{lead.aiSummary}</p>
+                      </div>
+                    )}
+                    {lead.jobsOpen && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Jobs Open:</span> {lead.jobsOpen}
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

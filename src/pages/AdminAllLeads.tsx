@@ -14,17 +14,42 @@ import { toast } from "@/hooks/use-toast";
 interface Lead {
   id: string;
   companyName: string;
-  contactName: string;
   status: string;
   assignedClient: string;
   assignedClientId: string | null;
-  industry: string;
   dateAdded: string;
+  
+  // Company Information
   companyWebsite?: string;
-  companiesLinkedIn?: string;
-  contactLinkedIn?: string;
-  title?: string;
+  companyLinkedIn?: string;
+  industry?: string;
+  companySize?: string;
+  employeeCount?: string;
+  country?: string;
+  location?: string;
+  companyDescription?: string;
+  founded?: string;
+  
+  // Contact Details
+  contactName?: string;
+  jobTitle?: string;
+  email?: string;
   phone?: string;
+  linkedInProfile?: string;
+  
+  // Interaction Details
+  callNotes?: string;
+  callbackDateTime?: string;
+  recordingTranscript?: string;
+  aiSummary?: string;
+  
+  // Job Information
+  jobPostingTitle?: string;
+  jobDescription?: string;
+  jobUrl?: string;
+  activeJobsUrl?: string;
+  jobsOpen?: string;
+  jobOpenings?: any[];
 }
 
 interface Client {
@@ -270,16 +295,24 @@ const AdminAllLeads = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Client</TableHead>
-                            <TableHead>Company Name</TableHead>
-                            <TableHead>Stage</TableHead>
-                            <TableHead>Company Website</TableHead>
-                            <TableHead>Company LinkedIn</TableHead>
-                            <TableHead>Contact Name</TableHead>
-                            <TableHead>Contact LinkedIn</TableHead>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead className="whitespace-nowrap">Client</TableHead>
+                            <TableHead className="whitespace-nowrap">Company</TableHead>
+                            <TableHead className="whitespace-nowrap">Stage</TableHead>
+                            <TableHead className="whitespace-nowrap">Industry</TableHead>
+                            <TableHead className="whitespace-nowrap">Size</TableHead>
+                            <TableHead className="whitespace-nowrap">Location</TableHead>
+                            <TableHead className="whitespace-nowrap">Contact</TableHead>
+                            <TableHead className="whitespace-nowrap">Job Title</TableHead>
+                            <TableHead className="whitespace-nowrap">Email</TableHead>
+                            <TableHead className="whitespace-nowrap">Phone</TableHead>
+                            <TableHead className="whitespace-nowrap">Company Website</TableHead>
+                            <TableHead className="whitespace-nowrap">Company LinkedIn</TableHead>
+                            <TableHead className="whitespace-nowrap">Contact LinkedIn</TableHead>
+                            <TableHead className="whitespace-nowrap">Call Notes</TableHead>
+                            <TableHead className="whitespace-nowrap">AI Summary</TableHead>
+                            <TableHead className="whitespace-nowrap">Jobs Open</TableHead>
+                            <TableHead className="whitespace-nowrap">Date Added</TableHead>
+                            <TableHead className="whitespace-nowrap">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -300,14 +333,21 @@ const AdminAllLeads = () => {
                                     </SelectContent>
                                   </Select>
                                 ) : (
-                                  <span className="text-sm">{lead.assignedClient}</span>
+                                  <span className="text-sm whitespace-nowrap">{lead.assignedClient}</span>
                                 )}
                               </TableCell>
-                              <TableCell className="font-medium">{lead.companyName}</TableCell>
+                              <TableCell className="font-medium whitespace-nowrap">{lead.companyName}</TableCell>
                               <TableCell>
                                 <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.industry || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.companySize || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.location || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.contactName || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.jobTitle || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.email || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.phone || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 {lead.companyWebsite && getDisplayUrl(lead.companyWebsite) ? (
                                   <a 
                                     href={getFullUrl(lead.companyWebsite) || '#'} 
@@ -322,10 +362,10 @@ const AdminAllLeads = () => {
                                   <span className="text-muted-foreground text-sm">N/A</span>
                                 )}
                               </TableCell>
-                              <TableCell>
-                                {lead.companiesLinkedIn && getFullUrl(lead.companiesLinkedIn) ? (
+                              <TableCell className="whitespace-nowrap">
+                                {lead.companyLinkedIn && getFullUrl(lead.companyLinkedIn) ? (
                                   <a 
-                                    href={getFullUrl(lead.companiesLinkedIn) || '#'} 
+                                    href={getFullUrl(lead.companyLinkedIn) || '#'} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-primary hover:underline flex items-center gap-1"
@@ -337,11 +377,10 @@ const AdminAllLeads = () => {
                                   <span className="text-muted-foreground text-sm">N/A</span>
                                 )}
                               </TableCell>
-                              <TableCell>{lead.contactName}</TableCell>
-                              <TableCell>
-                                {lead.contactLinkedIn && getFullUrl(lead.contactLinkedIn) ? (
+                              <TableCell className="whitespace-nowrap">
+                                {lead.linkedInProfile && getFullUrl(lead.linkedInProfile) ? (
                                   <a 
-                                    href={getFullUrl(lead.contactLinkedIn) || '#'} 
+                                    href={getFullUrl(lead.linkedInProfile) || '#'} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="text-primary hover:underline flex items-center gap-1"
@@ -353,8 +392,20 @@ const AdminAllLeads = () => {
                                   <span className="text-muted-foreground text-sm">N/A</span>
                                 )}
                               </TableCell>
-                              <TableCell>{lead.title || 'N/A'}</TableCell>
-                              <TableCell>{lead.phone || 'N/A'}</TableCell>
+                              <TableCell className="max-w-xs">
+                                <div className="truncate" title={lead.callNotes}>
+                                  {lead.callNotes || 'N/A'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-xs">
+                                <div className="truncate" title={lead.aiSummary}>
+                                  {lead.aiSummary || 'N/A'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">{lead.jobsOpen || 'N/A'}</TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {new Date(lead.dateAdded).toLocaleDateString()}
+                              </TableCell>
                               <TableCell>
                                 <Button
                                   variant="outline"

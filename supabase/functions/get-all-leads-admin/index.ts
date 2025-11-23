@@ -157,20 +157,56 @@ serve(async (req) => {
                 (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
                 'Company Name Not Available';
               
+              // Parse job openings if stored as JSON string
+              const parseJobOpenings = () => {
+                try {
+                  const jobsText = getText(props['Job Openings']);
+                  return jobsText ? JSON.parse(jobsText) : [];
+                } catch {
+                  return [];
+                }
+              };
+              
               return {
                 id: page.id,
+                // Basic Info
                 companyName,
-                contactName: getText(props['Contact Name']) || 'Not available',
                 status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
                 assignedClient: db.clientEmail,
                 assignedClientId: db.clientId,
-                industry: props.Industry?.select?.name || getText(props.Industry) || 'Not available',
-                dateAdded: page.created_time,
+                dateAdded: props['Date Added']?.date?.start || page.created_time,
+                
+                // Company Information
                 companyWebsite: props['Company Website']?.url || '',
-                companiesLinkedIn: props['Companies Linkedin']?.url || '',
-                contactLinkedIn: props["Contact's Linkedin"]?.url || '',
-                title: getText(props.Title) || 'Not available',
-                phone: props.Phone?.phone_number || getText(props.Phone) || 'Not available',
+                companyLinkedIn: props['Companies LinkedIn']?.url || '',
+                industry: props.Industry?.select?.name || getText(props.Industry) || '',
+                companySize: props.Size?.select?.name || getText(props.Size) || '',
+                employeeCount: props['Employee Count']?.number?.toString() || '',
+                country: props.Country?.select?.name || getText(props.Country) || '',
+                location: getText(props['Address - Location']) || getText(props.Location) || '',
+                companyDescription: getText(props['Company Description']) || '',
+                founded: props.Founded?.date?.start || getText(props.Founded) || '',
+                
+                // Contact Details
+                contactName: getText(props['Contact Name']) || '',
+                jobTitle: getText(props.Title) || getText(props['Job Title']) || '',
+                email: props.Email?.email || '',
+                phone: props.Phone?.phone_number || getText(props.Phone) || '',
+                linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+                
+                // Interaction Details
+                callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || '',
+                callbackDateTime: props['Callback Date and Time']?.date?.start || '',
+                recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
+                aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
+                
+                // Job Information
+                jobPostingTitle: getText(props['Title - Jobs']) || '',
+                jobDescription: getText(props['Description - Jobs']) || '',
+                jobUrl: props['Url - Jobs']?.url || '',
+                activeJobsUrl: props['Find Active Job Openings']?.url || '',
+                jobsOpen: props['Jobs open']?.number?.toString() || getText(props['Jobs open']) || '',
+                jobOpenings: parseJobOpenings(),
               };
             });
           
