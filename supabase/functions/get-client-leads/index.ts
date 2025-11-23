@@ -169,11 +169,10 @@ serve(async (req) => {
                   phone: props.Phone?.phone_number || getText(props.Phone) || '',
                   linkedInProfile: props["Contact's Linkeidn"]?.url || props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
                   
-                  // Interaction Details
-                  callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || '',
-                  callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || '',
-                  recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
-                  aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
+                // Interaction Details
+                callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || '',
+                callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || '',
+                aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
                   
                   // Job Information - using exact property names
                   jobPostingTitle: getText(props['Title - Jobs']) || '',
@@ -320,7 +319,6 @@ serve(async (req) => {
         // Interaction Details
         callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || '',
         callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || '',
-        recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
         aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
         
         // Job Information - using exact property names

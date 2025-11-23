@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Mic, Linkedin, ExternalLink } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface LeadData {
@@ -31,7 +31,6 @@ interface LeadData {
   callNotes: string | null;
   callbackDateTime: string | null;
   jobOpenings: Array<{ title: string; url: string; type?: string }>;
-  recordingTranscript: string | null;
   aiSummary: string | null;
   jobPostingTitle: string | null;
   jobDescription: string | null;
@@ -603,23 +602,6 @@ const AdminLeadDetail = () => {
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recording Transcript */}
-              {lead.recordingTranscript && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Mic className="h-5 w-5" />
-                      Recording Transcript
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed max-h-96 overflow-y-auto">
-                      {lead.recordingTranscript}
-                    </p>
                   </CardContent>
                 </Card>
               )}

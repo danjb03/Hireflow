@@ -207,7 +207,6 @@ serve(async (req) => {
                 // Interaction Details
                 callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || '',
                 callbackDateTime: props['Callback Date and Time']?.date?.start || '',
-                recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
                 aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
                 
                 // Job Information
