@@ -3,18 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Users, Database, UserPlus, ArrowLeft } from "lucide-react";
+import { Loader2, Users, Database, UserPlus, ArrowLeft, FileText, PlusCircle, BarChart } from "lucide-react";
 
 interface Stats {
   totalClients: number;
   totalLeads: number;
   clientsWithDatabases: number;
+  statusBreakdown: {
+    Qualified: number;
+    'In Progress': number;
+    Booked: number;
+    Approved: number;
+    Rejected: number;
+  };
 }
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState<Stats>({ totalClients: 0, totalLeads: 0, clientsWithDatabases: 0 });
+  const [stats, setStats] = useState<Stats>({ 
+    totalClients: 0, 
+    totalLeads: 0, 
+    clientsWithDatabases: 0,
+    statusBreakdown: {
+      Qualified: 0,
+      'In Progress': 0,
+      Booked: 0,
+      Approved: 0,
+      Rejected: 0,
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -56,30 +75,26 @@ const AdminDashboard = () => {
 
   const loadStats = async () => {
     try {
-      // Get total clients (exclude admins)
-      const { data: allRoles } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
+      const { data, error } = await supabase.functions.invoke("get-system-stats");
 
-      const adminUserIds = allRoles?.filter(r => r.role === "admin").map(r => r.user_id) || [];
-      
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*");
+      if (error) throw error;
 
-      if (profilesError) throw profilesError;
-
-      const clients = profiles?.filter(p => !adminUserIds.includes(p.id)) || [];
-      const clientsWithDb = clients.filter(p => p.notion_database_id);
-
-      setStats({
-        totalClients: clients.length,
-        totalLeads: 0, // Will be calculated from Notion
-        clientsWithDatabases: clientsWithDb.length,
-      });
+      setStats(data);
     } catch (error: any) {
       console.error("Error loading stats:", error);
+      toast.error("Failed to load stats");
     }
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      Booked: "bg-green-500/10 text-green-500 border-green-500/20",
+      "In Progress": "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      Approved: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Qualified: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+    };
+    return colors[status] || "bg-muted text-muted-foreground";
   };
 
   if (isLoading) {
@@ -132,7 +147,7 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-              <Database className="h-4 w-4 text-muted-foreground" />
+              <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalLeads}</div>
@@ -141,15 +156,62 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Status Breakdown */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Leads by Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              {Object.entries(stats.statusBreakdown).map(([status, count]) => (
+                <div key={status} className="flex items-center gap-2">
+                  <Badge className={getStatusColor(status)}>{status}</Badge>
+                  <span className="text-2xl font-bold">{count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/submit-lead")}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PlusCircle className="h-5 w-5" />
+                Submit Lead
+              </CardTitle>
+              <CardDescription>Add new lead to system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full">
+                Submit New Lead
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/leads")}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart className="h-5 w-5" />
+                All Leads
+              </CardTitle>
+              <CardDescription>View all leads</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full">
+                View All Leads
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/clients")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Manage Clients
               </CardTitle>
-              <CardDescription>View and manage all client accounts</CardDescription>
+              <CardDescription>View and manage clients</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full">
@@ -164,26 +226,11 @@ const AdminDashboard = () => {
                 <UserPlus className="h-5 w-5" />
                 Invite Client
               </CardTitle>
-              <CardDescription>Send invitation to new client</CardDescription>
+              <CardDescription>Send invitation</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full">
                 Invite New Client
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/all-leads")}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                All Leads
-              </CardTitle>
-              <CardDescription>View leads across all clients</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View All Leads
               </Button>
             </CardContent>
           </Card>

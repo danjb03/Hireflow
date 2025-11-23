@@ -10,6 +10,9 @@ import LeadDetail from "./pages/LeadDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminClients from "./pages/AdminClients";
 import AdminInvite from "./pages/AdminInvite";
+import AdminSubmitLead from "./pages/AdminSubmitLead";
+import AdminAllLeads from "./pages/AdminAllLeads";
+import AdminLeadDetail from "./pages/AdminLeadDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/clients" element={<AdminClients />} />
           <Route path="/admin/invite" element={<AdminInvite />} />
+          <Route path="/admin/submit-lead" element={<AdminSubmitLead />} />
+          <Route path="/admin/leads" element={<AdminAllLeads />} />
+          <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
