@@ -120,9 +120,9 @@ serve(async (req) => {
                 
                 // Extract company name
                 const companyName = 
+                  getText(props['Company Name']) ||
                   getText(props.Name) || 
                   getText(props.Title) || 
-                  getText(props['Company Name']) ||
                   (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
                   'Company Name Not Available';
                 
@@ -141,36 +141,36 @@ serve(async (req) => {
                   status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
                   companyName,
                   
-                  // Company Information
+                  // Company Information - using exact Notion property names
                   companyWebsite: props['Company Website']?.url || '',
-                  companyLinkedIn: props['Companies LinkedIn']?.url || '',
+                  companyLinkedIn: props['Companies Linkeidn']?.url || props['Companies LinkedIn']?.url || '',
                   industry: props.Industry?.select?.name || getText(props.Industry) || '',
                   companySize: props.Size?.select?.name || getText(props.Size) || '',
                   employeeCount: props['Employee Count']?.number?.toString() || '',
                   country: props.Country?.select?.name || getText(props.Country) || '',
-                  location: getText(props['Address - Location']) || getText(props.Location) || '',
+                  location: getText(props['Address - Locations']) || getText(props['Address - Location']) || getText(props.Location) || '',
                   companyDescription: getText(props['Company Description']) || '',
                   founded: props.Founded?.date?.start || getText(props.Founded) || '',
                   
-                  // Contact Details
+                  // Contact Details - using exact property names
                   contactName: getText(props['Contact Name']) || '',
                   jobTitle: getText(props.Title) || getText(props['Job Title']) || '',
-                  email: props.Email?.email || '',
+                  email: props.Email?.email || getText(props.Email) || '',
                   phone: props.Phone?.phone_number || getText(props.Phone) || '',
-                  linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+                  linkedInProfile: props["Contact's Linkeidn"]?.url || props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
                   
                   // Interaction Details
-                  callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || '',
-                  callbackDateTime: props['Callback Date and Time']?.date?.start || '',
+                  callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || '',
+                  callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || '',
                   recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
                   aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
                   
-                  // Job Information
+                  // Job Information - using exact property names
                   jobPostingTitle: getText(props['Title - Jobs']) || '',
                   jobDescription: getText(props['Description - Jobs']) || '',
                   jobUrl: props['Url - Jobs']?.url || '',
                   activeJobsUrl: props['Find Active Job Openings']?.url || '',
-                  jobsOpen: props['Jobs open']?.number?.toString() || getText(props['Jobs open']) || '',
+                  jobsOpen: props['Jobs open ']?.number?.toString() || props['Jobs open']?.number?.toString() || getText(props['Jobs open ']) || getText(props['Jobs open']) || '',
                   jobOpenings: parseJobOpenings(),
                   
                   dateAdded: props['Date Added']?.date?.start || page.created_time,
@@ -258,9 +258,9 @@ serve(async (req) => {
       
       // Extract company name
       const companyName = 
+        getText(props['Company Name']) ||
         getText(props.Name) || 
         getText(props.Title) || 
-        getText(props['Company Name']) ||
         (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
         'Company Name Not Available';
       
@@ -279,36 +279,36 @@ serve(async (req) => {
         status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
         companyName,
         
-        // Company Information
+        // Company Information - using exact Notion property names
         companyWebsite: props['Company Website']?.url || '',
-        companyLinkedIn: props['Companies LinkedIn']?.url || '',
+        companyLinkedIn: props['Companies Linkeidn']?.url || props['Companies LinkedIn']?.url || '',
         industry: props.Industry?.select?.name || getText(props.Industry) || '',
         companySize: props.Size?.select?.name || getText(props.Size) || '',
         employeeCount: props['Employee Count']?.number?.toString() || '',
         country: props.Country?.select?.name || getText(props.Country) || '',
-        location: getText(props['Address - Location']) || getText(props.Location) || '',
+        location: getText(props['Address - Locations']) || getText(props['Address - Location']) || getText(props.Location) || '',
         companyDescription: getText(props['Company Description']) || '',
         founded: props.Founded?.date?.start || getText(props.Founded) || '',
         
-        // Contact Details
+        // Contact Details - using exact property names
         contactName: getText(props['Contact Name']) || '',
         jobTitle: getText(props.Title) || getText(props['Job Title']) || '',
-        email: props.Email?.email || '',
+        email: props.Email?.email || getText(props.Email) || '',
         phone: props.Phone?.phone_number || getText(props.Phone) || '',
-        linkedInProfile: props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
+        linkedInProfile: props["Contact's Linkeidn"]?.url || props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
         
         // Interaction Details
-        callNotes: getText(props['Call notes']) || getText(props['Call Notes']) || '',
-        callbackDateTime: props['Callback Date and Time']?.date?.start || '',
+        callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || '',
+        callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || '',
         recordingTranscript: getText(props['Recording transcript']) || getText(props['Recording Transcript']) || '',
         aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || '',
         
-        // Job Information
+        // Job Information - using exact property names
         jobPostingTitle: getText(props['Title - Jobs']) || '',
         jobDescription: getText(props['Description - Jobs']) || '',
         jobUrl: props['Url - Jobs']?.url || '',
         activeJobsUrl: props['Find Active Job Openings']?.url || '',
-        jobsOpen: props['Jobs open']?.number?.toString() || getText(props['Jobs open']) || '',
+        jobsOpen: props['Jobs open ']?.number?.toString() || props['Jobs open']?.number?.toString() || getText(props['Jobs open ']) || getText(props['Jobs open']) || '',
         jobOpenings: parseJobOpenings(),
         
         dateAdded: props['Date Added']?.date?.start || page.created_time,
