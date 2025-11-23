@@ -19,6 +19,29 @@ const AdminInvite = () => {
     setIsLoading(true);
 
     try {
+      // Validate database ID if provided
+      if (databaseId) {
+        toast.loading("Validating Notion database...");
+        
+        const { data: validationData, error: validationError } = await supabase.functions.invoke(
+          "validate-notion-database",
+          { body: { databaseId } }
+        );
+
+        if (validationError) throw validationError;
+
+        if (!validationData.valid) {
+          toast.dismiss();
+          toast.error(`Database validation failed: ${validationData.error}`);
+          setIsLoading(false);
+          return;
+        }
+
+        toast.dismiss();
+        toast.success(`Database validated! Found ${validationData.pageCount} pages`);
+      }
+
+      // Proceed with invitation
       const { data, error } = await supabase.functions.invoke("invite-client", {
         body: { email, databaseId }
       });
@@ -95,11 +118,12 @@ const AdminInvite = () => {
               </Button>
 
               <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm font-medium mb-2">Note:</p>
+                <p className="text-sm font-medium mb-2">Important:</p>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                   <li>A temporary password will be generated</li>
                   <li>Share the password securely with the client</li>
-                  <li>Client should change password after first login</li>
+                  <li>If adding a database ID, it will be validated before creating the account</li>
+                  <li>Make sure the Notion database is shared with your integration first</li>
                 </ul>
               </div>
             </form>
