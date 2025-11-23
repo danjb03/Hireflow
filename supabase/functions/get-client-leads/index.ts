@@ -47,7 +47,82 @@ serve(async (req) => {
 
     console.log('Fetching leads for user:', user.id);
 
-    // Get user's Notion database ID from profile
+    // Get Notion API key
+    const notionApiKey = Deno.env.get('NOTION_API_KEY');
+    if (!notionApiKey) {
+      throw new Error('NOTION_API_KEY not configured');
+    }
+
+    // Check if user is admin
+    const { data: userRoles } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const isAdmin = userRoles?.some(r => r.role === 'admin');
+    console.log('User is admin:', isAdmin);
+
+    if (isAdmin) {
+      // Admin can see all leads from all clients
+      const { data: allProfiles, error: profilesError } = await supabaseClient
+        .from('profiles')
+        .select('notion_database_id');
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw new Error('Failed to get profiles');
+      }
+
+      const allLeads: any[] = [];
+      
+      // Fetch leads from all databases
+      for (const profile of allProfiles || []) {
+        if (profile.notion_database_id) {
+          try {
+            const notionResponse = await fetch(
+              `https://api.notion.com/v1/databases/${profile.notion_database_id}/query`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${notionApiKey}`,
+                  'Notion-Version': '2022-06-28',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ page_size: 100 })
+              }
+            );
+
+            if (notionResponse.ok) {
+              const notionData = await notionResponse.json();
+              const leads = notionData.results.map((page: any) => {
+                const props = page.properties;
+                return {
+                  id: page.id,
+                  status: props.Status?.select?.name || 'Unknown',
+                  companyName: props['Company Name']?.title?.[0]?.plain_text || 'N/A',
+                  contactName: props['Contact Name']?.rich_text?.[0]?.plain_text || 'N/A',
+                  jobTitle: props['Job Title']?.rich_text?.[0]?.plain_text || 'N/A',
+                  industry: props.Industry?.select?.name || 'N/A',
+                  companySize: props['Company Size']?.select?.name || 'N/A',
+                  dateAdded: props['Date Added']?.date?.start || page.created_time,
+                };
+              });
+              allLeads.push(...leads);
+            }
+          } catch (err) {
+            console.error('Error fetching from database:', profile.notion_database_id, err);
+          }
+        }
+      }
+
+      console.log('Admin fetched total leads:', allLeads.length);
+      return new Response(
+        JSON.stringify({ leads: allLeads }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Regular client flow - get user's Notion database ID from profile
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('notion_database_id')
@@ -68,12 +143,6 @@ serve(async (req) => {
     }
 
     console.log('Fetching from Notion database:', profile.notion_database_id);
-
-    // Fetch data from Notion API
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    if (!notionApiKey) {
-      throw new Error('NOTION_API_KEY not configured');
-    }
 
     const notionResponse = await fetch(
       `https://api.notion.com/v1/databases/${profile.notion_database_id}/query`,

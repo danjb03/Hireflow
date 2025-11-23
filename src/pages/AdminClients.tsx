@@ -1,0 +1,236 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Loader2, ArrowLeft, Mail, Database, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
+interface Client {
+  id: string;
+  email: string;
+  notion_database_id: string | null;
+  created_at: string;
+}
+
+const AdminClients = () => {
+  const navigate = useNavigate();
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingClient, setEditingClient] = useState<string | null>(null);
+  const [databaseId, setDatabaseId] = useState("");
+  const [deleteClient, setDeleteClient] = useState<Client | null>(null);
+
+  useEffect(() => {
+    checkAdminAndLoadClients();
+  }, []);
+
+  const checkAdminAndLoadClients = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const isAdmin = roles?.some(r => r.role === "admin");
+      
+      if (!isAdmin) {
+        toast.error("Access denied");
+        navigate("/dashboard");
+        return;
+      }
+
+      await loadClients();
+    } catch (error: any) {
+      toast.error("Failed to load clients");
+      navigate("/admin");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadClients = async () => {
+    try {
+      const { data: allRoles } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+
+      const adminUserIds = allRoles?.filter(r => r.role === "admin").map(r => r.user_id) || [];
+      
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const clientProfiles = profiles?.filter(p => !adminUserIds.includes(p.id)) || [];
+      setClients(clientProfiles);
+    } catch (error: any) {
+      toast.error("Failed to load clients");
+    }
+  };
+
+  const handleUpdateDatabase = async (clientId: string) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ notion_database_id: databaseId })
+        .eq("id", clientId);
+
+      if (error) throw error;
+
+      toast.success("Database ID updated");
+      setEditingClient(null);
+      setDatabaseId("");
+      await loadClients();
+    } catch (error: any) {
+      toast.error("Failed to update database ID");
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!deleteClient) return;
+
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(deleteClient.id);
+      
+      if (error) throw error;
+
+      toast.success("Client deleted");
+      setDeleteClient(null);
+      await loadClients();
+    } catch (error: any) {
+      toast.error("Failed to delete client");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-card">
+        <div className="container mx-auto flex items-center justify-between p-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate("/admin")}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Client Management</h1>
+              <p className="text-sm text-muted-foreground">{clients.length} clients</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto p-4 md:p-6">
+        <div className="grid gap-4">
+          {clients.map((client) => (
+            <Card key={client.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      {client.email}
+                    </CardTitle>
+                    <CardDescription>
+                      Joined {new Date(client.created_at).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteClient(client)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Notion Database ID:</span>
+                  {client.notion_database_id ? (
+                    <code className="text-sm bg-muted px-2 py-1 rounded">
+                      {client.notion_database_id}
+                    </code>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Not configured</span>
+                  )}
+                </div>
+
+                {editingClient === client.id ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter Notion Database ID"
+                      value={databaseId}
+                      onChange={(e) => setDatabaseId(e.target.value)}
+                    />
+                    <Button onClick={() => handleUpdateDatabase(client.id)}>
+                      Save
+                    </Button>
+                    <Button variant="outline" onClick={() => {
+                      setEditingClient(null);
+                      setDatabaseId("");
+                    }}>
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setEditingClient(client.id);
+                      setDatabaseId(client.notion_database_id || "");
+                    }}
+                  >
+                    Update Database ID
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {clients.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No clients yet</p>
+          </div>
+        )}
+      </main>
+
+      <AlertDialog open={!!deleteClient} onOpenChange={() => setDeleteClient(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deleteClient?.email}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClient}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default AdminClients;

@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -57,6 +58,16 @@ const Dashboard = () => {
     }
 
     setUser(session.user);
+    
+    // Check if user is admin
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id);
+    
+    const adminCheck = roles?.some(r => r.role === "admin") || false;
+    setIsAdmin(adminCheck);
+    
     await fetchLeads();
   };
 
@@ -134,10 +145,17 @@ const Dashboard = () => {
               Welcome, {user?.email}
             </p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate("/admin")}>
+                Admin Panel
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
