@@ -188,14 +188,15 @@ const AdminAllLeads = () => {
       Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
       'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      Unknown: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+      NEW: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Lead: "bg-purple-500/10 text-purple-500 border-purple-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
   // Group leads by status
   const groupedLeads = leads.reduce((acc, lead) => {
-    const status = lead.status || "Unknown";
+    const status = lead.status || "NEW";
     if (!acc[status]) {
       acc[status] = [];
     }
@@ -204,7 +205,7 @@ const AdminAllLeads = () => {
   }, {} as Record<string, Lead[]>);
 
   // Define status order - show all statuses that exist
-  const knownStatuses = ["Approved", "Needs Work", "Rejected", "Unknown"];
+  const knownStatuses = ["NEW", "Lead", "Approved", "Needs Work", "Rejected"];
   const allStatuses = [...new Set([...knownStatuses, ...Object.keys(groupedLeads)])];
   const sortedStatuses = allStatuses.filter(status => groupedLeads[status]);
 
@@ -245,6 +246,8 @@ const AdminAllLeads = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Stages</SelectItem>
+                <SelectItem value="NEW">NEW</SelectItem>
+                <SelectItem value="Lead">Lead</SelectItem>
                 <SelectItem value="Approved">Approved</SelectItem>
                 <SelectItem value="Needs Work">Needs Work</SelectItem>
                 <SelectItem value="Rejected">Rejected</SelectItem>

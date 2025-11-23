@@ -136,9 +136,19 @@ serve(async (req) => {
                   }
                 };
                 
+                // Calculate status based on age
+                const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
+                const dateAdded = props['Date Added']?.date?.start || page.created_time;
+                const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
+                
+                let calculatedStatus = notionStatus;
+                if (!notionStatus) {
+                  calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
+                }
+                
                 return {
                   id: page.id,
-                  status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
+                  status: calculatedStatus,
                   companyName,
                   
                   // Company Information - using exact Notion property names
@@ -274,9 +284,19 @@ serve(async (req) => {
         }
       };
       
+      // Calculate status based on age
+      const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
+      const dateAdded = props['Date Added']?.date?.start || page.created_time;
+      const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
+      
+      let calculatedStatus = notionStatus;
+      if (!notionStatus) {
+        calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
+      }
+      
       return {
         id: page.id,
-        status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
+        status: calculatedStatus,
         companyName,
         
         // Company Information - using exact Notion property names
