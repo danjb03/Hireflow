@@ -200,6 +200,23 @@ const AdminLeadDetail = () => {
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
+  const getLeadDescription = () => {
+    if (lead?.aiSummary) {
+      const firstLine = lead.aiSummary.split('\n').find(line => line.trim());
+      if (firstLine) return firstLine.replace(/^[•\-]\s*/, '');
+    }
+    
+    if (lead?.jobsOpen && lead?.industry) {
+      return `New callback lead interested in ${lead.industry.toLowerCase()} with ${lead.jobsOpen} open position${lead.jobsOpen !== '1' ? 's' : ''}`;
+    }
+    
+    if (lead?.industry) {
+      return `New callback lead in ${lead.industry.toLowerCase()}`;
+    }
+    
+    return "New callback lead requiring follow-up";
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -218,7 +235,7 @@ const AdminLeadDetail = () => {
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <Button
           variant="ghost"
           onClick={() => navigate("/admin/leads")}
@@ -228,34 +245,84 @@ const AdminLeadDetail = () => {
           Back to All Leads
         </Button>
 
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{lead.companyName}</h1>
-            <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
-          </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Lead
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Lead</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this lead? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteLead}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        {/* Lead Hero Section */}
+        <Card className="mb-6 border-primary/20 bg-gradient-to-br from-card to-card/50">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h1 className="text-4xl font-bold text-foreground">{lead.companyName}</h1>
+                  <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
+                </div>
+                {lead.companyWebsite && (
+                  <a 
+                    href={lead.companyWebsite} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mb-3"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {lead.companyWebsite}
+                  </a>
+                )}
+                <p className="text-muted-foreground text-lg mt-2">{getLeadDescription()}</p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Lead
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this lead? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteLead}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            {/* Callback Schedule - Prominent Display */}
+            {lead.callbackDateTime && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                      <span className="text-2xl">📅</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {new Date(lead.callbackDateTime).toLocaleString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  {new Date(lead.callbackDateTime) < new Date() ? (
+                    <Badge variant="destructive" className="text-sm">Overdue</Badge>
+                  ) : (
+                    <Badge className="text-sm bg-green-500/10 text-green-500 border-green-500/20">Upcoming</Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6">
+          {/* Admin Actions */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
             <div className="grid gap-4 md:grid-cols-2">
@@ -301,8 +368,63 @@ const AdminLeadDetail = () => {
             </div>
           </Card>
 
+          {/* Contact Details - Now at Top */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <User className="h-6 w-6" />
+                Contact Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {lead.contactName && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                    <p className="text-foreground font-semibold text-lg">{lead.contactName}</p>
+                  </div>
+                )}
+                {lead.jobTitle && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                    <p className="flex items-center gap-2 text-foreground font-medium">
+                      <Briefcase className="h-4 w-4 text-primary" />
+                      {lead.jobTitle}
+                    </p>
+                  </div>
+                )}
+                {lead.email && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline font-medium break-all">
+                      <Mail className="h-4 w-4 flex-shrink-0" />
+                      {lead.email}
+                    </a>
+                  </div>
+                )}
+                {lead.phone && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                    <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline font-medium">
+                      <Phone className="h-4 w-4" />
+                      {lead.phone}
+                    </a>
+                  </div>
+                )}
+              </div>
+              {lead.linkedInProfile && (
+                <div className="mt-4 pt-4 border-t">
+                  <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline font-medium">
+                    <Linkedin className="h-5 w-5" />
+                    View LinkedIn Profile
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Left Column - Company & Contact Info */}
+            {/* Left Column - Company Info */}
             <div className="space-y-6">
               {/* Company Information */}
               <Card>
@@ -314,20 +436,6 @@ const AdminLeadDetail = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4">
-                    {lead.companyWebsite && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Website</p>
-                        <a 
-                          href={lead.companyWebsite} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          {lead.companyWebsite}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    )}
                     {lead.industry && (
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Industry</p>
@@ -396,62 +504,6 @@ const AdminLeadDetail = () => {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Contact Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Contact Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4">
-                    {lead.contactName && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Name</p>
-                        <p className="text-foreground font-medium">{lead.contactName}</p>
-                      </div>
-                    )}
-                    {lead.jobTitle && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                        <p className="flex items-center gap-1 text-foreground">
-                          <Briefcase className="h-4 w-4" />
-                          {lead.jobTitle}
-                        </p>
-                      </div>
-                    )}
-                    {lead.email && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Email</p>
-                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-primary hover:underline">
-                          <Mail className="h-4 w-4" />
-                          {lead.email}
-                        </a>
-                      </div>
-                    )}
-                    {lead.phone && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                        <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-primary hover:underline">
-                          <Phone className="h-4 w-4" />
-                          {lead.phone}
-                        </a>
-                      </div>
-                    )}
-                    {lead.linkedInProfile && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Contact's LinkedIn</p>
-                        <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
-                          <Linkedin className="h-4 w-4" />
-                          View Profile
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Right Column - Interaction Details */}
@@ -467,34 +519,6 @@ const AdminLeadDetail = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Callback Schedule */}
-              {lead.callbackDateTime && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      📅 Callback Schedule
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-lg font-semibold text-foreground">
-                      {new Date(lead.callbackDateTime).toLocaleString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                    {new Date(lead.callbackDateTime) < new Date() && (
-                      <Badge variant="destructive" className="mt-2">Overdue</Badge>
-                    )}
-                    {new Date(lead.callbackDateTime) > new Date() && (
-                      <Badge variant="default" className="mt-2 bg-green-500/10 text-green-500 border-green-500/20">Upcoming</Badge>
-                    )}
                   </CardContent>
                 </Card>
               )}
