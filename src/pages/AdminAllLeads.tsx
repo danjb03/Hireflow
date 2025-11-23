@@ -167,12 +167,12 @@ const AdminAllLeads = () => {
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Qualified">Qualified</SelectItem>
                 <SelectItem value="In Progress">In Progress</SelectItem>
                 <SelectItem value="Booked">Booked</SelectItem>
@@ -181,12 +181,12 @@ const AdminAllLeads = () => {
               </SelectContent>
             </Select>
 
-            <Select value={clientFilter} onValueChange={setClientFilter}>
+            <Select value={clientFilter || "all"} onValueChange={(value) => setClientFilter(value === "all" ? "" : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by client" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Clients</SelectItem>
+                <SelectItem value="all">All Clients</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
