@@ -19,37 +19,13 @@ const AdminInvite = () => {
     setIsLoading(true);
 
     try {
-      // Create the user account
-      const tempPassword = Math.random().toString(36).slice(-12) + "A1!";
-      
-      const { data: authData, error: signUpError } = await supabase.auth.admin.createUser({
-        email,
-        password: tempPassword,
-        email_confirm: true,
+      const { data, error } = await supabase.functions.invoke("invite-client", {
+        body: { email, databaseId }
       });
 
-      if (signUpError) throw signUpError;
+      if (error) throw error;
 
-      // Update their profile with database ID if provided
-      if (databaseId && authData.user) {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ notion_database_id: databaseId })
-          .eq("id", authData.user.id);
-
-        if (updateError) throw updateError;
-      }
-
-      // Assign client role
-      if (authData.user) {
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: authData.user.id, role: "client" });
-
-        if (roleError) throw roleError;
-      }
-
-      toast.success(`Client invited! Temporary password: ${tempPassword}`);
+      toast.success(`Client invited! Temporary password: ${data.tempPassword}`);
       setEmail("");
       setDatabaseId("");
     } catch (error: any) {
