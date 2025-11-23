@@ -99,6 +99,7 @@ serve(async (req) => {
       Approved: 0,
       Rejected: 0,
       'Needs Work': 0,
+      Unknown: 0,
     };
 
     // Query main database
@@ -134,9 +135,12 @@ serve(async (req) => {
 
           // Count by status
           data.results.forEach((page: any) => {
-            const status = page.properties['Status']?.select?.name as keyof typeof statusCounts;
-            if (status && statusCounts[status] !== undefined) {
-              statusCounts[status]++;
+            const status = page.properties['Status']?.select?.name;
+            if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
+              statusCounts[status as keyof typeof statusCounts]++;
+            } else {
+              // Count anything without a matching status as Unknown
+              statusCounts.Unknown++;
             }
           });
         }
