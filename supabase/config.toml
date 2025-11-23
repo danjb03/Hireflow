@@ -1,1 +1,28 @@
 project_id = "dvqmzqnmgndfphemfief"
+
+[functions.get-client-leads]
+verify_jwt = true
+
+[functions.get-lead-details]
+verify_jwt = true
+
+[functions.submit-lead]
+verify_jwt = true
+
+[functions.get-all-leads-admin]
+verify_jwt = true
+
+[functions.get-system-stats]
+verify_jwt = true
+
+[functions.assign-lead-to-client]
+verify_jwt = true
+
+[functions.update-lead-status]
+verify_jwt = true
+
+[functions.update-lead]
+verify_jwt = true
+
+[functions.delete-lead]
+verify_jwt = true
