@@ -78,6 +78,8 @@ serve(async (req) => {
 
       const allLeads: any[] = [];
       
+      console.log('Found profiles with databases:', allProfiles?.filter(p => p.notion_database_id).length);
+      
       // Fetch leads from all databases
       for (const profile of allProfiles || []) {
         if (profile.notion_database_id) {
@@ -86,6 +88,8 @@ serve(async (req) => {
             const formattedDatabaseId = profile.notion_database_id.includes('-') 
               ? profile.notion_database_id 
               : profile.notion_database_id.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+            
+            console.log('Admin querying database:', formattedDatabaseId);
             
             const notionResponse = await fetch(
               `https://api.notion.com/v1/databases/${formattedDatabaseId}/query`,
@@ -102,6 +106,7 @@ serve(async (req) => {
 
             if (notionResponse.ok) {
               const notionData = await notionResponse.json();
+              console.log('Database', formattedDatabaseId, 'returned', notionData.results.length, 'leads');
               const leads = notionData.results.map((page: any) => {
                 const props = page.properties;
                 return {
@@ -116,6 +121,9 @@ serve(async (req) => {
                 };
               });
               allLeads.push(...leads);
+            } else {
+              const errorText = await notionResponse.text();
+              console.error('Error fetching from database:', formattedDatabaseId, notionResponse.status, errorText);
             }
           } catch (err) {
             console.error('Error fetching from database:', profile.notion_database_id, err);
