@@ -59,9 +59,10 @@ serve(async (req) => {
     const searchTerm = url.searchParams.get('search');
 
     const notionApiKey = Deno.env.get('NOTION_API_KEY');
+    const mainDatabaseId = Deno.env.get('MAIN_NOTION_DATABASE_ID');
 
     if (!notionApiKey) {
-      console.error('Missing Notion configuration');
+      console.error('Missing Notion API key');
       return new Response(
         JSON.stringify({ error: 'Notion configuration not set up' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -84,11 +85,30 @@ serve(async (req) => {
 
     // Fetch leads from main database and all client databases
     const allLeads = [];
-    const databasesToQuery = [
-      ...clients.map(c => ({ id: c.notion_database_id, clientEmail: c.email, clientId: c.id })),
-    ];
+    
+    // Start with databases to query
+    const databasesToQuery = [];
+    
+    // Add main database if configured
+    if (mainDatabaseId) {
+      databasesToQuery.push({ 
+        id: mainDatabaseId, 
+        clientEmail: 'Unassigned', 
+        clientId: null 
+      });
+      console.log('Will query main database:', mainDatabaseId);
+    }
+    
+    // Add all client databases
+    databasesToQuery.push(
+      ...clients.map(c => ({ 
+        id: c.notion_database_id, 
+        clientEmail: c.email, 
+        clientId: c.id 
+      }))
+    );
 
-    console.log('Querying databases:', databasesToQuery.length);
+    console.log('Querying', databasesToQuery.length, 'databases total');
 
     // Helper function to extract text from Notion properties
     const getText = (prop: any) => {
