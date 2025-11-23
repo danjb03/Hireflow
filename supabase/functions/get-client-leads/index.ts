@@ -139,10 +139,7 @@ serve(async (req) => {
 
     if (!profile?.notion_database_id) {
       console.log('No Notion database ID configured for user');
-      return new Response(
-        JSON.stringify({ leads: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      throw new Error('No Notion database configured for your account. Please contact your administrator.');
     }
 
     console.log('Fetching from Notion database:', profile.notion_database_id);
