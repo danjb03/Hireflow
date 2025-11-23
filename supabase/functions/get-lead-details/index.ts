@@ -130,10 +130,20 @@ serve(async (req) => {
       (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
       'Company Name Not Available';
 
+    // Calculate status based on age
+    const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
+    const dateAdded = props['Date Added']?.date?.start || page.created_time;
+    const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
+    
+    let calculatedStatus = notionStatus;
+    if (!notionStatus) {
+      calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
+    }
+
     // Transform to detailed format with ALL fields - using exact Notion property names
     const lead = {
       id: page.id,
-      status: props.STAGE?.select?.name || props.Status?.select?.name || 'New',
+      status: calculatedStatus,
       companyName,
       
       // Company Information - using exact property names from Notion

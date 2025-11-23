@@ -196,6 +196,8 @@ const AdminLeadDetail = () => {
       Approved: "bg-green-500/10 text-green-500 border-green-500/20",
       Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
       'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      NEW: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Lead: "bg-purple-500/10 text-purple-500 border-purple-500/20",
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };
@@ -265,6 +267,8 @@ const AdminLeadDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="NEW">NEW</SelectItem>
+                    <SelectItem value="Lead">Lead</SelectItem>
                     <SelectItem value="Approved">Approved</SelectItem>
                     <SelectItem value="Needs Work">Needs Work</SelectItem>
                     <SelectItem value="Rejected">Rejected</SelectItem>

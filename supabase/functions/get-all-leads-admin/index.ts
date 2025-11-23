@@ -167,14 +167,24 @@ serve(async (req) => {
                 }
               };
               
+              // Calculate status based on age
+              const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
+              const dateAdded = props['Date Added']?.date?.start || page.created_time;
+              const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
+              
+              let calculatedStatus = notionStatus;
+              if (!notionStatus) {
+                calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
+              }
+              
               return {
                 id: page.id,
                 // Basic Info
                 companyName,
-                status: props.STAGE?.select?.name || props.Status?.select?.name || 'Unknown',
+                status: calculatedStatus,
                 assignedClient: db.clientEmail,
                 assignedClientId: db.clientId,
-                dateAdded: props['Date Added']?.date?.start || page.created_time,
+                dateAdded: dateAdded,
                 
                 // Company Information
                 companyWebsite: props['Company Website']?.url || '',
