@@ -65,6 +65,19 @@ serve(async (req) => {
     }
 
     // Get total clients (excluding admins)
+    // First get all admin user IDs
+    const { data: adminRoles, error: adminError } = await supabaseClient
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin');
+
+    if (adminError) {
+      console.error('Error fetching admin roles:', adminError);
+    }
+
+    const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
+
+    // Get all profiles
     const { data: allProfiles, error: clientsError } = await supabaseClient
       .from('profiles')
       .select('id');
@@ -73,19 +86,11 @@ serve(async (req) => {
       console.error('Error fetching profiles:', clientsError);
     }
 
-    // Filter out admin users
-    let totalClients = 0;
-    if (allProfiles) {
-      for (const profile of allProfiles) {
-        const { data: isAdminUser } = await supabaseClient.rpc('is_admin', {
-          _user_id: profile.id,
-        });
-        if (!isAdminUser) {
-          totalClients++;
-        }
-      }
-    }
+    // Count non-admin profiles
+    const totalClients = allProfiles?.filter(p => !adminUserIds.has(p.id)).length || 0;
 
+    console.log('Total admin users:', adminUserIds.size);
+    console.log('Total profiles:', allProfiles?.length || 0);
     console.log('Total non-admin clients:', totalClients);
 
     // Get all client databases
