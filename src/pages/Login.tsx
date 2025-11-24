@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import hireflowLogo from "@/assets/hireflow-light.svg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -61,13 +62,18 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Hireflow</CardTitle>
-          <CardDescription>
-            {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
-          </CardDescription>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-[#1a1a1a] p-4">
+      <Card className="w-full max-w-md border-white/10">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <img src={hireflowLogo} alt="Hireflow" className="h-10" />
+          </div>
+          <div className="text-center">
+            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardDescription>
+              {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
@@ -96,7 +102,7 @@ const Login = () => {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
