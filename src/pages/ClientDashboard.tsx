@@ -243,7 +243,7 @@ const ClientDashboard = () => {
 
         {/* Quick Actions */}
         <div className="flex gap-4">
-          <Button onClick={() => navigate("/client/leads")} size="lg">
+          <Button onClick={() => navigate("/client/leads")} size="lg" className="bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white">
             View All Leads
           </Button>
           <Button onClick={() => navigate("/client/calendar")} variant="outline" size="lg">

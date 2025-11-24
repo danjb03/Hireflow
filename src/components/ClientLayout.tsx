@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import hireflowLogo from "@/assets/hireflow-light.svg";
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -66,8 +67,8 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
       >
         {/* Logo & Branding */}
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-primary">Hireflow</h1>
-          <p className="text-sm text-muted-foreground mt-1">Client Portal</p>
+          <img src={hireflowLogo} alt="Hireflow" className="h-8 mb-2" />
+          <p className="text-sm text-muted-foreground">Client Portal</p>
         </div>
 
         <Separator />

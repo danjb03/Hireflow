@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Users, Database, UserPlus, ArrowLeft, FileText, PlusCircle, BarChart } from "lucide-react";
+import { Loader2, Users, FileText, UserPlus, ArrowLeft, PlusCircle, BarChart } from "lucide-react";
+import hireflowLogo from "@/assets/hireflow-light.svg";
 
 interface Stats {
   totalClients: number;
@@ -105,11 +106,12 @@ const AdminDashboard = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            <img src={hireflowLogo} alt="Hireflow" className="h-8" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
               <p className="text-sm text-muted-foreground">Manage clients and system</p>
             </div>
           </div>
@@ -160,25 +162,25 @@ const AdminDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/submit-lead")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border" onClick={() => navigate("/admin/submit-lead")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <PlusCircle className="h-5 w-5" />
+                <PlusCircle className="h-5 w-5 text-[#64df88]" />
                 Submit Lead
               </CardTitle>
               <CardDescription>Add new lead to system</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button className="w-full bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white">
                 Submit New Lead
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/leads")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border" onClick={() => navigate("/admin/leads")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart className="h-5 w-5" />
+                <BarChart className="h-5 w-5 text-[#64df88]" />
                 All Leads
               </CardTitle>
               <CardDescription>View all leads</CardDescription>
@@ -190,10 +192,10 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/clients")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border" onClick={() => navigate("/admin/clients")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <Users className="h-5 w-5 text-[#64df88]" />
                 Manage Clients
               </CardTitle>
               <CardDescription>View and manage clients</CardDescription>
@@ -205,10 +207,10 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/admin/invite")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-border" onClick={() => navigate("/admin/invite")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
+                <UserPlus className="h-5 w-5 text-[#64df88]" />
                 Invite Client
               </CardTitle>
               <CardDescription>Send invitation</CardDescription>
