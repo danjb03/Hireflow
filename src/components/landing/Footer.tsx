@@ -1,5 +1,5 @@
 import hireflowLogo from "@/assets/hireflow-logo.svg";
-import { Mail, Phone, Linkedin } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 export const Footer = () => {
   return (
@@ -55,12 +55,6 @@ export const Footer = () => {
                 <Phone className="h-4 w-4 text-[#64df88]" />
                 <a href="tel:+441234567890" className="hover:text-[#64df88] transition-colors">
                   +44 123 456 7890
-                </a>
-              </li>
-              <li className="flex items-center gap-2 text-white/60 text-sm">
-                <Linkedin className="h-4 w-4 text-[#64df88]" />
-                <a href="#" className="hover:text-[#64df88] transition-colors">
-                  LinkedIn
                 </a>
               </li>
             </ul>
