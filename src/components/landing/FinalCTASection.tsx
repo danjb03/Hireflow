@@ -20,12 +20,14 @@ export const FinalCTASection = () => {
 
           {/* CTA Button */}
           <div className="pt-4">
-            <Button 
-              size="lg" 
-              className="bg-white text-[#35b192] hover:bg-white/90 font-semibold px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-            >
-              Book Your Strategy Call Now
-            </Button>
+            <a href="https://calendly.com/billy-tnwmarketing/rec-opportunities" target="_blank" rel="noopener noreferrer">
+              <Button 
+                size="lg" 
+                className="bg-white text-[#35b192] hover:bg-white/90 font-semibold px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+              >
+                Book Your Strategy Call Now
+              </Button>
+            </a>
             <p className="text-white/80 text-sm mt-4">
               No commitment required • 30-minute call • See if we're a fit
             </p>

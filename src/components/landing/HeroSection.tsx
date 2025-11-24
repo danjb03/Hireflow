@@ -47,12 +47,14 @@ export const HeroSection = () => {
 
           {/* CTA */}
           <div className="pt-6">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all"
-            >
-              Book Your Strategy Call
-            </Button>
+            <a href="https://calendly.com/billy-tnwmarketing/rec-opportunities" target="_blank" rel="noopener noreferrer">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all"
+              >
+                Book Your Strategy Call
+              </Button>
+            </a>
             <p className="text-white/50 text-sm mt-4">
               No commitment required • 30-minute call
             </p>
