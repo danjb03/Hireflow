@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import harryPhoto from "@/assets/harry-hyrra.png";
 
 export const TestimonialsSection = () => {
   return (
@@ -30,9 +31,11 @@ export const TestimonialsSection = () => {
               </p>
 
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-2xl font-bold">H</span>
-                </div>
+                <img 
+                  src={harryPhoto} 
+                  alt="Harry" 
+                  className="h-16 w-16 rounded-full object-cover flex-shrink-0"
+                />
                 <div>
                   <p className="text-white font-bold text-lg">Harry</p>
                   <p className="text-white/90">Managing Director, Hyrra</p>
