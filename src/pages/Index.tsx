@@ -6,6 +6,7 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { WhatsIncludedSection } from "@/components/landing/WhatsIncludedSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
+import { Footer } from "@/components/landing/Footer";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       <WhatsIncludedSection />
       <FAQSection />
       <FinalCTASection />
+      <Footer />
     </div>
   );
 };

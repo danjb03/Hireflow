@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
-import hireflowLogo from "@/assets/hireflow-light.svg";
+import hireflowLogo from "@/assets/hireflow-logo.svg";
 
 export const HeroSection = () => {
   return (
