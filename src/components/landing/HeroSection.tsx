@@ -17,7 +17,7 @@ export const HeroSection = () => {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-            We Generate Your Recruitment Agency Unlimited Qualified Leads Through AI-Powered Outreach
+            We Generate Your Recruitment Agency Unlimited Qualified Leads Through Direct Marketing
           </h1>
 
           {/* Subheadline */}
