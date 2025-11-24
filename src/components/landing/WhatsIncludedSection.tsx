@@ -14,7 +14,6 @@ export const WhatsIncludedSection = () => {
     "Compliance & GDPR Management",
     "Real-Time Dashboard Access",
     "Ongoing Campaign Refinement",
-    "Email Deliverability Management",
     "Appointment Setting & Qualification",
     "Industry-Specific Messaging",
     "Competitor Analysis",
