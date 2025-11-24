@@ -49,6 +49,31 @@ export const TestimonialsSection = () => {
             </p>
           </div>
 
+          {/* Featured Testimonial */}
+          <Card className="bg-gradient-to-br from-[#64df88] to-[#35b192] border-0 mb-12 shadow-2xl">
+            <CardContent className="p-8 md:p-10">
+              <div className="flex gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-6 w-6 fill-white text-white" />
+                ))}
+              </div>
+              
+              <p className="text-white text-lg md:text-xl leading-relaxed mb-8 font-medium">
+                "Hireflow have been a key part of our company scaling. Initially we tested a batch of 50 leads which quickly turned into 100+ on a monthly basis. So far we have converted 3 placements in 90 days and have another 130k to place before the end of the year. Alongside this I'm saving 60k+ a year on internal BD. Highly recommend."
+              </p>
+
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-2xl font-bold">H</span>
+                </div>
+                <div>
+                  <p className="text-white font-bold text-lg">Harry</p>
+                  <p className="text-white/90">Managing Director, Hyrra</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Testimonials Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
