@@ -31,6 +31,8 @@ serve(async (req) => {
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
+    console.log('Fetching stats from Airtable base:', airtableBaseId);
+
     // Get total clients (excluding admins)
     const { data: adminRoles } = await supabaseClient
       .from('user_roles')
@@ -45,8 +47,11 @@ serve(async (req) => {
 
     const totalClients = allProfiles?.filter(p => !adminUserIds.has(p.id)).length || 0;
 
-    // Fetch all leads from Airtable
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
+    // Fetch all leads from Airtable - try without URL encoding first
+    const tableName = 'Qualified Lead Table';
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}`;
+    console.log('Requesting URL:', airtableUrl);
+    
     const response = await fetch(airtableUrl, {
       headers: {
         'Authorization': `Bearer ${airtableToken}`,
@@ -54,7 +59,17 @@ serve(async (req) => {
       }
     });
 
-    if (!response.ok) throw new Error(`Airtable API error: ${response.status}`);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('Airtable API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorBody,
+        baseId: airtableBaseId,
+        tableName: tableName
+      });
+      throw new Error(`Airtable API error: ${response.status} - ${errorBody}`);
+    }
 
     const data = await response.json();
     const records = data.records || [];
