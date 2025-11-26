@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Users, FileText, UserPlus, ArrowLeft, PlusCircle, BarChart } from "lucide-react";
-import hireflowLogo from "@/assets/hireflow-light.svg";
+import { Loader2, Users, FileText, PlusCircle, TrendingUp } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 interface Stats {
   totalClients: number;
@@ -93,134 +93,143 @@ const AdminDashboard = () => {
     return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
   };
 
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) setUserEmail(user.email);
+    };
+    getUserEmail();
+  }, []);
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <AdminLayout userEmail={userEmail}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
-      <header className="border-b bg-card transition-all">
-        <div className="container mx-auto flex items-center justify-between p-4">
-          <div className="flex items-center gap-4">
-            <img src={hireflowLogo} alt="Hireflow" className="h-8 transition-transform hover:scale-105" />
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Manage clients and system</p>
-            </div>
+    <AdminLayout userEmail={userEmail}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">System overview and quick actions</p>
           </div>
+          <Button onClick={() => navigate("/admin/submit-lead")}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Submit Lead
+          </Button>
         </div>
-      </header>
 
-      <main className="container mx-auto p-4 md:p-6">
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 mb-6">
-          <Card className="transition-all hover:shadow-lg hover:scale-[1.02] duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.totalClients}</div>
+              <div className="text-3xl font-bold">{stats.totalClients}</div>
             </CardContent>
           </Card>
 
-          <Card className="transition-all hover:shadow-lg hover:scale-[1.02] duration-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-              <FileText className="h-4 w-4 text-primary" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{stats.totalLeads}</div>
-              <p className="text-xs text-muted-foreground">Across all clients</p>
+              <div className="text-3xl font-bold">{stats.totalLeads}</div>
+              <p className="text-xs text-muted-foreground mt-1">Across all clients</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Performance</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.statusBreakdown.Approved}</div>
+              <p className="text-xs text-muted-foreground mt-1">Approved leads</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Stage Breakdown */}
-        <Card className="mb-6 transition-all hover:shadow-lg">
+        {/* Status Breakdown */}
+        <Card>
           <CardHeader>
-            <CardTitle>Leads by Stage</CardTitle>
+            <CardTitle className="text-base">Leads by Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4">
-              {Object.entries(stats.statusBreakdown).map(([status, count]) => (
-                <div key={status} className="flex items-center gap-2 transition-all hover:scale-105">
-                  <Badge className={getStatusColor(status)}>{status}</Badge>
-                  <span className="text-2xl font-bold">{count}</span>
-                </div>
-              ))}
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor("Approved")}>Approved</Badge>
+                <span className="text-2xl font-semibold">{stats.statusBreakdown.Approved}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor("Needs Work")}>Needs Work</Badge>
+                <span className="text-2xl font-semibold">{stats.statusBreakdown['Needs Work']}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor("Rejected")}>Rejected</Badge>
+                <span className="text-2xl font-semibold">{stats.statusBreakdown.Rejected}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor("Unknown")}>Unknown</Badge>
+                <span className="text-2xl font-semibold">{stats.statusBreakdown.Unknown}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer border-border" onClick={() => navigate("/admin/submit-lead")}>
+        {/* Quick Actions Grid */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/leads")}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlusCircle className="h-5 w-5 text-primary" />
-                Submit Lead
-              </CardTitle>
-              <CardDescription>Add new lead to system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full transition-all hover:scale-105">
-                Submit New Lead
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer border-border" onClick={() => navigate("/admin/leads")}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="h-4 w-4" />
                 All Leads
               </CardTitle>
-              <CardDescription>View all leads</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full transition-all hover:scale-105">
-                View All Leads
-              </Button>
+              <p className="text-sm text-muted-foreground">View and manage all leads in the system</p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer border-border" onClick={() => navigate("/admin/clients")}>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/clients")}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" />
                 Manage Clients
               </CardTitle>
-              <CardDescription>View and manage clients</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full transition-all hover:scale-105">
-                View Clients
-              </Button>
+              <p className="text-sm text-muted-foreground">View and configure client accounts</p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer border-border" onClick={() => navigate("/admin/invite")}>
+          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/invite")}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
                 Invite Client
               </CardTitle>
-              <CardDescription>Send invitation</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full transition-all hover:scale-105">
-                Invite New Client
-              </Button>
+              <p className="text-sm text-muted-foreground">Send invitation to new client</p>
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
