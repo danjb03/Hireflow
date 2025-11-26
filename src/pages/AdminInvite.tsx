@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { Mail, Copy, Check } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 const AdminInvite = () => {
   const navigate = useNavigate();
@@ -14,6 +16,16 @@ const AdminInvite = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) setUserEmail(user.email);
+    };
+    getUserEmail();
+  }, []);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,130 +51,147 @@ const AdminInvite = () => {
     setClientName("");
     setEmail("");
     setGeneratedPassword("");
+    setCopied(false);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedPassword);
+    setCopied(true);
+    toast.success("Password copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto flex items-center justify-between p-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/admin")}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Invite Client</h1>
-              <p className="text-sm text-muted-foreground">Create new client account</p>
-            </div>
-          </div>
+    <AdminLayout userEmail={userEmail}>
+      <div className="max-w-2xl space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-semibold">Invite Client</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create a new client account and generate credentials
+          </p>
         </div>
-      </header>
 
-      <main className="container mx-auto p-4 md:p-6 max-w-2xl">
-        {generatedPassword ? (
-          <Card>
+        {/* Form Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Client Information</CardTitle>
+            <CardDescription>
+              Enter the client's email and name to create their account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="client@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={!!generatedPassword}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Client Name</Label>
+                <Input
+                  id="clientName"
+                  type="text"
+                  placeholder="Client Company Name"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  required
+                  disabled={!!generatedPassword}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This will be used to identify the client in the system
+                </p>
+              </div>
+
+              {!generatedPassword && (
+                <div className="flex gap-2 pt-2">
+                  <Button type="submit" disabled={isLoading} className="flex-1">
+                    {isLoading ? "Creating Account..." : "Create Client Account"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate("/admin/clients")}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Success Card */}
+        {generatedPassword && (
+          <Card className="border-success">
             <CardHeader>
-              <CardTitle className="text-green-600">Client Account Created!</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-success">
+                <Check className="h-5 w-5" />
+                Account Created Successfully
+              </CardTitle>
               <CardDescription>
                 Share these credentials with the client securely
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Client Name</p>
-                  <p className="text-lg font-semibold">{clientName}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <p className="text-lg font-semibold">{email}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Temporary Password</p>
-                  <code className="block text-2xl font-bold bg-background p-3 rounded border-2 border-primary">
-                    {generatedPassword}
-                  </code>
-                </div>
-              </div>
+              <Alert>
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <div>
+                      <strong>Email:</strong> {email}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <strong>Temporary Password:</strong>
+                      <code className="relative rounded bg-muted px-2 py-1 font-mono text-sm">
+                        {generatedPassword}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={copyToClipboard}
+                      >
+                        {copied ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
 
-              <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-lg">
-                <p className="text-sm font-medium mb-2">⚠️ Important:</p>
-                <ul className="text-sm space-y-1 list-disc list-inside">
-                  <li>Screenshot these credentials to send to the client</li>
-                  <li>The password is also saved in Client Management for reference</li>
-                  <li>Ask the client to change their password on first login</li>
-                  <li>Make sure "{clientName}" exactly matches the Airtable dropdown option</li>
-                </ul>
-              </div>
+              <Alert className="bg-warning/10 border-warning/20">
+                <AlertDescription className="text-sm">
+                  <strong>Important:</strong> Make sure to save this password. The client will need to change it on their first login.
+                </AlertDescription>
+              </Alert>
 
-              <div className="flex gap-2">
-                <Button onClick={() => navigate("/admin/clients")} className="flex-1">
-                  Go to Client Management
+              <div className="flex gap-2 pt-2">
+                <Button onClick={handleReset} className="flex-1">
+                  Invite Another Client
                 </Button>
-                <Button onClick={handleReset} variant="outline" className="flex-1">
-                  Create Another Client
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/admin/clients")}
+                >
+                  View All Clients
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Client Account</CardTitle>
-              <CardDescription>
-                Enter client details for Airtable access
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleInvite} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name *</Label>
-                  <Input
-                    id="clientName"
-                    type="text"
-                    placeholder="e.g., Acme Corp"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Must exactly match the option in your Airtable "Client Name" dropdown
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Client Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="client@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" disabled={isLoading || !email || !clientName}>
-                  {isLoading ? "Creating Account..." : "Create Client Account"}
-                </Button>
-
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-2">What happens next:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>A secure password will be generated automatically</li>
-                    <li>The client account will be created with this name</li>
-                    <li>They'll only see leads where "Client Name" = "{clientName || "their name"}"</li>
-                    <li>You'll see the password to share with the client</li>
-                    <li>The password will be saved for reference in Client Management</li>
-                  </ul>
-                </div>
-              </form>
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
