@@ -116,7 +116,8 @@ const AdminLeadDetail = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("id, email, client_name")
-        .not("client_name", "is", null);
+        .not("client_name", "is", null)
+        .neq("client_name", "");
 
       if (error) throw error;
 
