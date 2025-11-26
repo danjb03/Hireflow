@@ -43,6 +43,7 @@ interface LeadData {
 interface Client {
   id: string;
   email: string;
+  client_name?: string;
 }
 
 const AdminLeadDetail = () => {
@@ -277,26 +278,32 @@ const AdminLeadDetail = () => {
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Assign to Client</label>
-              <div className="flex gap-2">
-                <Select value={selectedClient} onValueChange={setSelectedClient}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAssignClient} disabled={!selectedClient}>
-                  Assign
-                </Button>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Assign to Client</label>
+                {clients.length > 0 ? (
+                  <div className="flex gap-2">
+                    <Select value={selectedClient} onValueChange={setSelectedClient}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.email} ({client.client_name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleAssignClient} disabled={!selectedClient}>
+                      Assign
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                    No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline">Client Management</button> to configure client names.
+                  </div>
+                )}
               </div>
-            </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Update Stage</label>
