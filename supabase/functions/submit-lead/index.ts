@@ -37,8 +37,8 @@ serve(async (req) => {
     // Build Airtable fields object
     const airtableFields: Record<string, any> = {
       'Company Name': leadData.companyName,
-      'STAGE': 'NEW',
-      'Date Added': new Date().toISOString(),
+      'Status': 'New',
+      'Date Created': new Date().toISOString(),
     };
 
     // Add optional fields
@@ -48,22 +48,22 @@ serve(async (req) => {
     if (leadData.companySize) airtableFields['Company Size'] = leadData.companySize;
     if (leadData.employeeCount) airtableFields['Employee Count'] = leadData.employeeCount;
     if (leadData.country) airtableFields['Country'] = leadData.country;
-    if (leadData.location) airtableFields['Location'] = leadData.location;
+    if (leadData.location) airtableFields['Address'] = leadData.location;
     if (leadData.companyDescription) airtableFields['Company Description'] = leadData.companyDescription;
-    if (leadData.founded) airtableFields['Founded'] = leadData.founded;
     if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
+    if (leadData.contactTitle) airtableFields['Contact Title'] = leadData.contactTitle;
     if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
     if (leadData.email) airtableFields['Email'] = leadData.email;
     if (leadData.phone) airtableFields['Phone'] = leadData.phone;
-    if (leadData.linkedInProfile) airtableFields['LinkedIn Profile'] = leadData.linkedInProfile;
-    if (leadData.callNotes) airtableFields['Call Notes'] = leadData.callNotes;
-    if (leadData.callbackDateTime) airtableFields['Callback Date/Time'] = leadData.callbackDateTime;
+    if (leadData.linkedInProfile) airtableFields['Contact LinkedIn'] = leadData.linkedInProfile;
     if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;
-    if (leadData.jobPostingTitle) airtableFields['Job Posting Title'] = leadData.jobPostingTitle;
     if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
     if (leadData.jobUrl) airtableFields['Job URL'] = leadData.jobUrl;
-    if (leadData.activeJobsUrl) airtableFields['Active Jobs URL'] = leadData.activeJobsUrl;
-    if (leadData.jobsOpen) airtableFields['Jobs Open'] = leadData.jobsOpen;
+    if (leadData.jobType) airtableFields['Job Type'] = leadData.jobType;
+    if (leadData.jobLevel) airtableFields['Job Level'] = leadData.jobLevel;
+    if (leadData.feedback) airtableFields['Feedback'] = leadData.feedback;
+    if (leadData.lastContactDate) airtableFields['Last Contact Date'] = leadData.lastContactDate;
+    if (leadData.nextAction) airtableFields['Next Action'] = leadData.nextAction;
 
     // Create record in Airtable
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;

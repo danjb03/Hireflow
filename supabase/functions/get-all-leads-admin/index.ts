@@ -52,14 +52,14 @@ serve(async (req) => {
     let filterParts: string[] = [];
     
     if (statusFilter) {
-      filterParts.push(`{STAGE} = '${statusFilter.replace(/'/g, "\\'")}'`);
+      filterParts.push(`{Status} = '${statusFilter.replace(/'/g, "\\'")}'`);
     }
     
     if (clientFilter) {
       if (clientFilter === 'unassigned') {
-        filterParts.push(`OR({Client Name} = '', {Client Name} = BLANK())`);
+        filterParts.push(`OR({Client} = '', {Client} = BLANK())`);
       } else {
-        filterParts.push(`{Client Name} = '${clientFilter.replace(/'/g, "\\'")}'`);
+        filterParts.push(`{Client} = '${clientFilter.replace(/'/g, "\\'")}'`);
       }
     }
     
@@ -102,25 +102,31 @@ serve(async (req) => {
       return {
         id: record.id,
         companyName: fields['Company Name'] || '',
-        status: fields['STAGE'] || 'NEW',
-        assignedClient: fields['Client Name'] || 'Unassigned',
+        status: fields['Status'] || 'New',
+        assignedClient: fields['Client'] || 'Unassigned',
         assignedClientId: null,
-        dateAdded: fields['Date Added'] || record.createdTime,
+        dateAdded: fields['Date Created'] || record.createdTime,
         companyWebsite: fields['Company Website'] || '',
         companyLinkedIn: fields['Company LinkedIn'] || null,
         industry: fields['Industry'] || null,
         companySize: fields['Company Size'] || null,
         employeeCount: fields['Employee Count'] || null,
         country: fields['Country'] || null,
-        location: fields['Location'] || null,
+        location: fields['Address'] || null,
         contactName: fields['Contact Name'] || null,
+        contactTitle: fields['Contact Title'] || null,
         jobTitle: fields['Job Title'] || null,
         email: fields['Email'] || '',
         phone: fields['Phone'] || '',
-        linkedInProfile: fields['LinkedIn Profile'] || '',
-        callNotes: fields['Call Notes'] || null,
+        linkedInProfile: fields['Contact LinkedIn'] || '',
         aiSummary: fields['AI Summary'] || null,
-        jobsOpen: fields['Jobs Open'] || null,
+        jobDescription: fields['Job Description'] || null,
+        jobUrl: fields['Job URL'] || null,
+        jobType: fields['Job Type'] || null,
+        jobLevel: fields['Job Level'] || null,
+        feedback: fields['Feedback'] || null,
+        lastContactDate: fields['Last Contact Date'] || null,
+        nextAction: fields['Next Action'] || null,
       };
     });
 

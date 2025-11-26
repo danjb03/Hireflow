@@ -76,15 +76,16 @@ serve(async (req) => {
 
     const totalLeads = records.length;
     const statusCounts = {
+      New: 0,
       Approved: 0,
       Rejected: 0,
-      'Needs Work': 0,
+      'Needs work': 0,
       Unknown: 0,
     };
 
     // Count by status
     records.forEach((record: any) => {
-      const status = record.fields['STAGE'];
+      const status = record.fields['Status'];
       if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
         statusCounts[status as keyof typeof statusCounts]++;
       } else {
