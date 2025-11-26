@@ -60,8 +60,8 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
               variant="ghost"
               className={`justify-start gap-3 font-normal ${
                 isActive(item.path) 
-                  ? "bg-muted text-foreground font-medium" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "bg-secondary/10 text-foreground font-medium" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
               onClick={() => navigate(item.path)}
             >
