@@ -51,6 +51,7 @@ interface Lead {
 interface Client {
   id: string;
   email: string;
+  client_name?: string;
 }
 
 const AdminAllLeads = () => {
@@ -137,7 +138,7 @@ const AdminAllLeads = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email")
+        .select("id, email, client_name")
         .not("client_name", "is", null);
 
       if (error) throw error;
@@ -337,18 +338,22 @@ const AdminAllLeads = () => {
                             <TableRow key={lead.id}>
                               <TableCell>
                                 {lead.assignedClient === "Unassigned" ? (
-                                  <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                                    <SelectTrigger className="w-[180px]">
-                                      <SelectValue placeholder="Assign to client" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {clients.map((client) => (
-                                        <SelectItem key={client.id} value={client.id}>
-                                          {client.email}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  clients.length > 0 ? (
+                                    <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
+                                      <SelectTrigger className="w-[220px]">
+                                        <SelectValue placeholder="Assign to client" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {clients.map((client) => (
+                                          <SelectItem key={client.id} value={client.id}>
+                                            {client.email} ({client.client_name})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">No clients configured</span>
+                                  )
                                 ) : (
                                   <span className="text-sm whitespace-nowrap">{lead.assignedClient}</span>
                                 )}
