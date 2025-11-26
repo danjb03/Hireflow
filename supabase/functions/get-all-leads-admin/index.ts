@@ -68,9 +68,14 @@ serve(async (req) => {
     }
 
     const filterFormula = filterParts.length > 0 ? `AND(${filterParts.join(', ')})` : '';
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table${
+    const tableName = 'Qualified Lead Table';
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}${
       filterFormula ? `?filterByFormula=${encodeURIComponent(filterFormula)}` : ''
     }`;
+
+    console.log('Fetching all leads from Airtable');
+    console.log('Base ID:', airtableBaseId);
+    console.log('URL:', airtableUrl);
 
     const response = await fetch(airtableUrl, {
       headers: {
@@ -80,7 +85,15 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Airtable API error: ${response.status}`);
+      const errorBody = await response.text();
+      console.error('Airtable API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorBody,
+        baseId: airtableBaseId,
+        tableName: tableName
+      });
+      throw new Error(`Airtable API error: ${response.status} - ${errorBody}`);
     }
 
     const data = await response.json();
