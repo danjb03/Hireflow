@@ -13,12 +13,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
@@ -26,120 +21,51 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Verify user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) throw new Error('Unauthorized');
 
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user is admin
-    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', {
-      _user_id: user.id,
-    });
-
-    if (roleError || !isAdmin) {
-      console.error('Role check error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+    if (!isAdmin) throw new Error('Admin access required');
 
     const { leadId, clientId } = await req.json();
+    if (!leadId || !clientId) throw new Error('Lead ID and Client ID required');
 
-    if (!leadId || !clientId) {
-      return new Response(
-        JSON.stringify({ error: 'Lead ID and Client ID are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-
-    if (!notionApiKey) {
-      console.error('Missing Notion API key');
-      return new Response(
-        JSON.stringify({ error: 'Notion configuration not set up' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get client's database ID
-    const { data: client, error: clientError } = await supabaseClient
+    const { data: client } = await supabaseClient
       .from('profiles')
-      .select('notion_database_id')
+      .select('client_name')
       .eq('id', clientId)
       .single();
 
-    if (clientError || !client?.notion_database_id) {
-      console.error('Client not found or no database configured:', clientError);
-      return new Response(
-        JSON.stringify({ error: 'Client database not configured' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!client?.client_name) throw new Error('Client name not configured');
 
-    // Fetch the lead from Notion
-    const leadResponse = await fetch(`https://api.notion.com/v1/pages/${leadId}`, {
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
+
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const response = await fetch(airtableUrl, {
+      method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Notion-Version': '2022-06-28',
-      },
-    });
-
-    if (!leadResponse.ok) {
-      console.error('Failed to fetch lead from Notion');
-      return new Response(
-        JSON.stringify({ error: 'Lead not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const leadData = await leadResponse.json();
-
-    // Copy lead to client's database
-    const copyResponse = await fetch('https://api.notion.com/v1/pages', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        parent: { database_id: client.notion_database_id },
-        properties: leadData.properties,
-      }),
+        fields: { 'Client Name': client.client_name }
+      })
     });
 
-    if (!copyResponse.ok) {
-      const errorData = await copyResponse.json();
-      console.error('Failed to copy lead to client database:', errorData);
-      return new Response(
-        JSON.stringify({ error: 'Failed to assign lead to client', details: errorData }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const copiedLead = await copyResponse.json();
-    console.log('Lead assigned successfully:', copiedLead.id);
+    if (!response.ok) throw new Error(`Failed to assign lead: ${response.status}`);
 
     return new Response(
-      JSON.stringify({ success: true, newLeadId: copiedLead.id }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error in assign-lead-to-client function:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

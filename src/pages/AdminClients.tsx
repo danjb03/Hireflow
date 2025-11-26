@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 interface Client {
   id: string;
   email: string;
-  notion_database_id: string | null;
+  client_name: string | null;
   initial_password: string | null;
   created_at: string;
 }
@@ -82,21 +82,21 @@ const AdminClients = () => {
     }
   };
 
-  const handleUpdateDatabase = async (clientId: string) => {
+  const handleUpdateClientName = async (clientId: string) => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ notion_database_id: databaseId })
+        .update({ client_name: databaseId })
         .eq("id", clientId);
 
       if (error) throw error;
 
-      toast.success("Database ID updated");
+      toast.success("Client name updated");
       setEditingClient(null);
       setDatabaseId("");
       await loadClients();
     } catch (error: any) {
-      toast.error("Failed to update database ID");
+      toast.error("Failed to update client name");
     }
   };
 
@@ -213,10 +213,10 @@ const AdminClients = () => {
 
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Notion Database ID:</span>
-                  {client.notion_database_id ? (
+                  <span className="text-sm font-medium">Client Name (Airtable):</span>
+                  {client.client_name ? (
                     <code className="text-sm bg-muted px-2 py-1 rounded">
-                      {client.notion_database_id}
+                      {client.client_name}
                     </code>
                   ) : (
                     <span className="text-sm text-muted-foreground">Not configured</span>
@@ -226,11 +226,11 @@ const AdminClients = () => {
                 {editingClient === client.id ? (
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter Notion Database ID"
+                      placeholder="Enter Client Name (must match Airtable dropdown)"
                       value={databaseId}
                       onChange={(e) => setDatabaseId(e.target.value)}
                     />
-                    <Button onClick={() => handleUpdateDatabase(client.id)}>
+                    <Button onClick={() => handleUpdateClientName(client.id)}>
                       Save
                     </Button>
                     <Button variant="outline" onClick={() => {
@@ -246,10 +246,10 @@ const AdminClients = () => {
                       variant="outline"
                       onClick={() => {
                         setEditingClient(client.id);
-                        setDatabaseId(client.notion_database_id || "");
+                        setDatabaseId(client.client_name || "");
                       }}
                     >
-                      Update Database ID
+                      Update Client Name
                     </Button>
                     <Button
                       variant="outline"

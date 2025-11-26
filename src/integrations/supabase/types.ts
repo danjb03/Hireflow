@@ -16,27 +16,27 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          client_name: string | null
           created_at: string
           email: string
           id: string
           initial_password: string | null
-          notion_database_id: string | null
           updated_at: string
         }
         Insert: {
+          client_name?: string | null
           created_at?: string
           email: string
           id: string
           initial_password?: string | null
-          notion_database_id?: string | null
           updated_at?: string
         }
         Update: {
+          client_name?: string | null
           created_at?: string
           email?: string
           id?: string
           initial_password?: string | null
-          notion_database_id?: string | null
           updated_at?: string
         }
         Relationships: []

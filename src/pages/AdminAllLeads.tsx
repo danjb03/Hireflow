@@ -142,7 +142,7 @@ const AdminAllLeads = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("id, email")
-        .not("notion_database_id", "is", null);
+        .not("client_name", "is", null);
 
       if (error) throw error;
 
