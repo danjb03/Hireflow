@@ -259,7 +259,7 @@ const AdminAllLeads = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">All Leads</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">All Leads</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {leads.length} leads {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
               </p>
@@ -317,13 +317,13 @@ const AdminAllLeads = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead>Company</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="font-medium">Company</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium">Client</TableHead>
+                    <TableHead className="font-medium">Contact</TableHead>
+                    <TableHead className="font-medium">Location</TableHead>
+                    <TableHead className="font-medium">Added</TableHead>
+                    <TableHead className="text-right font-medium">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

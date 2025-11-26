@@ -119,7 +119,7 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-1">System overview and quick actions</p>
           </div>
           <Button onClick={() => navigate("/admin/submit-lead")}>
@@ -131,33 +131,33 @@ const AdminDashboard = () => {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalClients}</div>
+              <div className="text-2xl font-bold">{stats.totalClients}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalLeads}</div>
+              <div className="text-2xl font-bold">{stats.totalLeads}</div>
               <p className="text-xs text-muted-foreground mt-1">Across all clients</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
               <CardTitle className="text-sm font-medium text-muted-foreground">Performance</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.statusBreakdown.Approved}</div>
+              <div className="text-2xl font-bold">{stats.statusBreakdown.Approved}</div>
               <p className="text-xs text-muted-foreground mt-1">Approved leads</p>
             </CardContent>
           </Card>
@@ -166,25 +166,25 @@ const AdminDashboard = () => {
         {/* Status Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Leads by Status</CardTitle>
+            <CardTitle className="text-base font-medium">Leads by Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-6">
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-semibold">{stats.statusBreakdown.Approved}</div>
                 <Badge className={getStatusColor("Approved")}>Approved</Badge>
-                <span className="text-2xl font-semibold">{stats.statusBreakdown.Approved}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-semibold">{stats.statusBreakdown['Needs Work']}</div>
                 <Badge className={getStatusColor("Needs Work")}>Needs Work</Badge>
-                <span className="text-2xl font-semibold">{stats.statusBreakdown['Needs Work']}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-semibold">{stats.statusBreakdown.Rejected}</div>
                 <Badge className={getStatusColor("Rejected")}>Rejected</Badge>
-                <span className="text-2xl font-semibold">{stats.statusBreakdown.Rejected}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-semibold">{stats.statusBreakdown.Unknown}</div>
                 <Badge className={getStatusColor("Unknown")}>Unknown</Badge>
-                <span className="text-2xl font-semibold">{stats.statusBreakdown.Unknown}</span>
               </div>
             </div>
           </CardContent>
@@ -192,9 +192,9 @@ const AdminDashboard = () => {
 
         {/* Quick Actions Grid */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/leads")}>
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/leads")}>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 All Leads
               </CardTitle>
@@ -204,9 +204,9 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/clients")}>
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/clients")}>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Manage Clients
               </CardTitle>
@@ -216,9 +216,9 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/invite")}>
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/invite")}>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <PlusCircle className="h-4 w-4" />
                 Invite Client
               </CardTitle>
