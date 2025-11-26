@@ -46,10 +46,10 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r bg-card">
+      <aside className="fixed left-0 top-0 z-40 h-screen w-56 border-r bg-background">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <img src={hireflowLogo} alt="Hireflow" className="h-6" />
+        <div className="flex h-14 items-center gap-2 border-b px-6">
+          <img src={hireflowLogo} alt="Hireflow" className="h-5" />
         </div>
 
         {/* Navigation */}
@@ -58,10 +58,10 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
             <Button
               key={item.path}
               variant="ghost"
-              className={`justify-start gap-3 ${
+              className={`justify-start gap-3 font-normal ${
                 isActive(item.path) 
-                  ? "bg-accent text-accent-foreground" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  ? "bg-muted text-foreground font-medium" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
               onClick={() => navigate(item.path)}
             >
@@ -72,21 +72,22 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 border-t p-4">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="absolute bottom-0 left-0 right-0 border-t p-3">
+          <div className="flex items-center gap-3 px-3 py-2">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              <AvatarFallback className="bg-muted text-xs font-medium">
                 {userEmail ? getInitials(userEmail) : "AD"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium truncate">{userEmail || "Admin"}</p>
+              <p className="text-xs text-muted-foreground">Administrator</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+            className="w-full justify-start gap-2 mt-1 text-muted-foreground hover:text-foreground font-normal"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
@@ -98,17 +99,17 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
       {/* Main Content */}
       <div className="flex-1 ml-56">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
           <div className="flex-1 flex items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
-              className="max-w-md border-0 bg-transparent focus-visible:ring-0"
+              className="max-w-md border-0 bg-transparent focus-visible:ring-0 text-sm"
             />
           </div>
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              <AvatarFallback className="bg-muted text-xs font-medium">
                 {userEmail ? getInitials(userEmail) : "AD"}
               </AvatarFallback>
             </Avatar>
