@@ -124,8 +124,11 @@ const AdminClients = () => {
 
   const handleDeleteClient = async (client: Client) => {
     try {
-      const { error: authError } = await supabase.auth.admin.deleteUser(client.id);
-      if (authError) throw authError;
+      const { error } = await supabase.functions.invoke("delete-user", {
+        body: { userId: client.id }
+      });
+
+      if (error) throw error;
 
       toast.success("Client deleted successfully");
       setDeleteClient(null);
