@@ -3,25 +3,26 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyRetry } from "@/lib/lazyRetry";
 
-// Lazy load all pages for better performance
-const Index = lazy(() => import("./pages/Index"));
-const Login = lazy(() => import("./pages/Login"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const LeadDetail = lazy(() => import("./pages/LeadDetail"));
-const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
-const ClientLeads = lazy(() => import("./pages/ClientLeads"));
-const ClientLeadDetail = lazy(() => import("./pages/ClientLeadDetail"));
-const ClientCalendar = lazy(() => import("./pages/ClientCalendar"));
-const ClientSettings = lazy(() => import("./pages/ClientSettings"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminClients = lazy(() => import("./pages/AdminClients"));
-const AdminInvite = lazy(() => import("./pages/AdminInvite"));
-const AdminSubmitLead = lazy(() => import("./pages/AdminSubmitLead"));
-const AdminAllLeads = lazy(() => import("./pages/AdminAllLeads"));
-const AdminLeadDetail = lazy(() => import("./pages/AdminLeadDetail"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Lazy load all pages with retry logic for better reliability
+const Index = lazyRetry(() => import("./pages/Index"), "Index");
+const Login = lazyRetry(() => import("./pages/Login"), "Login");
+const Dashboard = lazyRetry(() => import("./pages/Dashboard"), "Dashboard");
+const LeadDetail = lazyRetry(() => import("./pages/LeadDetail"), "LeadDetail");
+const ClientDashboard = lazyRetry(() => import("./pages/ClientDashboard"), "ClientDashboard");
+const ClientLeads = lazyRetry(() => import("./pages/ClientLeads"), "ClientLeads");
+const ClientLeadDetail = lazyRetry(() => import("./pages/ClientLeadDetail"), "ClientLeadDetail");
+const ClientCalendar = lazyRetry(() => import("./pages/ClientCalendar"), "ClientCalendar");
+const ClientSettings = lazyRetry(() => import("./pages/ClientSettings"), "ClientSettings");
+const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"), "AdminDashboard");
+const AdminClients = lazyRetry(() => import("./pages/AdminClients"), "AdminClients");
+const AdminInvite = lazyRetry(() => import("./pages/AdminInvite"), "AdminInvite");
+const AdminSubmitLead = lazyRetry(() => import("./pages/AdminSubmitLead"), "AdminSubmitLead");
+const AdminAllLeads = lazyRetry(() => import("./pages/AdminAllLeads"), "AdminAllLeads");
+const AdminLeadDetail = lazyRetry(() => import("./pages/AdminLeadDetail"), "AdminLeadDetail");
+const NotFound = lazyRetry(() => import("./pages/NotFound"), "NotFound");
 
 // Optimized QueryClient configuration for better caching
 const queryClient = new QueryClient({
