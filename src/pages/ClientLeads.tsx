@@ -34,12 +34,6 @@ interface Lead {
   phone?: string;
   linkedInProfile?: string;
   
-  // Interaction Details
-  callNotes?: string;
-  callbackDateTime?: string;
-  recordingTranscript?: string;
-  aiSummary?: string;
-  
   // Job Information
   jobPostingTitle?: string;
   jobDescription?: string;
@@ -239,12 +233,6 @@ const ClientLeads = () => {
                           {lead.industry}
                           {lead.companySize && ` • ${lead.companySize}`}
                         </span>
-                      </div>
-                    )}
-                    {lead.aiSummary && (
-                      <div className="text-sm text-muted-foreground pt-2 border-t">
-                        <p className="font-medium mb-1">AI Summary:</p>
-                        <p className="line-clamp-2">{lead.aiSummary}</p>
                       </div>
                     )}
                     {lead.jobsOpen && (

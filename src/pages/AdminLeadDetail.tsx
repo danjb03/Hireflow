@@ -31,7 +31,6 @@ interface LeadData {
   callNotes: string | null;
   callbackDateTime: string | null;
   jobOpenings: Array<{ title: string; url: string; type?: string }>;
-  aiSummary: string | null;
   jobPostingTitle: string | null;
   jobDescription: string | null;
   jobUrl: string | null;
@@ -565,24 +564,6 @@ const AdminLeadDetail = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* AI Summary */}
-              {lead.aiSummary && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      ✨ AI Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
-                      {lead.aiSummary.split('\n').filter(line => line.trim()).map((line, idx) => (
-                        <li key={idx}>{line.replace(/^[•\-]\s*/, '')}</li>
-                      ))}
-                    </ul>
                   </CardContent>
                 </Card>
               )}
