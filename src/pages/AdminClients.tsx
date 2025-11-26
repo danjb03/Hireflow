@@ -167,11 +167,11 @@ const AdminClients = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
+    <div className="min-h-screen bg-background animate-fade-in">
+      <header className="border-b bg-card transition-all">
         <div className="container mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/admin")}>
+            <Button variant="ghost" onClick={() => navigate("/admin")} className="transition-all hover:translate-x-[-4px]">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
@@ -185,7 +185,7 @@ const AdminClients = () => {
       <main className="container mx-auto p-4 md:p-6">
         <div className="grid gap-4">
           {clients.map((client) => (
-            <Card key={client.id}>
+            <Card key={client.id} className="transition-all hover:shadow-lg duration-200">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -296,6 +296,7 @@ const AdminClients = () => {
                         setEditingClient(client.id);
                         setDatabaseId(client.client_name || "");
                       }}
+                      className="transition-all hover:scale-105"
                     >
                       Update Client Name
                     </Button>
@@ -303,6 +304,7 @@ const AdminClients = () => {
                       variant="outline"
                       onClick={() => handleResetPassword(client.id, client.email)}
                       disabled={resettingPassword === client.id}
+                      className="transition-all hover:scale-105"
                     >
                       {resettingPassword === client.id ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
