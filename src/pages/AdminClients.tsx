@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft, Mail, Database, Trash2, Key } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -24,10 +25,29 @@ const AdminClients = () => {
   const [databaseId, setDatabaseId] = useState("");
   const [deleteClient, setDeleteClient] = useState<Client | null>(null);
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
+  const [airtableOptions, setAirtableOptions] = useState<string[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   useEffect(() => {
     checkAdminAndLoadClients();
+    loadAirtableOptions();
   }, []);
+
+  const loadAirtableOptions = async () => {
+    setLoadingOptions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-airtable-client-options");
+
+      if (error) throw error;
+
+      setAirtableOptions(data.options || []);
+    } catch (error: any) {
+      console.error("Failed to load Airtable options:", error);
+      toast.error("Failed to load client name options from Airtable");
+    } finally {
+      setLoadingOptions(false);
+    }
+  };
 
   const checkAdminAndLoadClients = async () => {
     try {
@@ -224,21 +244,49 @@ const AdminClients = () => {
                 </div>
 
                 {editingClient === client.id ? (
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter Client Name (must match Airtable dropdown)"
-                      value={databaseId}
-                      onChange={(e) => setDatabaseId(e.target.value)}
-                    />
-                    <Button onClick={() => handleUpdateClientName(client.id)}>
-                      Save
-                    </Button>
-                    <Button variant="outline" onClick={() => {
-                      setEditingClient(null);
-                      setDatabaseId("");
-                    }}>
-                      Cancel
-                    </Button>
+                  <div className="space-y-2">
+                    {loadingOptions ? (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading client names from Airtable...
+                      </div>
+                    ) : airtableOptions.length > 0 ? (
+                      <div className="flex gap-2">
+                        <Select value={databaseId} onValueChange={setDatabaseId}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select client name from Airtable" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {airtableOptions.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button onClick={() => handleUpdateClientName(client.id)} disabled={!databaseId}>
+                          Save
+                        </Button>
+                        <Button variant="outline" onClick={() => {
+                          setEditingClient(null);
+                          setDatabaseId("");
+                        }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          No client names found in Airtable. Add options to the 'Client' dropdown field in Airtable first.
+                        </p>
+                        <Button variant="outline" onClick={() => {
+                          setEditingClient(null);
+                          setDatabaseId("");
+                        }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex gap-2">
