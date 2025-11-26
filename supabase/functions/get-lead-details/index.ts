@@ -12,203 +12,69 @@ serve(async (req) => {
   }
 
   try {
-    // Get authorization header (check both cases)
-    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
-    
-    if (!authHeader) {
-      console.error('No authorization header found');
-      throw new Error('Unauthorized: No authorization header');
-    }
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error('No authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
-        }
-      }
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError) {
-      console.error('Auth error:', authError);
-      throw new Error(`Unauthorized: ${authError.message}`);
-    }
-    
-    if (!user) {
-      console.error('No user found');
-      throw new Error('Unauthorized: No user found');
-    }
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !user) throw new Error('User not authenticated');
 
     const { leadId } = await req.json();
-    
-    if (!leadId) {
-      throw new Error('Lead ID is required');
-    }
+    if (!leadId) throw new Error('Lead ID is required');
 
-    console.log('Fetching lead details for:', leadId);
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    // Fetch specific page from Notion
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    if (!notionApiKey) {
-      throw new Error('NOTION_API_KEY not configured');
-    }
-
-    // Check if user is admin
-    const { data: isAdmin } = await supabaseClient.rpc('is_admin', {
-      _user_id: user.id,
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    console.log('User is admin:', isAdmin);
+    if (!response.ok) throw new Error(`Airtable API error: ${response.status}`);
 
-    // Admins can view any lead, clients can only view leads from their database
-    if (!isAdmin) {
-      // For clients, verify they have access to this lead via their database
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('notion_database_id')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        throw new Error('Failed to get user profile');
-      }
-
-      if (!profile?.notion_database_id) {
-        throw new Error('No Notion database configured for your account. Please contact your administrator.');
-      }
-    }
-
-    const notionResponse = await fetch(
-      `https://api.notion.com/v1/pages/${leadId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${notionApiKey}`,
-          'Notion-Version': '2022-06-28',
-        },
-      }
-    );
-
-    if (!notionResponse.ok) {
-      const errorText = await notionResponse.text();
-      console.error('Notion API error:', errorText);
-      throw new Error(`Notion API error: ${notionResponse.status}`);
-    }
-
-    const page = await notionResponse.json();
-    const props = page.properties;
-
-    // Log all available property names to help debug
-    console.log('Available Notion properties:', Object.keys(props));
+    const record = await response.json();
+    const fields = record.fields;
     
-    // Log sample of property structures
-    Object.keys(props).slice(0, 5).forEach(key => {
-      console.log(`Property "${key}" type:`, props[key]?.type);
-    });
-
-    // Helper function to extract text from rich_text or title arrays
-    const getText = (prop: any) => {
-      if (!prop) return '';
-      if (prop.title && prop.title[0]) return prop.title[0].plain_text;
-      if (prop.rich_text && prop.rich_text[0]) return prop.rich_text[0].plain_text;
-      return '';
-    };
-
-      // Extract company name
-      const companyName = 
-        getText(props['Company Name']) ||
-        getText(props.Name) || 
-        getText(props.Title) || 
-        (props['Company Website']?.url ? new URL(props['Company Website'].url).hostname.replace('www.', '') : '') ||
-        'Company Name Not Available';
-      
-      // Parse job openings if stored as JSON string
-      const parseJobOpenings = () => {
-        try {
-          const jobsText = getText(props['Job Openings']);
-          return jobsText ? JSON.parse(jobsText) : [];
-        } catch {
-          return [];
-        }
-      };
-      
-      // Calculate status based on age
-      const notionStatus = props.STAGE?.select?.name || props.Status?.select?.name;
-      const dateAdded = props['Date Added']?.date?.start || page.created_time;
-      const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
-      
-      let calculatedStatus = notionStatus;
-      if (!notionStatus) {
-        calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
-      }
-
-    // Transform to detailed format with ALL fields - using exact Notion property names
     const lead = {
-      id: page.id,
-      status: calculatedStatus,
-      companyName,
-      
-      // Company Information - using exact property names from Notion
-      companyWebsite: props['Company Website']?.url || '',
-      companyLinkedIn: props['Companies Linkeidn']?.url || props['Companies LinkedIn']?.url || '',
-      industry: props.Industry?.select?.name || getText(props.Industry) || null,
-      companySize: props.Size?.select?.name || getText(props.Size) || null,
-      employeeCount: props['Employee Count']?.number?.toString() || null,
-      country: props.Country?.select?.name || getText(props.Country) || null,
-      location: getText(props['Address - Locations']) || getText(props['Address - Location']) || getText(props.Location) || null,
-      companyDescription: getText(props['Company Description']) || null,
-      founded: props.Founded?.date?.start || getText(props.Founded) || null,
-      
-      // Contact Details - using exact property names
-      contactName: getText(props['Contact Name']) || null,
-      jobTitle: getText(props.Title) || getText(props['Job Title']) || null,
-      email: props.Email?.email || getText(props.Email) || '',
-      phone: props.Phone?.phone_number || getText(props.Phone) || '',
-      linkedInProfile: props["Contact's Linkeidn"]?.url || props["Contact's LinkedIn"]?.url || props['LinkedIn Profile']?.url || '',
-      
-      // Interaction Details - Call Back Date and Time field contains callback notes
-      callNotes: getText(props['Call Back Date and Time']) || getText(props['Call notes']) || getText(props['Call Notes']) || null,
-      callbackDateTime: props['Call Back Date and Time']?.date?.start || props['Callback Date and Time']?.date?.start || null,
-      aiSummary: getText(props['AI summary']) || getText(props['AI Summary']) || null,
-      feedback: getText(props.Feedback) || null,
-      
-      // Job Information - using exact property names
-      jobPostingTitle: getText(props['Title - Jobs']) || null,
-      jobDescription: getText(props['Description - Jobs']) || null,
-      jobUrl: props['Url - Jobs']?.url || null,
-      activeJobsUrl: props['Find Active Job Openings']?.url || null,
-      jobsOpen: props['Jobs open ']?.number?.toString() || props['Jobs open']?.number?.toString() || getText(props['Jobs open ']) || getText(props['Jobs open']) || null,
-      
-      // Parse job openings if stored as JSON string
-      jobOpenings: (() => {
-        try {
-          const jobsText = getText(props['Job Openings']);
-          return jobsText ? JSON.parse(jobsText) : [];
-        } catch {
-          return [];
-        }
-      })(),
-      
-      // Metadata
-      dateAdded: dateAdded,
-      createdTime: page.created_time,
-      lastEditedTime: page.last_edited_time,
+      id: record.id,
+      companyName: fields['Company Name'] || '',
+      status: fields['STAGE'] || 'NEW',
+      companyWebsite: fields['Company Website'] || '',
+      companyLinkedIn: fields['Company LinkedIn'] || null,
+      industry: fields['Industry'] || null,
+      companySize: fields['Company Size'] || null,
+      employeeCount: fields['Employee Count'] || null,
+      country: fields['Country'] || null,
+      location: fields['Location'] || null,
+      companyDescription: fields['Company Description'] || null,
+      founded: fields['Founded'] || null,
+      contactName: fields['Contact Name'] || null,
+      jobTitle: fields['Job Title'] || null,
+      email: fields['Email'] || '',
+      phone: fields['Phone'] || '',
+      linkedInProfile: fields['LinkedIn Profile'] || '',
+      callNotes: fields['Call Notes'] || null,
+      callbackDateTime: fields['Callback Date/Time'] || null,
+      aiSummary: fields['AI Summary'] || null,
+      jobPostingTitle: fields['Job Posting Title'] || null,
+      jobDescription: fields['Job Description'] || null,
+      jobUrl: fields['Job URL'] || null,
+      activeJobsUrl: fields['Active Jobs URL'] || null,
+      jobsOpen: fields['Jobs Open'] || null,
+      dateAdded: fields['Date Added'] || record.createdTime,
+      feedback: fields['Feedback'] || null,
+      jobOpenings: [],
     };
-
-    console.log('Lead details fetched successfully');
-    console.log('Returning lead with fields:', Object.keys(lead));
-    console.log('Sample data - Company Name:', lead.companyName);
-    console.log('Sample data - Status:', lead.status);
-    console.log('Sample data - Has Call Notes:', !!lead.callNotes);
-    console.log('Sample data - Has AI Summary:', !!lead.aiSummary);
 
     return new Response(
       JSON.stringify({ lead }),
@@ -216,14 +82,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in get-lead-details:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

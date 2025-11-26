@@ -13,12 +13,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
@@ -26,98 +21,53 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Verify user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) throw new Error('Unauthorized');
 
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user is admin
-    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', {
-      _user_id: user.id,
-    });
-
-    if (roleError || !isAdmin) {
-      console.error('Role check error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+    if (!isAdmin) throw new Error('Admin access required');
 
     const { leadId, status } = await req.json();
+    if (!leadId || !status) throw new Error('Lead ID and status required');
 
-    if (!leadId || !status) {
-      return new Response(
-        JSON.stringify({ error: 'Lead ID and stage are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const validStatuses = ['Approved', 'Needs Work', 'Rejected'];
+    const validStatuses = ['NEW', 'Lead', 'Approved', 'Needs Work', 'Rejected'];
     if (!validStatuses.includes(status)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid stage value' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
 
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    if (!notionApiKey) {
-      console.error('Missing Notion API key');
-      return new Response(
-        JSON.stringify({ error: 'Notion configuration not set up' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Update the stage in Notion
-    const updateResponse = await fetch(`https://api.notion.com/v1/pages/${leadId}`, {
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const response = await fetch(airtableUrl, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        properties: {
-          'STAGE': {
-            select: { name: status },
-          },
-        },
-      }),
+        fields: { 'STAGE': status }
+      })
     });
 
-    if (!updateResponse.ok) {
-      const errorData = await updateResponse.json();
-      console.error('Failed to update stage in Notion:', errorData);
-      return new Response(
-        JSON.stringify({ error: 'Failed to update lead stage', details: errorData }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Airtable error:', errorText);
+      throw new Error(`Failed to update status: ${response.status}`);
     }
 
-    const updatedLead = await updateResponse.json();
-    console.log('Lead stage updated successfully:', leadId);
-
+    console.log(`Successfully updated lead ${leadId} status to ${status}`);
     return new Response(
-      JSON.stringify({ success: true, lead: updatedLead }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error in update-lead-status function:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

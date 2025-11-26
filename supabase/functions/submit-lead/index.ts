@@ -13,12 +13,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
@@ -26,110 +21,79 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Verify user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) throw new Error('Unauthorized');
 
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+    if (!isAdmin) throw new Error('Admin access required');
 
-    // Check if user is admin
-    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', {
-      _user_id: user.id,
-    });
+    const leadData = await req.json();
+    if (!leadData.companyName) throw new Error('Company name is required');
 
-    if (roleError || !isAdmin) {
-      console.error('Role check error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    const { companyName, companyWebsite, companyLinkedIn, industry, notes } = await req.json();
+    // Build Airtable fields object
+    const airtableFields: Record<string, any> = {
+      'Company Name': leadData.companyName,
+      'STAGE': 'NEW',
+      'Date Added': new Date().toISOString(),
+    };
 
-    if (!companyName || !companyWebsite) {
-      return new Response(
-        JSON.stringify({ error: 'Company name and website are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Add optional fields
+    if (leadData.companyWebsite) airtableFields['Company Website'] = leadData.companyWebsite;
+    if (leadData.companyLinkedIn) airtableFields['Company LinkedIn'] = leadData.companyLinkedIn;
+    if (leadData.industry) airtableFields['Industry'] = leadData.industry;
+    if (leadData.companySize) airtableFields['Company Size'] = leadData.companySize;
+    if (leadData.employeeCount) airtableFields['Employee Count'] = leadData.employeeCount;
+    if (leadData.country) airtableFields['Country'] = leadData.country;
+    if (leadData.location) airtableFields['Location'] = leadData.location;
+    if (leadData.companyDescription) airtableFields['Company Description'] = leadData.companyDescription;
+    if (leadData.founded) airtableFields['Founded'] = leadData.founded;
+    if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
+    if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
+    if (leadData.email) airtableFields['Email'] = leadData.email;
+    if (leadData.phone) airtableFields['Phone'] = leadData.phone;
+    if (leadData.linkedInProfile) airtableFields['LinkedIn Profile'] = leadData.linkedInProfile;
+    if (leadData.callNotes) airtableFields['Call Notes'] = leadData.callNotes;
+    if (leadData.callbackDateTime) airtableFields['Callback Date/Time'] = leadData.callbackDateTime;
+    if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;
+    if (leadData.jobPostingTitle) airtableFields['Job Posting Title'] = leadData.jobPostingTitle;
+    if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
+    if (leadData.jobUrl) airtableFields['Job URL'] = leadData.jobUrl;
+    if (leadData.activeJobsUrl) airtableFields['Active Jobs URL'] = leadData.activeJobsUrl;
+    if (leadData.jobsOpen) airtableFields['Jobs Open'] = leadData.jobsOpen;
 
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    const mainDatabaseId = Deno.env.get('MAIN_NOTION_DATABASE_ID');
-
-    if (!notionApiKey || !mainDatabaseId) {
-      console.error('Missing Notion configuration');
-      return new Response(
-        JSON.stringify({ error: 'Notion configuration not set up' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create page in main Notion database
-    const notionResponse = await fetch('https://api.notion.com/v1/pages', {
+    // Create record in Airtable
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
+    const response = await fetch(airtableUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        parent: { database_id: mainDatabaseId },
-        properties: {
-          'Company Name': {
-            title: [{ text: { content: companyName } }],
-          },
-          'Company Website': {
-            url: companyWebsite,
-          },
-          ...(companyLinkedIn && {
-            'Company LinkedIn': {
-              url: companyLinkedIn,
-            },
-          }),
-          ...(industry && {
-            'Industry': {
-              select: { name: industry },
-            },
-          }),
-          'Status': {
-            select: { name: 'Qualified' },
-          },
-          ...(notes && {
-            'Notes': {
-              rich_text: [{ text: { content: notes } }],
-          },
-          }),
-        },
-      }),
+        fields: airtableFields
+      })
     });
 
-    if (!notionResponse.ok) {
-      const errorData = await notionResponse.json();
-      console.error('Notion API error:', errorData);
-      return new Response(
-        JSON.stringify({ error: 'Failed to create lead in Notion', details: errorData }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Airtable error:', errorText);
+      throw new Error(`Failed to create lead: ${response.status}`);
     }
 
-    const notionData = await notionResponse.json();
-    console.log('Lead created successfully:', notionData.id);
+    const createdRecord = await response.json();
+    console.log(`Successfully created lead: ${createdRecord.id}`);
 
     return new Response(
-      JSON.stringify({ success: true, leadId: notionData.id }),
+      JSON.stringify({ success: true, lead: createdRecord }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error in submit-lead function:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
