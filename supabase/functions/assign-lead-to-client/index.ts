@@ -50,7 +50,7 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        fields: { 'Client Name': client.client_name }
+        fields: { 'Client': client.client_name }
       })
     });
 

@@ -30,7 +30,7 @@ serve(async (req) => {
     const { leadId, status } = await req.json();
     if (!leadId || !status) throw new Error('Lead ID and status required');
 
-    const validStatuses = ['NEW', 'Lead', 'Approved', 'Needs Work', 'Rejected'];
+    const validStatuses = ['New', 'Approved', 'Rejected', 'Needs work'];
     if (!validStatuses.includes(status)) {
       throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
@@ -47,7 +47,7 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        fields: { 'STAGE': status }
+        fields: { 'Status': status }
       })
     });
 

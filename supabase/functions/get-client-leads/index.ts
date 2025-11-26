@@ -91,7 +91,7 @@ serve(async (req) => {
       console.log('Client fetching leads for:', profile.client_name);
 
       // Fetch leads filtered by client name using Airtable formula
-      const filterFormula = `{Client Name} = '${profile.client_name.replace(/'/g, "\\'")}'`;
+      const filterFormula = `{Client} = '${profile.client_name.replace(/'/g, "\\'")}'`;
       const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
       
       const response = await fetch(airtableUrl, {
@@ -132,54 +132,37 @@ function transformAirtableRecords(records: any[]): any[] {
   return records.map(record => {
     const fields = record.fields;
     
-    // Calculate status based on age if not set
-    const notionStatus = fields['STAGE'];
-    const dateAdded = fields['Date Added'] || record.createdTime;
-    const daysSinceAdded = Math.floor((Date.now() - new Date(dateAdded).getTime()) / (1000 * 60 * 60 * 24));
-    
-    let calculatedStatus = notionStatus;
-    if (!notionStatus) {
-      calculatedStatus = daysSinceAdded >= 5 ? 'Lead' : 'NEW';
-    }
+    // Use Airtable status field
+    const status = fields['Status'] || 'New';
     
     return {
       id: record.id,
       companyName: fields['Company Name'] || '',
-      status: calculatedStatus,
+      status: status,
       companyWebsite: fields['Company Website'] || '',
       companyLinkedIn: fields['Company LinkedIn'] || null,
       industry: fields['Industry'] || null,
       companySize: fields['Company Size'] || null,
       employeeCount: fields['Employee Count'] || null,
       country: fields['Country'] || null,
-      location: fields['Location'] || null,
+      location: fields['Address'] || null,
       companyDescription: fields['Company Description'] || null,
-      founded: fields['Founded'] || null,
       contactName: fields['Contact Name'] || null,
+      contactTitle: fields['Contact Title'] || null,
       jobTitle: fields['Job Title'] || null,
       email: fields['Email'] || '',
       phone: fields['Phone'] || '',
-      linkedInProfile: fields['LinkedIn Profile'] || '',
-      callNotes: fields['Call Notes'] || null,
-      callbackDateTime: fields['Callback Date/Time'] || null,
+      linkedInProfile: fields['Contact LinkedIn'] || '',
       aiSummary: fields['AI Summary'] || null,
-      jobPostingTitle: fields['Job Posting Title'] || null,
       jobDescription: fields['Job Description'] || null,
       jobUrl: fields['Job URL'] || null,
-      activeJobsUrl: fields['Active Jobs URL'] || null,
-      jobsOpen: fields['Jobs Open'] || null,
-      dateAdded: fields['Date Added'] || record.createdTime,
-      jobOpenings: parseJobOpenings(fields['Job Openings']),
+      jobType: fields['Job Type'] || null,
+      jobLevel: fields['Job Level'] || null,
+      dateAdded: fields['Date Created'] || record.createdTime,
+      feedback: fields['Feedback'] || null,
+      lastContactDate: fields['Last Contact Date'] || null,
+      nextAction: fields['Next Action'] || null,
     };
   });
 }
 
-function parseJobOpenings(jobOpeningsText: string | null | undefined): any[] {
-  if (!jobOpeningsText) return [];
-  
-  try {
-    return JSON.parse(jobOpeningsText);
-  } catch (e) {
-    return [];
-  }
-}
