@@ -13,9 +13,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Unauthorized: No authorization header');
-    }
+    if (!authHeader) throw new Error('Unauthorized: No authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
@@ -24,72 +22,44 @@ serve(async (req) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { leadId, feedback } = await req.json();
-    
-    if (!leadId || feedback === undefined) {
-      throw new Error('Lead ID and feedback are required');
-    }
+    if (!leadId || feedback === undefined) throw new Error('Lead ID and feedback required');
 
-    console.log('Updating feedback for lead:', leadId);
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    if (!notionApiKey) {
-      throw new Error('NOTION_API_KEY not configured');
-    }
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const response = await fetch(airtableUrl, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fields: { 'Feedback': feedback }
+      })
+    });
 
-    // Update the feedback field in Notion
-    const notionResponse = await fetch(
-      `https://api.notion.com/v1/pages/${leadId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${notionApiKey}`,
-          'Notion-Version': '2022-06-28',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          properties: {
-            Feedback: {
-              rich_text: [
-                {
-                  text: {
-                    content: feedback,
-                  },
-                },
-              ],
-            },
-          },
-        }),
-      }
-    );
-
-    if (!notionResponse.ok) {
-      const errorText = await notionResponse.text();
-      console.error('Notion API error:', errorText);
-      throw new Error(`Failed to update feedback in Notion: ${notionResponse.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Airtable error:', errorText);
+      throw new Error(`Failed to update feedback: ${response.status}`);
     }
 
     console.log('Feedback updated successfully');
-
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in update-lead-feedback:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

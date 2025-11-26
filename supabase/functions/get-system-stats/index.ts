@@ -13,12 +13,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const token = authHeader.replace('Bearer ', '');
     const supabaseClient = createClient(
@@ -26,80 +21,45 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Verify user is authenticated
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) throw new Error('Unauthorized');
 
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+    if (!isAdmin) throw new Error('Admin access required');
 
-    // Check if user is admin
-    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', {
-      _user_id: user.id,
-    });
-
-    if (roleError || !isAdmin) {
-      console.error('Role check error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const notionApiKey = Deno.env.get('NOTION_API_KEY');
-    const mainDatabaseId = Deno.env.get('MAIN_NOTION_DATABASE_ID');
-
-    if (!notionApiKey || !mainDatabaseId) {
-      console.error('Missing Notion configuration');
-      return new Response(
-        JSON.stringify({ error: 'Notion configuration not set up' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
     // Get total clients (excluding admins)
-    // First get all admin user IDs
-    const { data: adminRoles, error: adminError } = await supabaseClient
+    const { data: adminRoles } = await supabaseClient
       .from('user_roles')
       .select('user_id')
       .eq('role', 'admin');
 
-    if (adminError) {
-      console.error('Error fetching admin roles:', adminError);
-    }
-
     const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
 
-    // Get all profiles
-    const { data: allProfiles, error: clientsError } = await supabaseClient
+    const { data: allProfiles } = await supabaseClient
       .from('profiles')
       .select('id');
 
-    if (clientsError) {
-      console.error('Error fetching profiles:', clientsError);
-    }
-
-    // Count non-admin profiles
     const totalClients = allProfiles?.filter(p => !adminUserIds.has(p.id)).length || 0;
 
-    console.log('Total admin users:', adminUserIds.size);
-    console.log('Total profiles:', allProfiles?.length || 0);
-    console.log('Total non-admin clients:', totalClients);
+    // Fetch all leads from Airtable
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    // Get all client databases
-    const { data: clients, error: clientsFetchError } = await supabaseClient
-      .from('profiles')
-      .select('notion_database_id')
-      .not('notion_database_id', 'is', null);
+    if (!response.ok) throw new Error(`Airtable API error: ${response.status}`);
 
-    let totalLeads = 0;
+    const data = await response.json();
+    const records = data.records || [];
+
+    const totalLeads = records.length;
     const statusCounts = {
       Approved: 0,
       Rejected: 0,
@@ -107,53 +67,15 @@ serve(async (req) => {
       Unknown: 0,
     };
 
-    // Query main database
-    const databases = [mainDatabaseId, ...(clients?.map(c => c.notion_database_id) || [])];
-
-    for (const dbId of databases) {
-      if (!dbId) continue;
-      
-      try {
-        // Format database ID with hyphens if needed
-        const formattedDbId = dbId.includes('-') 
-          ? dbId 
-          : dbId.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
-        
-        console.log(`Querying database: ${formattedDbId}`);
-        
-        const notionResponse = await fetch(
-          `https://api.notion.com/v1/databases/${formattedDbId}/query`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${notionApiKey}`,
-              'Notion-Version': '2022-06-28',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ page_size: 100 }),
-          }
-        );
-
-        if (notionResponse.ok) {
-          const data = await notionResponse.json();
-          totalLeads += data.results.length;
-
-          // Count by status
-          data.results.forEach((page: any) => {
-            const status = page.properties['STAGE']?.select?.name || page.properties['Status']?.select?.name;
-            if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
-              statusCounts[status as keyof typeof statusCounts]++;
-            } else {
-              // Count anything without a matching status as Unknown
-              statusCounts.Unknown++;
-            }
-          });
-        }
-      } catch (error) {
-        console.error(`Error querying database ${dbId}:`, error);
-        // Continue to next database on error - don't break the entire stats function
+    // Count by status
+    records.forEach((record: any) => {
+      const status = record.fields['STAGE'];
+      if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
+        statusCounts[status as keyof typeof statusCounts]++;
+      } else {
+        statusCounts.Unknown++;
       }
-    }
+    });
 
     return new Response(
       JSON.stringify({
@@ -163,8 +85,9 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error in get-system-stats function:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
