@@ -85,9 +85,9 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-primary/10 text-primary border-primary/20",
+      Approved: "bg-success/10 text-success border-success/20",
       Rejected: "bg-destructive/10 text-destructive border-destructive/20",
-      'Needs Work': "bg-secondary/10 text-secondary-foreground border-secondary/20",
+      'Needs Work': "bg-warning/10 text-warning border-warning/20",
       Unknown: "bg-muted/10 text-muted-foreground border-muted/20",
     };
     return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
