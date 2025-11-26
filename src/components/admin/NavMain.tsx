@@ -28,7 +28,7 @@ export function NavMain({ items }: NavMainProps) {
                   to={item.url}
                   end
                   activeClassName="bg-secondary/10 text-foreground font-medium"
-                  className="hover:bg-accent"
+                  className="hover:bg-accent hover:text-accent-foreground"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>
