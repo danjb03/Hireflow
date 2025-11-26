@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ArrowLeft, Search, Loader2, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -60,12 +62,31 @@ const AdminAllLeads = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [leadsPerPage] = useState(50);
 
   useEffect(() => {
     checkAdminAndLoadData();
   }, []);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reload when filters change
+  useEffect(() => {
+    if (!loading) {
+      loadLeads();
+      setCurrentPage(1);
+    }
+  }, [debouncedSearch, statusFilter, clientFilter]);
 
   const checkAdminAndLoadData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -94,7 +115,7 @@ const AdminAllLeads = () => {
       const params = new URLSearchParams();
       if (statusFilter) params.append("status", statusFilter);
       if (clientFilter) params.append("client", clientFilter);
-      if (searchTerm) params.append("search", searchTerm);
+      if (debouncedSearch) params.append("search", debouncedSearch);
       
       // Get the auth session to pass in headers
       const { data: { session } } = await supabase.auth.getSession();
@@ -227,39 +248,67 @@ const AdminAllLeads = () => {
   const allStatuses = [...new Set([...knownStatuses, ...Object.keys(groupedLeads)])];
   const sortedStatuses = allStatuses.filter(status => groupedLeads[status]);
 
+  // Pagination
+  const indexOfLastLead = currentPage * leadsPerPage;
+  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+  const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
+  const totalPages = Math.ceil(leads.length / leadsPerPage);
+
+  // Group current page leads
+  const groupedCurrentLeads = currentLeads.reduce((acc, lead) => {
+    const status = lead.status || "NEW";
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(lead);
+    return acc;
+  }, {} as Record<string, Lead[]>);
+
+  const currentSortedStatuses = sortedStatuses.filter(status => groupedCurrentLeads[status]);
+
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 animate-fade-in">
       <div className="max-w-7xl mx-auto">
         <Button
           variant="ghost"
           onClick={() => navigate("/admin")}
-          className="mb-6"
+          className="mb-6 transition-all hover:translate-x-[-4px]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Admin Dashboard
         </Button>
 
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">All Leads</h1>
-          <Button onClick={() => navigate("/admin/submit-lead")}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">All Leads</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {leads.length} total leads {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
+            </p>
+          </div>
+          <Button onClick={() => navigate("/admin/submit-lead")} className="transition-all hover:scale-105">
             Submit New Lead
           </Button>
         </div>
 
-        <Card className="p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-6 mb-6 transition-all hover:shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by company..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 transition-all focus:ring-2 focus:ring-primary"
               />
+              {searchTerm && (
+                <span className="absolute right-3 top-3 text-xs text-muted-foreground">
+                  Searching...
+                </span>
+              )}
             </div>
 
             <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
-              <SelectTrigger>
+              <SelectTrigger className="transition-all focus:ring-2 focus:ring-primary">
                 <SelectValue placeholder="Filter by stage" />
               </SelectTrigger>
               <SelectContent>
@@ -273,7 +322,7 @@ const AdminAllLeads = () => {
             </Select>
 
             <Select value={clientFilter || "all"} onValueChange={(value) => setClientFilter(value === "all" ? "" : value)}>
-              <SelectTrigger>
+              <SelectTrigger className="transition-all focus:ring-2 focus:ring-primary">
                 <SelectValue placeholder="Filter by client" />
               </SelectTrigger>
               <SelectContent>
@@ -286,32 +335,36 @@ const AdminAllLeads = () => {
                 ))}
               </SelectContent>
             </Select>
-
-            <Button onClick={loadLeads}>Apply Filters</Button>
           </div>
         </Card>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-4">
+                <Skeleton className="h-8 w-full mb-4" />
+                <Skeleton className="h-32 w-full" />
+              </Card>
+            ))}
           </div>
         ) : leads.length === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground">
+          <Card className="p-8 text-center text-muted-foreground animate-fade-in">
             No leads found
           </Card>
         ) : (
-          <div className="space-y-4">
-            {sortedStatuses.map((status) => (
-              <Collapsible key={status} defaultOpen={true}>
-                <Card>
-                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <ChevronDown className="h-5 w-5 transition-transform data-[state=closed]:-rotate-90" />
-                      <h2 className="text-lg font-semibold">{status}</h2>
-                      <Badge variant="secondary">{groupedLeads[status].length}</Badge>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
+          <>
+            <div className="space-y-4 animate-fade-in">
+              {currentSortedStatuses.map((status) => (
+                <Collapsible key={status} defaultOpen={true}>
+                  <Card className="transition-all hover:shadow-lg">
+                    <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-accent/50 transition-all duration-200">
+                      <div className="flex items-center gap-3">
+                        <ChevronDown className="h-5 w-5 transition-transform duration-200 data-[state=closed]:-rotate-90" />
+                        <h2 className="text-lg font-semibold">{status}</h2>
+                        <Badge variant="secondary" className="transition-all hover:scale-105">{groupedCurrentLeads[status].length}</Badge>
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="transition-all duration-300">
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -335,8 +388,8 @@ const AdminAllLeads = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {groupedLeads[status].map((lead) => (
-                            <TableRow key={lead.id}>
+                          {groupedCurrentLeads[status].map((lead) => (
+                            <TableRow key={lead.id} className="transition-colors hover:bg-accent/30">
                               <TableCell>
                                 {lead.assignedClient === "Unassigned" ? (
                                   clients.length > 0 ? (
@@ -424,6 +477,7 @@ const AdminAllLeads = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => navigate(`/admin/leads/${lead.id}`)}
+                                  className="transition-all hover:scale-105 hover:bg-primary hover:text-primary-foreground"
                                 >
                                   View Details
                                 </Button>
@@ -438,6 +492,39 @@ const AdminAllLeads = () => {
               </Collapsible>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <Card className="p-4 mt-6 animate-fade-in">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer transition-all hover:scale-105"}
+                    />
+                  </PaginationItem>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(i + 1)}
+                        isActive={currentPage === i + 1}
+                        className="cursor-pointer transition-all hover:scale-105"
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer transition-all hover:scale-105"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </Card>
+          )}
+        </>
         )}
       </div>
     </div>
