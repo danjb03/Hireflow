@@ -233,6 +233,21 @@ const AdminAllLeads = () => {
     return colors[status] || "bg-muted text-muted-foreground";
   };
 
+  const getClientColor = (clientName: string) => {
+    const colors = [
+      "bg-primary/10 text-primary border-2 border-primary/30",
+      "bg-purple-500/10 text-purple-600 border-2 border-purple-500/30",
+      "bg-emerald-500/10 text-emerald-600 border-2 border-emerald-500/30",
+      "bg-amber-500/10 text-amber-600 border-2 border-amber-500/30",
+      "bg-rose-500/10 text-rose-600 border-2 border-rose-500/30",
+      "bg-cyan-500/10 text-cyan-600 border-2 border-cyan-500/30",
+      "bg-indigo-500/10 text-indigo-600 border-2 border-indigo-500/30",
+      "bg-pink-500/10 text-pink-600 border-2 border-pink-500/30",
+    ];
+    const hash = clientName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   // Group leads by status
   const groupedLeads = leads.reduce((acc, lead) => {
     const status = lead.status || "NEW";
@@ -394,13 +409,20 @@ const AdminAllLeads = () => {
                                 {lead.assignedClient === "Unassigned" ? (
                                   clients.length > 0 ? (
                                     <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                                      <SelectTrigger className="w-[220px]">
+                                      <SelectTrigger className="w-[240px] transition-all hover:scale-105">
                                         <SelectValue placeholder="Assign to client" />
                                       </SelectTrigger>
-                                      <SelectContent>
+                                      <SelectContent className="z-50">
                                         {clients.map((client) => (
-                                          <SelectItem key={client.id} value={client.id}>
-                                            {client.email} ({client.client_name})
+                                          <SelectItem 
+                                            key={client.id} 
+                                            value={client.id}
+                                            className="cursor-pointer"
+                                          >
+                                            <div className={`px-3 py-2 rounded-md font-medium transition-all ${getClientColor(client.client_name || client.email)}`}>
+                                              <div className="font-semibold text-sm">{client.client_name || "No Name"}</div>
+                                              <div className="text-xs opacity-75">{client.email}</div>
+                                            </div>
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
@@ -409,7 +431,9 @@ const AdminAllLeads = () => {
                                     <span className="text-xs text-muted-foreground">No clients configured</span>
                                   )
                                 ) : (
-                                  <span className="text-sm whitespace-nowrap">{lead.assignedClient}</span>
+                                  <Badge className={`${getClientColor(lead.assignedClient)} px-3 py-1.5 font-medium whitespace-nowrap`}>
+                                    {lead.assignedClient}
+                                  </Badge>
                                 )}
                               </TableCell>
                               <TableCell className="font-medium whitespace-nowrap">{lead.companyName}</TableCell>
