@@ -224,13 +224,13 @@ const AdminAllLeads = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-green-500/10 text-green-500 border-green-500/20",
-      Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-      'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      NEW: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      Lead: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      Approved: "bg-primary/10 text-primary border-primary/20",
+      Rejected: "bg-destructive/10 text-destructive border-destructive/20",
+      'Needs Work': "bg-secondary/10 text-secondary-foreground border-secondary/20",
+      NEW: "bg-primary/10 text-primary border-primary/20",
+      Lead: "bg-accent text-accent-foreground border-border",
     };
-    return colors[status] || "bg-muted text-muted-foreground";
+    return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
   };
 
   const getClientColor = (clientName: string) => {
