@@ -30,13 +30,16 @@ serve(async (req) => {
     const { leadId, clientId } = await req.json();
     if (!leadId || !clientId) throw new Error('Lead ID and Client ID required');
 
-    const { data: client } = await supabaseClient
+    const { data: client, error: clientError } = await supabaseClient
       .from('profiles')
       .select('client_name')
       .eq('id', clientId)
       .single();
 
-    if (!client?.client_name) throw new Error('Client name not configured');
+    if (clientError) throw new Error(`Failed to fetch client: ${clientError.message}`);
+    if (!client?.client_name || client.client_name.trim() === '') {
+      throw new Error('Client name not configured. Please set a client name in Client Management that exactly matches an Airtable dropdown value.');
+    }
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
@@ -50,7 +53,7 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        fields: { 'Client': client.client_name }
+        fields: { 'Client': client.client_name.trim() }
       })
     });
 
