@@ -38,10 +38,6 @@ interface Lead {
   linkedInProfile?: string;
   
   // Interaction Details
-  callNotes?: string;
-  callbackDateTime?: string;
-  recordingTranscript?: string;
-  aiSummary?: string;
   
   // Job Information
   jobPostingTitle?: string;
@@ -331,8 +327,6 @@ const AdminAllLeads = () => {
                             <TableHead className="whitespace-nowrap">Company Website</TableHead>
                             <TableHead className="whitespace-nowrap">Company LinkedIn</TableHead>
                             <TableHead className="whitespace-nowrap">Contact LinkedIn</TableHead>
-                            <TableHead className="whitespace-nowrap">Call Notes</TableHead>
-                            <TableHead className="whitespace-nowrap">AI Summary</TableHead>
                             <TableHead className="whitespace-nowrap">Jobs Open</TableHead>
                             <TableHead className="whitespace-nowrap">Date Added</TableHead>
                             <TableHead className="whitespace-nowrap">Actions</TableHead>
@@ -413,19 +407,9 @@ const AdminAllLeads = () => {
                                   </a>
                                 ) : (
                                   <span className="text-muted-foreground text-sm">N/A</span>
-                                )}
-                              </TableCell>
-                              <TableCell className="max-w-xs">
-                                <div className="truncate" title={lead.callNotes}>
-                                  {lead.callNotes || 'N/A'}
-                                </div>
-                              </TableCell>
-                              <TableCell className="max-w-xs">
-                                <div className="truncate" title={lead.aiSummary}>
-                                  {lead.aiSummary || 'N/A'}
-                                </div>
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">{lead.jobsOpen || 'N/A'}</TableCell>
+                              )}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">{lead.jobsOpen || 'N/A'}</TableCell>
                               <TableCell className="whitespace-nowrap">
                                 {new Date(lead.dateAdded).toLocaleDateString()}
                               </TableCell>

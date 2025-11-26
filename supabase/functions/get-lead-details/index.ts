@@ -63,7 +63,6 @@ serve(async (req) => {
       email: fields['Email'] || '',
       phone: fields['Phone'] || '',
       linkedInProfile: fields['Contact LinkedIn'] || '',
-      aiSummary: fields['AI Summary'] || null,
       jobDescription: fields['Job Description'] || null,
       jobUrl: fields['Job URL'] || null,
       jobType: fields['Job Type'] || null,
