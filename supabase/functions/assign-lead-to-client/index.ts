@@ -30,13 +30,20 @@ serve(async (req) => {
     const { leadId, clientId } = await req.json();
     if (!leadId || !clientId) throw new Error('Lead ID and Client ID required');
 
-    const { data: client, error: clientError } = await supabaseClient
+    // Use service role key to bypass RLS for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: client, error: clientError } = await supabaseAdmin
       .from('profiles')
       .select('client_name')
       .eq('id', clientId)
-      .single();
+      .maybeSingle();
 
     if (clientError) throw new Error(`Failed to fetch client: ${clientError.message}`);
+    if (!client) throw new Error('Client not found. Please check the client ID.');
     if (!client?.client_name || client.client_name.trim() === '') {
       throw new Error('Client name not configured. Please set a client name in Client Management that exactly matches an Airtable dropdown value.');
     }
