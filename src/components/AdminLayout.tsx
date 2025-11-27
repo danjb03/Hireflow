@@ -54,7 +54,6 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
                 <SidebarMenuButton size="lg" asChild>
                   <a href="/admin" className="flex items-center gap-2">
                     <img src={hireflowLogo} alt="Hireflow" className="h-5" />
-                    <span className="text-base font-semibold">Hireflow</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
