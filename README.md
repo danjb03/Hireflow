@@ -1,73 +1,138 @@
-# Welcome to your Lovable project
+# Hireflow - Lead Management Platform
 
-## Project info
+A modern lead management platform for managing and distributing qualified leads to clients. Built with React, TypeScript, and powered by Lovable Cloud.
 
-**URL**: https://lovable.dev/projects/9d70e1dd-3e66-4af4-becf-22a38e77214d
+## Overview
 
-## How can I edit this code?
+Hireflow is a B2B lead generation platform that allows administrators to manage leads from Airtable and distribute them to clients. Clients can view, approve, reject, or request changes to their assigned leads through a dedicated dashboard.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+### Admin Portal
+- **Dashboard**: Overview of system stats, recent leads, and quick actions
+- **Lead Management**: View all leads, assign to clients, update statuses
+- **Client Management**: Invite new clients, manage existing client accounts
+- **Lead Submission**: Submit new leads directly to Airtable
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9d70e1dd-3e66-4af4-becf-22a38e77214d) and start prompting.
+### Client Portal
+- **Dashboard**: Overview of assigned leads and key metrics
+- **Lead Inbox**: View and manage assigned leads
+- **Lead Actions**: Approve, reject, or request changes on leads with feedback
+- **Calendar**: Schedule and manage callbacks
+- **Settings**: Account settings and preferences
 
-Changes made via Lovable will be committed automatically to this repo.
+### Lead Statuses
+- **New** (Blue) - Fresh lead awaiting review
+- **Approved** (Green) - Lead accepted by client
+- **Rejected** (Red) - Lead declined by client
+- **Needs Work** (Orange) - Lead requires additional information
 
-**Use your preferred IDE**
+## Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **State Management**: TanStack Query (React Query)
+- **Routing**: React Router v6
+- **Backend**: Lovable Cloud (Supabase)
+- **Database**: Airtable (leads), PostgreSQL (users/auth)
+- **Authentication**: Supabase Auth
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Project Structure
 
-Follow these steps:
+```
+src/
+├── components/
+│   ├── admin/          # Admin-specific components
+│   ├── landing/        # Landing page sections
+│   └── ui/             # shadcn/ui components
+├── hooks/              # Custom React hooks
+├── integrations/       # Supabase client & types
+├── lib/                # Utility functions
+├── pages/              # Page components
+│   ├── Admin*.tsx      # Admin portal pages
+│   ├── Client*.tsx     # Client portal pages
+│   └── Index.tsx       # Landing page
+└── assets/             # Images and static assets
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+supabase/
+├── functions/          # Edge functions for API operations
+│   ├── assign-lead-to-client/
+│   ├── get-all-leads-admin/
+│   ├── get-client-leads/
+│   ├── get-lead-details/
+│   ├── submit-lead/
+│   ├── update-lead/
+│   ├── update-lead-feedback/
+│   ├── update-lead-status/
+│   └── ...
+└── config.toml         # Supabase configuration
 ```
 
-**Edit a file directly in GitHub**
+## Architecture
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Data Flow
+1. Leads are stored in Airtable's "Qualified Lead Table"
+2. Edge functions handle all Airtable API communication
+3. Each lead has a "Client" field for assignment filtering
+4. Clients only see leads where their assigned name matches
 
-**Use GitHub Codespaces**
+### Authentication
+- Users authenticate via Supabase Auth
+- Profiles stored in PostgreSQL with role assignments
+- Roles: `admin` or `client`
+- RLS policies protect data access
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Key Airtable Fields
+- `Client` - Single select dropdown for client assignment
+- `Status` - Lead status (New, Approved, Rejected, Needs work)
+- `Contact LinkedIn` - LinkedIn profile URL
+- `Date Created` - When the lead was added
+- `Address` - Lead location
 
-## What technologies are used for this project?
+## Environment Variables
 
-This project is built with:
+The following environment variables are automatically configured:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```
+VITE_SUPABASE_URL          # Supabase project URL
+VITE_SUPABASE_PUBLISHABLE_KEY  # Supabase anon key
+```
 
-## How can I deploy this project?
+### Required Secrets (Edge Functions)
 
-Simply open [Lovable](https://lovable.dev/projects/9d70e1dd-3e66-4af4-becf-22a38e77214d) and click on Share -> Publish.
+- `AIRTABLE_API_TOKEN` - Airtable API authentication
+- `AIRTABLE_BASE_ID` - Airtable base identifier
+- `SUPABASE_SERVICE_ROLE_KEY` - Admin operations
 
-## Can I connect a custom domain to my Lovable project?
+## Development
 
-Yes, you can!
+```bash
+# Install dependencies
+npm install
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Start development server
+npm run dev
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Build for production
+npm run build
+```
+
+## Deployment
+
+This project is deployed via Lovable. Click the **Publish** button in the editor to deploy updates.
+
+- Frontend changes require clicking "Update" in the publish dialog
+- Backend changes (edge functions) deploy automatically
+
+## Design System
+
+The application uses a consistent design system across all portals:
+
+- **UI Components**: shadcn/ui with custom theming
+- **Colors**: HSL-based semantic tokens
+- **Layout**: Sidebar navigation with collapsible menu
+- **Icons**: Lucide React icons
+
+## License
+
+Private - All rights reserved.
