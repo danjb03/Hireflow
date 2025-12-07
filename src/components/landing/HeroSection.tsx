@@ -1,14 +1,34 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import hireflowLogo from "@/assets/hireflow-logo.svg";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-[#1a1a1a] overflow-hidden">
+    <section className="relative min-h-[90vh] flex flex-col bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-[#1a1a1a] overflow-hidden">
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-to-br from-[#1a1a1a]/95 via-[#0f0f0f]/95 to-[#1a1a1a]/95 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center">
+              <img src={hireflowLogo} alt="Hireflow" className="h-8 md:h-10" />
+            </Link>
+            <Link to="/login">
+              <Button 
+                variant="outline" 
+                className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+              >
+                Login
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#64df88]/5 to-[#35b192]/5 pointer-events-none" />
       
-      <div className="container mx-auto px-4 py-20 relative z-10">
+      <div className="container mx-auto px-4 py-20 relative z-10 flex-1 flex items-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Logo */}
           <div className="flex justify-center mb-12">

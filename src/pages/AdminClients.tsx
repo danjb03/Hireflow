@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Mail, Trash2, Key, Save, X } from "lucide-react";
+import { Loader2, Mail, Trash2, Key, Save, X, UserX, CheckCircle2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -154,6 +154,9 @@ const AdminClients = () => {
     }
   };
 
+  const activeClients = clients.filter(c => c.client_name);
+  const pendingUsers = clients.filter(c => !c.client_name);
+
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
@@ -172,7 +175,7 @@ const AdminClients = () => {
           <div>
             <h1 className="text-2xl font-semibold">Clients</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {clients.length} total clients
+              {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
           <Button onClick={() => navigate("/admin/invite")}>
@@ -182,24 +185,32 @@ const AdminClients = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Clients</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{clients.length}</div>
+              <div className="text-3xl font-bold">{activeClients.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">With assigned names</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Configured</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Users</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
-                {clients.filter(c => c.client_name).length}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">With assigned names</p>
+              <div className="text-3xl font-bold text-warning">{pendingUsers.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{clients.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">All accounts</p>
             </CardContent>
           </Card>
           <Card>
@@ -213,116 +224,177 @@ const AdminClients = () => {
           </Card>
         </div>
 
-        {/* Clients Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">All Clients</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Email</TableHead>
-                  <TableHead>Client Name</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clients.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.email}</TableCell>
-                    <TableCell>
-                      {editingClient === client.id ? (
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={editingName}
-                            onValueChange={setEditingName}
-                          >
-                            <SelectTrigger className="w-48">
-                              <SelectValue placeholder="Select name" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {loadingOptions ? (
-                                <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-                              ) : (
-                                airtableOptions.map((option) => (
-                                  <SelectItem key={option} value={option}>
-                                    {option}
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            size="sm"
-                            onClick={() => handleUpdateClient(client.id, editingName)}
-                          >
-                            <Save className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setEditingClient(null)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          {client.client_name ? (
-                            <Badge variant="secondary">{client.client_name}</Badge>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">Not set</span>
-                          )}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {new Date(client.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {client.client_name ? (
-                        <Badge className="bg-success/10 text-success border-success/20">Active</Badge>
-                      ) : (
-                        <Badge variant="outline">Pending Setup</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {editingClient !== client.id && (
+        {/* Pending Users Section */}
+        {pendingUsers.length > 0 && (
+          <Card className="border-warning/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UserX className="h-5 w-5 text-warning" />
+                  <CardTitle className="text-base">Pending Users</CardTitle>
+                  <Badge variant="outline" className="ml-2">{pendingUsers.length}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Review and approve or delete new signups
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Email</TableHead>
+                    <TableHead>Signed Up</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.email}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => {
-                              setEditingClient(client.id);
-                              setEditingName(client.client_name || "");
+                              setEditingClient(user.id);
+                              setEditingName("");
                             }}
+                            className="text-success hover:text-success"
                           >
-                            Edit
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Approve
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setResettingPassword(client.id)}
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeleteClient(client)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteClient(user)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Active Clients Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Active Clients</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {activeClients.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <p>No active clients yet. Approve pending users or invite new clients.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Email</TableHead>
+                    <TableHead>Client Name</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {activeClients.map((client) => (
+                    <TableRow key={client.id}>
+                      <TableCell className="font-medium">{client.email}</TableCell>
+                      <TableCell>
+                        {editingClient === client.id ? (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={editingName}
+                              onValueChange={setEditingName}
+                            >
+                              <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Select name" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {loadingOptions ? (
+                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                ) : (
+                                  airtableOptions.map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateClient(client.id, editingName)}
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingClient(null)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">{client.client_name}</Badge>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {new Date(client.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className="bg-success/10 text-success border-success/20">Active</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {editingClient !== client.id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingClient(client.id);
+                                setEditingName(client.client_name || "");
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setResettingPassword(client.id)}
+                          >
+                            <Key className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteClient(client)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -331,9 +403,21 @@ const AdminClients = () => {
       <AlertDialog open={!!deleteClient} onOpenChange={() => setDeleteClient(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Client</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deleteClient && !deleteClient.client_name ? "Delete Pending User" : "Delete Client"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {deleteClient?.email}? This action cannot be undone.
+              {deleteClient && !deleteClient.client_name ? (
+                <>
+                  Are you sure you want to delete the pending user <strong>{deleteClient.email}</strong>? 
+                  This will permanently remove their account. This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete <strong>{deleteClient?.email}</strong>? 
+                  This will permanently remove their account and all associated data. This action cannot be undone.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
