@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import { lazyRetry } from "@/lib/lazyRetry";
+import ResetPassword from "@/pages/ResetPassword";
+
+// Inside your Routes, add:
+<Route path="/reset-password" element={<ResetPassword />} />
 
 // Lazy load all pages with retry logic for better reliability
 const Index = lazyRetry(() => import("./pages/Index"), "Index");
