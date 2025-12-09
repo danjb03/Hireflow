@@ -17,26 +17,44 @@ export type Database = {
       profiles: {
         Row: {
           client_name: string | null
+          client_status: string | null
           created_at: string
           email: string
           id: string
           initial_password: string | null
+          leads_fulfilled: number | null
+          leads_per_day: number | null
+          leads_purchased: number | null
+          onboarding_date: string | null
+          target_delivery_date: string | null
           updated_at: string
         }
         Insert: {
           client_name?: string | null
+          client_status?: string | null
           created_at?: string
           email: string
           id: string
           initial_password?: string | null
+          leads_fulfilled?: number | null
+          leads_per_day?: number | null
+          leads_purchased?: number | null
+          onboarding_date?: string | null
+          target_delivery_date?: string | null
           updated_at?: string
         }
         Update: {
           client_name?: string | null
+          client_status?: string | null
           created_at?: string
           email?: string
           id?: string
           initial_password?: string | null
+          leads_fulfilled?: number | null
+          leads_per_day?: number | null
+          leads_purchased?: number | null
+          onboarding_date?: string | null
+          target_delivery_date?: string | null
           updated_at?: string
         }
         Relationships: []

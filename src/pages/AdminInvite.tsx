@@ -7,13 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Mail, Copy, Check } from "lucide-react";
+import { Mail, Copy, Check, Calculator } from "lucide-react";
+import { calculateLeadsPerDay } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
 
 const AdminInvite = () => {
   const navigate = useNavigate();
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
+  const [leadsPurchased, setLeadsPurchased] = useState<number>(0);
+  const [onboardingDate, setOnboardingDate] = useState("");
+  const [targetDeliveryDate, setTargetDeliveryDate] = useState("");
+  const [calculatedLeadsPerDay, setCalculatedLeadsPerDay] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState(false);
@@ -27,13 +32,36 @@ const AdminInvite = () => {
     getUserEmail();
   }, []);
 
+  // Calculate leads per day when relevant fields change
+  useEffect(() => {
+    if (leadsPurchased > 0 && onboardingDate && targetDeliveryDate) {
+      const onboarding = new Date(onboardingDate);
+      const target = new Date(targetDeliveryDate);
+      const leadsPerDay = calculateLeadsPerDay(leadsPurchased, onboarding, target);
+      setCalculatedLeadsPerDay(leadsPerDay);
+    } else {
+      setCalculatedLeadsPerDay(null);
+    }
+  }, [leadsPurchased, onboardingDate, targetDeliveryDate]);
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      // Prepare onboarding data
+      const onboardingData: any = {
+        email,
+        clientName,
+        leadsPurchased: leadsPurchased || 0,
+        onboardingDate: onboardingDate || null,
+        targetDeliveryDate: targetDeliveryDate || null,
+        leadsPerDay: calculatedLeadsPerDay,
+        clientStatus: 'on_track' // Default status for new clients
+      };
+
       const { data, error } = await supabase.functions.invoke("invite-client", {
-        body: { email, clientName }
+        body: onboardingData
       });
 
       if (error) throw error;
@@ -50,6 +78,10 @@ const AdminInvite = () => {
   const handleReset = () => {
     setClientName("");
     setEmail("");
+    setLeadsPurchased(0);
+    setOnboardingDate("");
+    setTargetDeliveryDate("");
+    setCalculatedLeadsPerDay(null);
     setGeneratedPassword("");
     setCopied(false);
   };
@@ -109,6 +141,71 @@ const AdminInvite = () => {
                 <p className="text-xs text-muted-foreground">
                   This will be used to identify the client in the system
                 </p>
+              </div>
+
+              {/* Onboarding Information */}
+              <div className="pt-4 border-t space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-3">Onboarding Information</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Set up the client's campaign details and delivery targets
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="leadsPurchased">Leads Purchased</Label>
+                  <Input
+                    id="leadsPurchased"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={leadsPurchased || ""}
+                    onChange={(e) => setLeadsPurchased(parseInt(e.target.value) || 0)}
+                    disabled={!!generatedPassword}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Total number of leads the client has purchased
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="onboardingDate">Onboarding Date</Label>
+                    <Input
+                      id="onboardingDate"
+                      type="date"
+                      value={onboardingDate}
+                      onChange={(e) => setOnboardingDate(e.target.value)}
+                      disabled={!!generatedPassword}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="targetDeliveryDate">Target Delivery Date</Label>
+                    <Input
+                      id="targetDeliveryDate"
+                      type="date"
+                      value={targetDeliveryDate}
+                      onChange={(e) => setTargetDeliveryDate(e.target.value)}
+                      disabled={!!generatedPassword}
+                    />
+                  </div>
+                </div>
+
+                {calculatedLeadsPerDay !== null && (
+                  <Alert className="bg-info/10 border-info/20">
+                    <Calculator className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Leads Per Day Required:</span>
+                        <span className="text-lg font-bold">{calculatedLeadsPerDay}</span>
+                      </div>
+                      <p className="text-xs mt-1 text-muted-foreground">
+                        Based on work days between onboarding and target delivery date
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               {!generatedPassword && (

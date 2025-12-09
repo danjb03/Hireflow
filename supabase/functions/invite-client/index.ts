@@ -18,7 +18,16 @@ serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { email, clientName } = await req.json();
+    const { 
+      email, 
+      clientName, 
+      leadsPurchased, 
+      onboardingDate, 
+      targetDeliveryDate, 
+      leadsPerDay,
+      clientStatus 
+    } = await req.json();
+    
     if (!email || !clientName) throw new Error('Email and client name are required');
 
     const tempPassword = Math.random().toString(36).slice(-12) + "A1!";
@@ -32,9 +41,22 @@ serve(async (req) => {
     if (signUpError) throw signUpError;
 
     if (authData.user) {
+      // Prepare profile update with onboarding data
+      const profileUpdate: any = {
+        client_name: clientName,
+        initial_password: tempPassword
+      };
+
+      // Add onboarding fields if provided
+      if (leadsPurchased !== undefined) profileUpdate.leads_purchased = leadsPurchased;
+      if (onboardingDate) profileUpdate.onboarding_date = onboardingDate;
+      if (targetDeliveryDate) profileUpdate.target_delivery_date = targetDeliveryDate;
+      if (leadsPerDay !== null && leadsPerDay !== undefined) profileUpdate.leads_per_day = leadsPerDay;
+      if (clientStatus) profileUpdate.client_status = clientStatus;
+
       await supabaseAdmin
         .from("profiles")
-        .update({ client_name: clientName, initial_password: tempPassword })
+        .update(profileUpdate)
         .eq("id", authData.user.id);
 
       await supabaseAdmin

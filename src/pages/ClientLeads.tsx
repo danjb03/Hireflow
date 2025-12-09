@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,6 @@ interface Lead {
 const ClientLeads = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -68,7 +67,7 @@ const ClientLeads = () => {
     await fetchLeads();
   };
 
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase.functions.invoke("get-client-leads");
@@ -76,22 +75,23 @@ const ClientLeads = () => {
       if (error) throw error;
 
       setLeads(data.leads || []);
-      setFilteredLeads(data.leads || []);
     } catch (error: any) {
       toast.error("Failed to load leads: " + error.message);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => {
+  // Memoize filtered leads to avoid recalculating on every render
+  const filteredLeads = useMemo(() => {
     let filtered = leads;
 
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (lead) =>
-          lead.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          lead.contactName.toLowerCase().includes(searchQuery.toLowerCase())
+          lead.companyName?.toLowerCase().includes(query) ||
+          lead.contactName?.toLowerCase().includes(query)
       );
     }
 
@@ -99,10 +99,10 @@ const ClientLeads = () => {
       filtered = filtered.filter((lead) => lead.status === statusFilter);
     }
 
-    setFilteredLeads(filtered);
+    return filtered;
   }, [searchQuery, statusFilter, leads]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status.toLowerCase()) {
       case "booked":
         return "bg-success text-success-foreground";
@@ -115,7 +115,7 @@ const ClientLeads = () => {
       default:
         return "bg-muted text-muted-foreground";
     }
-  };
+  }, []);
 
   if (isLoading) {
     return (

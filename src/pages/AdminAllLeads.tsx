@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,7 @@ const AdminAllLeads = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [leadsPerPage] = useState(50);
   const [userEmail, setUserEmail] = useState<string>("");
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     checkAdminAndLoadData();
@@ -82,35 +83,7 @@ const AdminAllLeads = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reload when filters change
-  useEffect(() => {
-    if (!loading) {
-      loadLeads();
-      setCurrentPage(1);
-    }
-  }, [debouncedSearch, statusFilter, clientFilter]);
-
-  const checkAdminAndLoadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    const { data: isAdmin } = await supabase.rpc("is_admin", {
-      _user_id: user.id,
-    });
-
-    if (!isAdmin) {
-      navigate("/dashboard");
-      return;
-    }
-
-    await Promise.all([loadLeads(), loadClients()]);
-  };
-
-  const loadLeads = async () => {
+  const loadLeads = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -152,6 +125,47 @@ const AdminAllLeads = () => {
     } finally {
       setLoading(false);
     }
+  }, [debouncedSearch, statusFilter, clientFilter, navigate]);
+
+  // Reload when filters change (but not on initial mount)
+  useEffect(() => {
+    // Skip initial mount - it's handled by checkAdminAndLoadData
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Skip if still loading from initial load
+    if (loading) return;
+    
+    loadLeads();
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter, clientFilter, loadLeads, loading]);
+
+  const checkAdminAndLoadData = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      const { data: isAdmin } = await supabase.rpc("is_admin", {
+        _user_id: user.id,
+      });
+
+      if (!isAdmin) {
+        navigate("/dashboard");
+        return;
+      }
+
+      await Promise.all([loadLeads(), loadClients()]);
+    } catch (error) {
+      console.error("Error in checkAdminAndLoadData:", error);
+      setLoading(false);
+    }
   };
 
   const loadClients = async () => {
@@ -170,7 +184,7 @@ const AdminAllLeads = () => {
     }
   };
 
-  const handleAssignClient = async (leadId: string, clientId: string) => {
+  const handleAssignClient = useCallback(async (leadId: string, clientId: string) => {
     try {
       const { error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId, clientId },
@@ -192,7 +206,7 @@ const AdminAllLeads = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [loadLeads]);
 
   const getDisplayUrl = (url: string | undefined): string | null => {
     if (!url || url.trim() === '') return null;
@@ -228,7 +242,7 @@ const AdminAllLeads = () => {
     return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
   };
 
-  const getClientColor = (clientName: string) => {
+  const getClientColor = useCallback((clientName: string) => {
     const colors = [
       "bg-primary/10 text-primary border-2 border-primary/30",
       "bg-purple-500/10 text-purple-600 border-2 border-purple-500/30",
@@ -241,12 +255,16 @@ const AdminAllLeads = () => {
     ];
     const hash = clientName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
-  };
+  }, []);
 
-  const indexOfLastLead = currentPage * leadsPerPage;
-  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-  const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
-  const totalPages = Math.ceil(leads.length / leadsPerPage);
+  // Memoize pagination calculations
+  const { currentLeads, totalPages } = useMemo(() => {
+    const indexOfLastLead = currentPage * leadsPerPage;
+    const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+    const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
+    const totalPages = Math.ceil(leads.length / leadsPerPage);
+    return { currentLeads, totalPages };
+  }, [leads, currentPage, leadsPerPage]);
 
   return (
     <AdminLayout userEmail={userEmail}>
