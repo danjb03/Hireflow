@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -49,7 +48,9 @@ const AdminClients = () => {
 
       if (error) throw error;
 
-      setAirtableOptions(data.options || []);
+      // Filter out empty options
+      const validOptions = (data.options || []).filter((opt: string) => opt && opt.trim() !== "");
+      setAirtableOptions(validOptions);
     } catch (error: any) {
       console.error("Failed to load Airtable options:", error);
       toast.error("Failed to load client name options from Airtable");
@@ -237,7 +238,7 @@ const AdminClients = () => {
                       {editingClient === client.id ? (
                         <div className="flex items-center gap-2">
                           <Select
-                            value={editingName}
+                            value={editingName || undefined}
                             onValueChange={setEditingName}
                           >
                             <SelectTrigger className="w-48">
@@ -246,6 +247,8 @@ const AdminClients = () => {
                             <SelectContent>
                               {loadingOptions ? (
                                 <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                              ) : airtableOptions.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground">No options available</div>
                               ) : (
                                 airtableOptions.map((option) => (
                                   <SelectItem key={option} value={option}>
