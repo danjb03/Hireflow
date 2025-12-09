@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import hireflowLogo from "@/assets/hireflow-logo.svg";
 
 export const HeroSection = () => {
@@ -8,6 +9,15 @@ export const HeroSection = () => {
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#64df88]/5 to-[#35b192]/5 pointer-events-none" />
       
+      {/* Login Button - Top Right */}
+      <div className="absolute top-6 right-6 z-20">
+        <Link to="/login">
+          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            Login
+          </Button>
+        </Link>
+      </div>
+
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Logo */}
