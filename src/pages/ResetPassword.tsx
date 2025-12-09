@@ -13,26 +13,38 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Check if user arrived via recovery link
+    // Listen for auth state changes (this catches the recovery token)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          setReady(true);
+        } else if (event === "SIGNED_IN" && !ready) {
+          // User is signed in but not from recovery - redirect
+          navigate("/dashboard");
+        }
+      }
+    );
+
+    // Check if we already have a session from recovery
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Invalid or expired link",
-          description: "Please request a new password reset email.",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
+      if (session) {
+        setReady(true);
+      } else {
+        // Give it a moment to process the hash
+        setTimeout(() => {
+          setReady(true);
+        }, 1000);
       }
-      setSessionChecked(true);
     };
 
     checkSession();
-  }, [navigate]);
+
+    return () => subscription.unsubscribe();
+  }, [navigate, ready]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +80,6 @@ const ResetPassword = () => {
         description: "Your password has been reset successfully.",
       });
 
-      // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -84,7 +95,7 @@ const ResetPassword = () => {
     }
   };
 
-  if (!sessionChecked) {
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
