@@ -7,8 +7,6 @@ import { Suspense } from "react";
 import { lazyRetry } from "@/lib/lazyRetry";
 import ResetPassword from "@/pages/ResetPassword";
 
-// Inside your Routes, add:
-<Route path="/reset-password" element={<ResetPassword />} />
 
 // Lazy load all pages with retry logic for better reliability
 const Index = lazyRetry(() => import("./pages/Index"), "Index");
@@ -53,6 +51,7 @@ const App = () => (
       >
         <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
           <Routes>
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             {/* Legacy routes for backwards compatibility */}
