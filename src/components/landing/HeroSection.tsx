@@ -12,7 +12,7 @@ export const HeroSection = () => {
       {/* Login Button - Top Right */}
       <div className="absolute top-6 right-6 z-20">
         <Link to="/login">
-          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+          <Button className="bg-transparent border border-white text-white hover:bg-white hover:text-black">
             Login
           </Button>
         </Link>
