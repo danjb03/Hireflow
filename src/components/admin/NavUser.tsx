@@ -38,17 +38,17 @@ export function NavUser({ user }: NavUserProps) {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg">
+            <SidebarMenuButton size="lg" className="hover:bg-white/10 rounded-md transition-colors duration-200">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-muted text-xs font-medium">
+                <AvatarFallback className="bg-white/10 text-white text-xs font-medium">
                   {user.initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium text-sm">{user.name}</span>
-                <span className="text-xs text-muted-foreground">{user.email}</span>
+                <span className="font-medium text-sm text-white">{user.name}</span>
+                <span className="text-xs text-slate-400">{user.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto h-4 w-4" />
+              <ChevronsUpDown className="ml-auto h-4 w-4 text-slate-400" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

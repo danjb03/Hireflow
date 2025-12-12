@@ -105,14 +105,14 @@ const AdminInvite = () => {
         </div>
 
         {/* Form Card */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border">
+          <CardHeader className="p-6 pb-4">
             <CardTitle>Client Information</CardTitle>
             <CardDescription>
               Enter the client's email and name to create their account
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6 pt-0">
             <form onSubmit={handleInvite} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
@@ -210,13 +210,18 @@ const AdminInvite = () => {
 
               {!generatedPassword && (
                 <div className="flex gap-2 pt-2">
-                  <Button type="submit" disabled={isLoading} className="flex-1">
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                  >
                     {isLoading ? "Creating Account..." : "Create Client Account"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => navigate("/admin/clients")}
+                    className="transition-colors duration-200"
                   >
                     Cancel
                   </Button>
@@ -228,9 +233,9 @@ const AdminInvite = () => {
 
         {/* Success Card */}
         {generatedPassword && (
-          <Card className="border-success">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-success">
+          <Card className="border-emerald-200 shadow-sm border-border">
+            <CardHeader className="p-6 pb-4">
+              <CardTitle className="flex items-center gap-2 text-emerald-700">
                 <Check className="h-5 w-5" />
                 Account Created Successfully
               </CardTitle>
@@ -238,7 +243,7 @@ const AdminInvite = () => {
                 Share these credentials with the client securely
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 pt-0 space-y-4">
               <Alert>
                 <Mail className="h-4 w-4" />
                 <AlertDescription>
@@ -274,12 +279,16 @@ const AdminInvite = () => {
               </Alert>
 
               <div className="flex gap-2 pt-2">
-                <Button onClick={handleReset} className="flex-1">
+                <Button 
+                  onClick={handleReset} 
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                >
                   Invite Another Client
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/admin/clients")}
+                  className="transition-colors duration-200"
                 >
                   View All Clients
                 </Button>

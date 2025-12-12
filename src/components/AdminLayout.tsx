@@ -47,11 +47,11 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
+        <Sidebar collapsible="icon" className="bg-slate-900 border-r border-slate-800">
+          <SidebarHeader className="border-b border-slate-800">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg" asChild>
+                <SidebarMenuButton size="lg" asChild className="hover:bg-white/10">
                   <a href="/admin" className="flex items-center gap-2">
                     <img src={hireflowLogo} alt="Hireflow" className="h-5" />
                   </a>
@@ -62,7 +62,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
           <SidebarContent>
             <NavMain items={menuItems} />
           </SidebarContent>
-          <SidebarFooter>
+          <SidebarFooter className="border-t border-slate-800">
             <NavUser user={userData} />
           </SidebarFooter>
         </Sidebar>

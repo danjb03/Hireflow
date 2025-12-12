@@ -215,14 +215,14 @@ const AdminDashboard = () => {
     return labels[status] || status;
   };
 
-  const getStatusColor = (status: string) => {
+  const getLeadStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-success/10 text-success border-success/20",
-      Rejected: "bg-destructive/10 text-destructive border-destructive/20",
-      'Needs Work': "bg-warning/10 text-warning border-warning/20",
-      Unknown: "bg-muted/10 text-muted-foreground border-muted/20",
+      Approved: "bg-emerald-100 text-emerald-700",
+      Rejected: "bg-red-100 text-red-700",
+      'Needs Work': "bg-amber-100 text-amber-700",
+      Unknown: "bg-blue-100 text-blue-700",
     };
-    return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
+    return colors[status] || "bg-blue-100 text-blue-700";
   };
 
   const [userEmail, setUserEmail] = useState<string>("");
@@ -254,7 +254,10 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-1">System overview and quick actions</p>
           </div>
-          <Button onClick={() => navigate("/admin/submit-lead")}>
+          <Button 
+            onClick={() => navigate("/admin/submit-lead")}
+            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+          >
             <PlusCircle className="h-4 w-4 mr-2" />
             Submit Lead
           </Button>
@@ -262,72 +265,72 @@ const AdminDashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalClients}</div>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">{stats.totalClients}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalLeads}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all clients</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">{stats.totalLeads}</div>
+              <p className="text-xs text-muted-foreground mt-2">Across all clients</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Performance</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.statusBreakdown.Approved}</div>
-              <p className="text-xs text-muted-foreground mt-1">Approved leads</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Performance</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="text-3xl font-bold text-foreground">{stats.statusBreakdown.Approved}</div>
+              <p className="text-xs text-muted-foreground mt-2">Approved leads</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Status Breakdown */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border">
+          <CardHeader className="p-6 pb-4">
             <CardTitle className="text-base font-medium">Leads by Status</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6 pt-0">
             <div className="flex flex-wrap gap-6">
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold">{stats.statusBreakdown.Approved}</div>
-                <Badge className={getStatusColor("Approved")}>Approved</Badge>
+                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Approved}</div>
+                <Badge className={`${getLeadStatusColor("Approved")} rounded-full`}>Approved</Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold">{stats.statusBreakdown['Needs Work']}</div>
-                <Badge className={getStatusColor("Needs Work")}>Needs Work</Badge>
+                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown['Needs Work']}</div>
+                <Badge className={`${getLeadStatusColor("Needs Work")} rounded-full`}>Needs Work</Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold">{stats.statusBreakdown.Rejected}</div>
-                <Badge className={getStatusColor("Rejected")}>Rejected</Badge>
+                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Rejected}</div>
+                <Badge className={`${getLeadStatusColor("Rejected")} rounded-full`}>Rejected</Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold">{stats.statusBreakdown.Unknown}</div>
-                <Badge className={getStatusColor("Unknown")}>Unknown</Badge>
+                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Unknown}</div>
+                <Badge className={`${getLeadStatusColor("Unknown")} rounded-full`}>Unknown</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Client Status Overview - Prioritized View */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border">
+          <CardHeader className="p-6 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium">Client Status Overview</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")} className="transition-colors duration-200">
                 View All Clients
               </Button>
             </div>
@@ -342,18 +345,18 @@ const AdminDashboard = () => {
                   <div key={status} className="space-y-3">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(status)}
-                      <h3 className="font-semibold text-lg">{getStatusLabel(status)}</h3>
-                      <Badge variant="outline" className="ml-2">{statusClients.length}</Badge>
+                      <h3 className="font-semibold text-lg text-foreground">{getStatusLabel(status)}</h3>
+                      <Badge variant="outline" className="ml-2 rounded-full">{statusClients.length}</Badge>
                     </div>
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border border-border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead>Client</TableHead>
-                            <TableHead>Progress</TableHead>
-                            <TableHead>Leads/Day</TableHead>
-                            <TableHead>Days Remaining</TableHead>
-                            <TableHead>Status</TableHead>
+                          <TableRow className="bg-muted/50 hover:bg-muted/50">
+                            <TableHead className="font-medium">Client</TableHead>
+                            <TableHead className="font-medium">Progress</TableHead>
+                            <TableHead className="font-medium">Leads/Day</TableHead>
+                            <TableHead className="font-medium">Days Remaining</TableHead>
+                            <TableHead className="font-medium">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -369,18 +372,18 @@ const AdminDashboard = () => {
                             return (
                               <TableRow 
                                 key={client.id}
-                                className={status === 'urgent' ? "bg-destructive/5" : ""}
+                                className={`${status === 'urgent' ? "bg-destructive/5" : ""} hover:bg-muted/50 transition-colors duration-200`}
                               >
                                 <TableCell className="font-medium">
                                   <div>
-                                    <div>{client.client_name}</div>
+                                    <div className="text-foreground">{client.client_name}</div>
                                     <div className="text-xs text-muted-foreground">{client.email}</div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_purchased ? (
                                     <div className="text-sm">
-                                      <div className="font-medium">{completion}%</div>
+                                      <div className="font-medium text-foreground">{completion}%</div>
                                       <div className="text-xs text-muted-foreground">
                                         {client.leads_fulfilled || 0} / {client.leads_purchased}
                                       </div>
@@ -391,14 +394,14 @@ const AdminDashboard = () => {
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_per_day ? (
-                                    <span className="text-sm font-medium">{client.leads_per_day}</span>
+                                    <span className="text-sm font-medium text-foreground">{client.leads_per_day}</span>
                                   ) : (
                                     <span className="text-sm text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {daysRemaining !== null ? (
-                                    <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : "text-sm"}>
+                                    <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : "text-sm text-foreground"}>
                                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                                     </span>
                                   ) : (
@@ -444,38 +447,32 @@ const AdminDashboard = () => {
 
         {/* Quick Actions Grid */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/leads")}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4" />
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/leads")}>
+            <CardContent className="p-6">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 All Leads
               </CardTitle>
-            </CardHeader>
-            <CardContent>
               <p className="text-sm text-muted-foreground">View and manage all leads in the system</p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/clients")}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4" />
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/clients")}>
+            <CardContent className="p-6">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
                 Manage Clients
               </CardTitle>
-            </CardHeader>
-            <CardContent>
               <p className="text-sm text-muted-foreground">View and configure client accounts</p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/invite")}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/invite")}>
+            <CardContent className="p-6">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
+                <PlusCircle className="h-4 w-4 text-muted-foreground" />
                 Invite Client
               </CardTitle>
-            </CardHeader>
-            <CardContent>
               <p className="text-sm text-muted-foreground">Send invitation to new client</p>
             </CardContent>
           </Card>

@@ -233,13 +233,13 @@ const AdminAllLeads = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-success/10 text-success border-success/20",
-      Rejected: "bg-destructive/10 text-destructive border-destructive/20",
-      'Needs Work': "bg-warning/10 text-warning border-warning/20",
-      NEW: "bg-info/10 text-info border-info/20",
-      Lead: "bg-accent text-accent-foreground border-border",
+      Approved: "bg-emerald-100 text-emerald-700",
+      Rejected: "bg-red-100 text-red-700",
+      'Needs Work': "bg-amber-100 text-amber-700",
+      NEW: "bg-blue-100 text-blue-700",
+      Lead: "bg-blue-100 text-blue-700",
     };
-    return colors[status] || "bg-muted/10 text-muted-foreground border-muted/20";
+    return colors[status] || "bg-blue-100 text-blue-700";
   };
 
   const getClientColor = useCallback((clientName: string) => {
@@ -328,13 +328,16 @@ const AdminAllLeads = () => {
           {/* Table */}
           {leads.length === 0 ? (
             <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
-              No leads found
+              <div className="text-center">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-sm">No leads found</p>
+              </div>
             </div>
           ) : (
-            <div className="border rounded-lg bg-card">
+            <div className="border border-border rounded-lg bg-card shadow-sm">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
                     <TableHead className="font-medium">Company</TableHead>
                     <TableHead className="font-medium">Status</TableHead>
                     <TableHead className="font-medium">Client</TableHead>
@@ -346,17 +349,21 @@ const AdminAllLeads = () => {
                 </TableHeader>
                 <TableBody>
                   {currentLeads.map((lead) => (
-                    <TableRow key={lead.id} className="cursor-pointer" onClick={() => navigate(`/admin/leads/${lead.id}`)}>
+                    <TableRow 
+                      key={lead.id} 
+                      className="cursor-pointer hover:bg-muted/50 transition-colors duration-200" 
+                      onClick={() => navigate(`/admin/leads/${lead.id}`)}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
-                          <span>{lead.companyName}</span>
+                          <span className="text-foreground">{lead.companyName}</span>
                           {lead.industry && (
                             <span className="text-xs text-muted-foreground">{lead.industry}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
+                        <Badge className={`${getStatusColor(lead.status)} rounded-full`}>{lead.status}</Badge>
                       </TableCell>
                       <TableCell>
                         {lead.assignedClient === "Unassigned" ? (
@@ -386,21 +393,21 @@ const AdminAllLeads = () => {
                             <span className="text-xs text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          <Badge className={`${getClientColor(lead.assignedClient)} font-medium`}>
+                          <Badge className={`${getClientColor(lead.assignedClient)} font-medium rounded-full`}>
                             {lead.assignedClient}
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-sm">
-                          <span>{lead.contactName || 'N/A'}</span>
+                          <span className="text-foreground">{lead.contactName || 'N/A'}</span>
                           {lead.email && (
                             <span className="text-xs text-muted-foreground">{lead.email}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">{lead.location || 'N/A'}</TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-sm text-foreground">{lead.location || 'N/A'}</TableCell>
+                      <TableCell className="text-sm text-foreground">
                         {new Date(lead.dateAdded).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
@@ -411,6 +418,7 @@ const AdminAllLeads = () => {
                             e.stopPropagation();
                             navigate(`/admin/leads/${lead.id}`);
                           }}
+                          className="transition-colors duration-200"
                         >
                           View
                         </Button>
@@ -430,6 +438,7 @@ const AdminAllLeads = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
+                className="transition-colors duration-200"
               >
                 Previous
               </Button>
@@ -441,6 +450,7 @@ const AdminAllLeads = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
+                className="transition-colors duration-200"
               >
                 Next
               </Button>

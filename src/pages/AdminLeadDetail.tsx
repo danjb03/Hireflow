@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 
 interface LeadData {
   id: string;
@@ -55,6 +57,15 @@ const AdminLeadDetail = () => {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [callbackDateTime, setCallbackDateTime] = useState("");
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) setUserEmail(user.email);
+    };
+    getUserEmail();
+  }, []);
 
   useEffect(() => {
     checkAdminAndLoadData();
@@ -234,13 +245,13 @@ const AdminLeadDetail = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-green-500/10 text-green-500 border-green-500/20",
-      Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-      'Needs Work': "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      NEW: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      Lead: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      Approved: "bg-emerald-100 text-emerald-700",
+      Rejected: "bg-red-100 text-red-700",
+      'Needs Work': "bg-amber-100 text-amber-700",
+      NEW: "bg-blue-100 text-blue-700",
+      Lead: "bg-blue-100 text-blue-700",
     };
-    return colors[status] || "bg-muted text-muted-foreground";
+    return colors[status] || "bg-blue-100 text-blue-700";
   };
 
   const getLeadDescription = () => {
@@ -249,42 +260,61 @@ const AdminLeadDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <AdminLayout userEmail={userEmail}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
     );
   }
 
   if (!lead) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Lead not found</p>
-      </div>
+      <AdminLayout userEmail={userEmail}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-muted-foreground">Lead not found</p>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/admin/leads")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Leads
-        </Button>
+    <AdminLayout userEmail={userEmail}>
+      <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <a href="/admin">Dashboard</a>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <a href="/admin/leads">All Leads</a>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{lead.companyName}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Admin Actions */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="p-6 pb-4">
+            <CardTitle className="text-lg font-semibold">Admin Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <div className="grid gap-6 md:grid-cols-3">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Assign to Client</label>
+                <label className="text-sm font-medium text-foreground">Assign to Client</label>
                 {clients.length > 0 ? (
                   <div className="flex gap-2">
                     <Select value={selectedClient} onValueChange={setSelectedClient}>
-                      <SelectTrigger>
+                      <SelectTrigger className="flex-1">
                         <SelectValue placeholder="Select client" />
                       </SelectTrigger>
                       <SelectContent>
@@ -295,80 +325,92 @@ const AdminLeadDetail = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button onClick={handleAssignClient} disabled={!selectedClient}>
+                    <Button 
+                      onClick={handleAssignClient} 
+                      disabled={!selectedClient}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                    >
                       Assign
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-                    No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline">Client Management</button> to configure client names.
+                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md border border-border">
+                    No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline hover:text-primary/80 transition-colors duration-200">Client Management</button> to configure client names.
                   </div>
                 )}
               </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Update Stage</label>
-              <div className="flex gap-2">
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NEW">NEW</SelectItem>
-                    <SelectItem value="Lead">Lead</SelectItem>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Needs Work">Needs Work</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleUpdateStatus}>
-                  Update
-                </Button>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Update Stage</label>
+                <div className="flex gap-2">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="NEW">NEW</SelectItem>
+                      <SelectItem value="Lead">Lead</SelectItem>
+                      <SelectItem value="Approved">Approved</SelectItem>
+                      <SelectItem value="Needs Work">Needs Work</SelectItem>
+                      <SelectItem value="Rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={handleUpdateStatus}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                  >
+                    Update
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Callback Date & Time</label>
-              <div className="flex gap-2">
-                <input
-                  type="datetime-local"
-                  value={callbackDateTime}
-                  onChange={(e) => setCallbackDateTime(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                />
-                <Button onClick={handleUpdateCallbackDateTime} disabled={!callbackDateTime}>
-                  Update
-                </Button>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Callback Date & Time</label>
+                <div className="flex gap-2">
+                  <input
+                    type="datetime-local"
+                    value={callbackDateTime}
+                    onChange={(e) => setCallbackDateTime(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                  <Button 
+                    onClick={handleUpdateCallbackDateTime} 
+                    disabled={!callbackDateTime}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                  >
+                    Update
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Lead Hero Section */}
-        <Card className="mb-6 border-primary/20 bg-gradient-to-br from-card to-card/50">
-          <CardContent className="pt-6">
-            <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
+        <Card className="shadow-sm border-border">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-6 flex-wrap gap-4">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                <div className="flex items-center gap-3 mb-3 flex-wrap">
                   <h1 className="text-4xl font-bold text-foreground">{lead.companyName}</h1>
-                  <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
+                  <Badge className={`${getStatusColor(lead.status)} rounded-full`}>{lead.status}</Badge>
                 </div>
                 {lead.companyWebsite && (
                   <a 
                     href={lead.companyWebsite} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mb-3"
+                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mb-3 transition-colors duration-200"
                   >
                     <Globe className="h-4 w-4" />
                     {lead.companyWebsite}
                   </a>
                 )}
-                <p className="text-muted-foreground text-lg mt-2">{getLeadDescription()}</p>
+                <p className="text-muted-foreground text-base mt-2">{getLeadDescription()}</p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" className="transition-colors duration-200">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete Lead
                   </Button>
@@ -410,9 +452,9 @@ const AdminLeadDetail = () => {
                     </div>
                   </div>
                   {new Date(lead.callbackDateTime) < new Date() ? (
-                    <Badge variant="destructive" className="text-sm">Overdue</Badge>
+                    <Badge variant="destructive" className="text-sm rounded-full">Overdue</Badge>
                   ) : (
-                    <Badge className="text-sm bg-green-500/10 text-green-500 border-green-500/20">Upcoming</Badge>
+                    <Badge className="text-sm bg-emerald-100 text-emerald-700 rounded-full">Upcoming</Badge>
                   )}
                 </div>
               </div>
@@ -420,16 +462,16 @@ const AdminLeadDetail = () => {
           </CardContent>
         </Card>
 
-        <div className="grid gap-6">
+        <div className="space-y-6">
           {/* Contact Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <User className="h-6 w-6" />
+          <Card className="shadow-sm border-border">
+            <CardHeader className="p-6 pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <User className="h-5 w-5" />
                 Contact Details
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 pt-0">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {lead.contactName && (
                   <div className="space-y-1">
@@ -480,14 +522,14 @@ const AdminLeadDetail = () => {
             {/* Left Column - Company Info */}
             <div className="space-y-6">
               {/* Company Information */}
-              <Card>
-                <CardHeader>
+              <Card className="shadow-sm border-border">
+                <CardHeader className="p-6 pb-4">
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
                     Company Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-6 pt-0 space-y-4">
                   <div className="grid gap-4">
                     {lead.industry && (
                       <div>
@@ -563,14 +605,14 @@ const AdminLeadDetail = () => {
             <div className="space-y-6">
               {/* Call Notes */}
               {lead.callNotes && (
-                <Card>
-                  <CardHeader>
+                <Card className="shadow-sm border-border">
+                  <CardHeader className="p-6 pb-4">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Call Notes
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6 pt-0">
                     <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
                   </CardContent>
                 </Card>
@@ -578,14 +620,14 @@ const AdminLeadDetail = () => {
 
               {/* Job Openings */}
               {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
-                <Card>
-                  <CardHeader>
+                <Card className="shadow-sm border-border">
+                  <CardHeader className="p-6 pb-4">
                     <CardTitle className="flex items-center gap-2">
                       <Briefcase className="h-5 w-5" />
                       Job Openings
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-6 pt-0 space-y-4">
                     {lead.jobsOpen && (
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Open Positions</p>
@@ -652,14 +694,14 @@ const AdminLeadDetail = () => {
 
               {/* Client Feedback */}
               {lead.feedback && (
-                <Card>
-                  <CardHeader>
+                <Card className="shadow-sm border-border">
+                  <CardHeader className="p-6 pb-4">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Client Feedback
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6 pt-0">
                     <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
                       {lead.feedback}
                     </p>
@@ -670,7 +712,7 @@ const AdminLeadDetail = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

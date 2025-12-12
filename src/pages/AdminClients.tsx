@@ -240,7 +240,10 @@ const AdminClients = () => {
               {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
-          <Button onClick={() => navigate("/admin/invite")}>
+          <Button 
+            onClick={() => navigate("/admin/invite")}
+            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+          >
             <Mail className="h-4 w-4 mr-2" />
             Invite Client
           </Button>
@@ -248,53 +251,53 @@ const AdminClients = () => {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Clients</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{activeClients.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">With assigned names</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Clients</CardTitle>
+              </div>
+              <div className="text-3xl font-bold text-foreground">{activeClients.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">With assigned names</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-warning">{pendingUsers.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Pending Users</CardTitle>
+              </div>
+              <div className="text-3xl font-bold text-foreground">{pendingUsers.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">Awaiting approval</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{clients.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">All accounts</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+              </div>
+              <div className="text-3xl font-bold text-foreground">{clients.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">All accounts</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Available Names</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{airtableOptions.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">From Airtable</p>
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Available Names</CardTitle>
+              </div>
+              <div className="text-3xl font-bold text-foreground">{airtableOptions.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">From Airtable</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Pending Users Section */}
         {pendingUsers.length > 0 && (
-          <Card className="border-warning/20">
-            <CardHeader>
+          <Card className="border-warning/20 shadow-sm border-border">
+            <CardHeader className="p-6 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <UserX className="h-5 w-5 text-warning" />
                   <CardTitle className="text-base">Pending Users</CardTitle>
-                  <Badge variant="outline" className="ml-2">{pendingUsers.length}</Badge>
+                  <Badge variant="outline" className="ml-2 rounded-full">{pendingUsers.length}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Review and approve or delete new signups
@@ -304,17 +307,17 @@ const AdminClients = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Email</TableHead>
-                    <TableHead>Client Name</TableHead>
-                    <TableHead>Signed Up</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="font-medium">Email</TableHead>
+                    <TableHead className="font-medium">Client Name</TableHead>
+                    <TableHead className="font-medium">Signed Up</TableHead>
+                    <TableHead className="text-right font-medium">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pendingUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
+                    <TableRow key={user.id} className="hover:bg-muted/50 transition-colors duration-200">
+                      <TableCell className="font-medium text-foreground">{user.email}</TableCell>
                       <TableCell>
                         {editingClient === user.id ? (
                           <div className="flex items-center gap-2">
@@ -341,6 +344,7 @@ const AdminClients = () => {
                               size="sm"
                               onClick={() => handleUpdateClient(user.id, editingName)}
                               disabled={!editingName}
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                             >
                               <Save className="h-4 w-4" />
                             </Button>
@@ -348,6 +352,7 @@ const AdminClients = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => setEditingClient(null)}
+                              className="transition-colors duration-200"
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -369,7 +374,7 @@ const AdminClients = () => {
                                 setEditingClient(user.id);
                                 setEditingName("");
                               }}
-                              className="text-success hover:text-success"
+                              className="text-success hover:text-success transition-colors duration-200"
                             >
                               <CheckCircle2 className="h-4 w-4 mr-1" />
                               Approve
@@ -379,7 +384,7 @@ const AdminClients = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() => setDeleteClient(user)}
-                            className="text-destructive hover:text-destructive"
+                            className="text-destructive hover:text-destructive transition-colors duration-200"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -395,12 +400,12 @@ const AdminClients = () => {
 
         {/* Clients Needing Help */}
         {activeClients.filter(needsHelp).length > 0 && (
-          <Card className="border-destructive/20 bg-destructive/5">
-            <CardHeader>
+          <Card className="border-destructive/20 bg-destructive/5 shadow-sm border-border">
+            <CardHeader className="p-6 pb-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 <CardTitle className="text-base">Clients Needing Help</CardTitle>
-                <Badge variant="destructive" className="ml-2">
+                <Badge variant="destructive" className="ml-2 rounded-full">
                   {activeClients.filter(needsHelp).length}
                 </Badge>
               </div>
@@ -408,12 +413,12 @@ const AdminClients = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Client</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Progress</TableHead>
-                    <TableHead>Days Remaining</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="font-medium">Client</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium">Progress</TableHead>
+                    <TableHead className="font-medium">Days Remaining</TableHead>
+                    <TableHead className="text-right font-medium">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -427,15 +432,15 @@ const AdminClients = () => {
                       : null;
                     
                     return (
-                      <TableRow key={client.id} className="bg-destructive/5">
+                      <TableRow key={client.id} className="bg-destructive/5 hover:bg-destructive/10 transition-colors duration-200">
                         <TableCell className="font-medium">
                           <div>
-                            <div>{client.client_name}</div>
+                            <div className="text-foreground">{client.client_name}</div>
                             <div className="text-xs text-muted-foreground">{client.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(client.client_status)}>
+                          <Badge className={`${getStatusColor(client.client_status)} rounded-full`}>
                             {getStatusIcon(client.client_status)}
                             <span className="ml-1 capitalize">{client.client_status || 'on_track'}</span>
                           </Badge>
@@ -489,25 +494,26 @@ const AdminClients = () => {
         )}
 
         {/* Active Clients Table */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border">
+          <CardHeader className="p-6 pb-4">
             <CardTitle className="text-base">Active Clients</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {activeClients.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                 <p>No active clients yet. Approve pending users or invite new clients.</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Email</TableHead>
-                    <TableHead>Client Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Progress</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="font-medium">Email</TableHead>
+                    <TableHead className="font-medium">Client Name</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium">Progress</TableHead>
+                    <TableHead className="font-medium">Created</TableHead>
+                    <TableHead className="text-right font-medium">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -521,9 +527,9 @@ const AdminClients = () => {
                     return (
                       <TableRow 
                         key={client.id}
-                        className={isHighlighted ? "bg-warning/5 border-l-4 border-l-warning" : ""}
+                        className={`${isHighlighted ? "bg-warning/5 border-l-4 border-l-warning" : ""} hover:bg-muted/50 transition-colors duration-200`}
                       >
-                        <TableCell className="font-medium">{client.email}</TableCell>
+                        <TableCell className="font-medium text-foreground">{client.email}</TableCell>
                         <TableCell>
                           {editingClient === client.id ? (
                             <div className="flex items-center gap-2">
@@ -549,6 +555,7 @@ const AdminClients = () => {
                               <Button
                                 size="sm"
                                 onClick={() => handleUpdateClient(client.id, editingName)}
+                                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                               >
                                 <Save className="h-4 w-4" />
                               </Button>
@@ -556,6 +563,7 @@ const AdminClients = () => {
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => setEditingClient(null)}
+                                className="transition-colors duration-200"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
@@ -609,6 +617,7 @@ const AdminClients = () => {
                                   setEditingClient(client.id);
                                   setEditingName(client.client_name || "");
                                 }}
+                                className="transition-colors duration-200"
                               >
                                 Edit
                               </Button>
@@ -617,6 +626,7 @@ const AdminClients = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => setResettingPassword(client.id)}
+                              className="transition-colors duration-200"
                             >
                               <Key className="h-4 w-4" />
                             </Button>
@@ -624,6 +634,7 @@ const AdminClients = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => setDeleteClient(client)}
+                              className="transition-colors duration-200"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
