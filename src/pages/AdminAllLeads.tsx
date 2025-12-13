@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ArrowUpRight } from "lucide-react";
+import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ExternalLink, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -199,29 +199,31 @@ const AdminAllLeads = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-emerald-100 text-emerald-700",
-      Rejected: "bg-red-100 text-red-700",
-      'Needs Work': "bg-amber-100 text-amber-700",
-      NEW: "bg-blue-100 text-blue-700",
-      Lead: "bg-blue-100 text-blue-700",
+      Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      Rejected: "bg-red-100 text-red-700 border-red-200",
+      'Needs Work': "bg-amber-100 text-amber-700 border-amber-200",
+      NEW: "bg-blue-100 text-blue-700 border-blue-200",
+      Lead: "bg-purple-100 text-purple-700 border-purple-200",
     };
-    return colors[status] || "bg-blue-100 text-blue-700";
+    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
   };
 
-  const getClientColor = (clientName: string) => {
-    const colors = [
-      "bg-primary/10 text-primary border-2 border-primary/30",
-      "bg-purple-500/10 text-purple-600 border-2 border-purple-500/30",
-      "bg-emerald-500/10 text-emerald-600 border-2 border-emerald-500/30",
-      "bg-amber-500/10 text-amber-600 border-2 border-amber-500/30",
-      "bg-rose-500/10 text-rose-600 border-2 border-rose-500/30",
-      "bg-cyan-500/10 text-cyan-600 border-2 border-cyan-500/30",
-      "bg-indigo-500/10 text-indigo-600 border-2 border-indigo-500/30",
-      "bg-pink-500/10 text-pink-600 border-2 border-pink-500/30",
-    ];
-    const hash = clientName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Approved':
+        return <CheckCircle2 className="h-3 w-3" />;
+      case 'Needs Work':
+        return <AlertTriangle className="h-3 w-3" />;
+      case 'Rejected':
+        return <X className="h-3 w-3" />;
+      case 'NEW':
+      case 'Lead':
+        return <Clock className="h-3 w-3" />;
+      default:
+        return <Clock className="h-3 w-3" />;
+    }
   };
+
 
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
@@ -235,36 +237,66 @@ const AdminAllLeads = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="space-y-4 md:space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">All Leads</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {leads.length} leads {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
-              </p>
-            </div>
+        <div className="space-y-6">
+          {/* Header Section */}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">All Leads</h1>
+            <p className="text-muted-foreground mt-1">
+              {leads.length} leads {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
+            </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Tabs value={statusFilter || "all"} onValueChange={handleStatusChange}>
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="NEW">New</TabsTrigger>
-                <TabsTrigger value="Lead">Lead</TabsTrigger>
-                <TabsTrigger value="Approved">Approved</TabsTrigger>
-                <TabsTrigger value="Needs Work">Needs Work</TabsTrigger>
-                <TabsTrigger value="Rejected">Rejected</TabsTrigger>
+          {/* Status Tabs and Filters */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <Tabs value={statusFilter || "all"} onValueChange={handleStatusChange} className="w-full sm:w-auto">
+              <TabsList className="bg-background rounded-lg p-1 shadow-sm border">
+                <TabsTrigger 
+                  value="all"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="NEW"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Lead"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  Lead
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Approved"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  Approved
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Needs Work"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  Needs Work
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Rejected"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md px-4 py-2"
+                >
+                  Rejected
+                </TabsTrigger>
               </TabsList>
             </Tabs>
             
-            <div className="flex-1 flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 min-w-0">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Search by company..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 rounded-lg border bg-background"
                 />
               </div>
               
@@ -293,48 +325,60 @@ const AdminAllLeads = () => {
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <Table>
-                <TableHeader className="bg-muted sticky top-0 z-10">
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50 border-b">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Company
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Client
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Contact
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Location
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Added
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {currentLeads.map((lead) => (
                     <TableRow 
                       key={lead.id} 
-                      className="cursor-pointer" 
+                      className="cursor-pointer hover:bg-muted/50 transition-colors border-b last:border-0" 
                       onClick={() => navigate(`/admin/leads/${lead.id}`)}
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="px-4 py-3">
                         <div className="flex flex-col">
-                          <span>{lead.companyName}</span>
+                          <span className="font-medium text-foreground">{lead.companyName}</span>
                           {lead.industry && (
-                            <span className="text-xs text-muted-foreground">{lead.industry}</span>
+                            <span className="text-sm text-muted-foreground">{lead.industry}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="gap-1">
-                          {lead.status === 'Approved' && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
-                          {lead.status === 'Needs Work' && <AlertTriangle className="h-3 w-3 text-amber-600" />}
-                          {lead.status === 'Rejected' && <X className="h-3 w-3 text-red-600" />}
-                          {lead.status}
+                      <TableCell className="px-4 py-3">
+                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium`}>
+                          {getStatusIcon(lead.status)}
+                          <span>{lead.status}</span>
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 py-3">
                         {lead.assignedClient === "Unassigned" ? (
                           clients.length > 0 ? (
                             <div onClick={(e) => e.stopPropagation()}>
                               <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                                <SelectTrigger className="w-40">
+                                <SelectTrigger className="w-40 h-8">
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
                                 <SelectContent className="z-50">
@@ -350,33 +394,34 @@ const AdminAllLeads = () => {
                             <span className="text-xs text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          <Badge className={`${getClientColor(lead.assignedClient)} font-medium rounded-full`}>
+                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-3 py-1 text-xs font-medium">
                             {lead.assignedClient}
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-sm">
-                          <span className="text-foreground">{lead.contactName || 'N/A'}</span>
+                      <TableCell className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">{lead.contactName || 'N/A'}</span>
                           {lead.email && (
-                            <span className="text-xs text-muted-foreground">{lead.email}</span>
+                            <span className="text-sm text-muted-foreground">{lead.email}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-foreground">{lead.location || 'N/A'}</TableCell>
-                      <TableCell className="text-sm text-foreground">
+                      <TableCell className="px-4 py-3 text-sm text-foreground">{lead.location || 'N/A'}</TableCell>
+                      <TableCell className="px-4 py-3 text-sm text-foreground">
                         {new Date(lead.dateAdded).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="px-4 py-3 text-right">
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/admin/leads/${lead.id}`);
                           }}
+                          className="hover:bg-muted"
                         >
-                          <ArrowUpRight className="h-4 w-4" />
+                          <ExternalLink className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
