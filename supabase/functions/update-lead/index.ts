@@ -43,7 +43,7 @@ serve(async (req) => {
       companySize: 'Company Size',
       employeeCount: 'Employee Count',
       country: 'Country',
-      location: 'Address',
+      address: 'Address',
       companyDescription: 'Company Description',
       contactName: 'Contact Name',
       contactTitle: 'Contact Title',

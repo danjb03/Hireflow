@@ -8,39 +8,43 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, X, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
 interface LeadData {
   id: string;
-  status: string;
   companyName: string;
-  companyWebsite: string;
-  companyLinkedIn: string | null;
-  industry: string | null;
-  companySize: string | null;
-  employeeCount: string | null;
-  country: string | null;
-  location: string | null;
-  companyDescription: string | null;
-  founded: string | null;
+  status: string;
+  clients: string;
+  
   contactName: string | null;
-  jobTitle: string | null;
+  contactTitle: string | null;
   email: string;
   phone: string;
-  linkedInProfile: string;
-  callNotes: string | null;
-  availability: string | null;
-  jobOpenings: Array<{ title: string; url: string; type?: string }>;
-  jobPostingTitle: string | null;
+  contactLinkedIn: string | null;
+  
+  companyWebsite: string;
+  companyLinkedIn: string | null;
+  companyDescription: string | null;
+  address: string | null;
+  country: string | null;
+  industry: string | null;
+  employeeCount: number | null;
+  companySize: string | null;
+  
+  jobTitle: string | null;
   jobDescription: string | null;
   jobUrl: string | null;
-  activeJobsUrl: string | null;
-  jobsOpen: string | null;
-  dateAdded: string;
-  feedback: string | null;
+  jobType: string | null;
+  jobLevel: string | null;
+  
+  aiSummary: string | null;
+  availability: string | null;
+  lastContactDate: string | null;
+  nextAction: string | null;
+  dateCreated: string;
 }
 
 interface Client {
@@ -399,18 +403,33 @@ const AdminLeadDetail = () => {
                   <span>{lead.status}</span>
                 </Badge>
               </div>
-              <p className="text-muted-foreground mt-2">{getLeadDescription()}</p>
-              {lead.companyWebsite && (
-                <a 
-                  href={lead.companyWebsite} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-primary hover:underline flex items-center gap-2 mt-2"
-                >
-                  <Globe className="h-4 w-4" />
-                  {lead.companyWebsite}
-                </a>
+              {lead.companyDescription && (
+                <p className="text-muted-foreground mt-2 text-base leading-relaxed">{lead.companyDescription}</p>
               )}
+              <div className="flex flex-wrap gap-4 mt-4">
+                {lead.companyWebsite && (
+                  <a 
+                    href={lead.companyWebsite} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline flex items-center gap-2 text-sm"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {lead.companyWebsite}
+                  </a>
+                )}
+                {lead.companyLinkedIn && (
+                  <a 
+                    href={lead.companyLinkedIn} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline flex items-center gap-2 text-sm"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    Company LinkedIn
+                  </a>
+                )}
+              </div>
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -433,23 +452,6 @@ const AdminLeadDetail = () => {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-
-          {/* Availability - Prominent Display */}
-          {lead.availability && (
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Availability</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {lead.availability}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="space-y-6">
@@ -462,13 +464,19 @@ const AdminLeadDetail = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {lead.contactName && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Name</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Name</p>
                   <p className="text-sm font-medium flex items-center gap-2">{lead.contactName}</p>
+                </div>
+              )}
+              {lead.contactTitle && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Title</p>
+                  <p className="text-sm font-medium">{lead.contactTitle}</p>
                 </div>
               )}
               {lead.jobTitle && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
                   <p className="text-sm font-medium flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                     {lead.jobTitle}
@@ -500,12 +508,12 @@ const AdminLeadDetail = () => {
                 </div>
               )}
             </div>
-            {lead.linkedInProfile && (
+            {lead.contactLinkedIn && (
               <div className="mt-6 pt-6 border-t">
                 <Button variant="outline" asChild className="gap-2">
-                  <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer">
+                  <a href={lead.contactLinkedIn} target="_blank" rel="noopener noreferrer">
                     <Linkedin className="h-4 w-4" />
-                    View LinkedIn Profile
+                    View Contact LinkedIn Profile
                   </a>
                 </Button>
               </div>
@@ -547,19 +555,13 @@ const AdminLeadDetail = () => {
                     <p className="text-sm text-foreground">{lead.country}</p>
                   </div>
                 )}
-                {lead.location && (
+                {lead.address && (
                   <div className="space-y-1 col-span-2">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Address / Location</p>
                     <p className="flex items-center gap-2 text-sm text-foreground">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
-                      {lead.location}
+                      {lead.address}
                     </p>
-                  </div>
-                )}
-                {lead.founded && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Founded</p>
-                    <p className="text-sm text-foreground">{lead.founded}</p>
                   </div>
                 )}
                 {lead.companyLinkedIn && (
@@ -589,24 +591,31 @@ const AdminLeadDetail = () => {
             </div>
 
             {/* Right Column - Job Openings */}
-            {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
+            {(lead.jobTitle || lead.jobDescription || lead.jobUrl || lead.jobType || lead.jobLevel) && (
               <div className="bg-card border rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-2 text-lg font-semibold mb-4">
                   <Briefcase className="h-5 w-5" />
                   Job Openings
                 </div>
                 <div className="space-y-4">
-                  {lead.jobsOpen && (
+                  {lead.jobTitle && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Open Positions</p>
-                      <p className="text-2xl font-bold text-foreground">{lead.jobsOpen}</p>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
+                      <p className="text-sm font-medium text-foreground">{lead.jobTitle}</p>
                     </div>
                   )}
                   
-                  {lead.jobPostingTitle && (
+                  {lead.jobType && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
-                      <p className="text-sm font-medium text-foreground">{lead.jobPostingTitle}</p>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Type</p>
+                      <p className="text-sm text-foreground">{lead.jobType}</p>
+                    </div>
+                  )}
+                  
+                  {lead.jobLevel && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Level</p>
+                      <p className="text-sm text-foreground">{lead.jobLevel}</p>
                     </div>
                   )}
                   
@@ -619,40 +628,10 @@ const AdminLeadDetail = () => {
                     </div>
                   )}
                   
-                  {lead.jobOpenings && lead.jobOpenings.length > 0 && (
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Available Positions</p>
-                      <ul className="space-y-3">
-                        {lead.jobOpenings.map((job, index) => (
-                          <li key={index} className="border-l-2 border-primary pl-3">
-                            <a 
-                              href={job.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-primary hover:underline font-medium text-sm transition-colors"
-                            >
-                              {job.title}
-                            </a>
-                            {job.type && <p className="text-xs text-muted-foreground mt-1">{job.type}</p>}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
                   {lead.jobUrl && (
                     <Button variant="outline" asChild className="gap-2">
                       <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
                         View Job Posting URL
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                  
-                  {lead.activeJobsUrl && (
-                    <Button variant="outline" asChild className="gap-2">
-                      <a href={lead.activeJobsUrl} target="_blank" rel="noopener noreferrer">
-                        Find Active Job Openings
                         <ExternalLink className="h-4 w-4" />
                       </a>
                     </Button>
@@ -662,31 +641,49 @@ const AdminLeadDetail = () => {
             )}
           </div>
 
-          {/* Additional Sections */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Call Notes */}
-            {lead.callNotes && (
-              <div className="bg-card border rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                  <FileText className="h-5 w-5" />
-                  Call Notes
-                </div>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{lead.callNotes}</p>
+          {/* AI Summary Card */}
+          {lead.aiSummary && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 border rounded-xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+                AI Summary
               </div>
-            )}
+              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
+            </div>
+          )}
 
-            {/* Client Feedback */}
-            {lead.feedback && (
-              <div className="bg-card border rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                  <FileText className="h-5 w-5" />
-                  Client Feedback
+          {/* Activity Card */}
+          <div className="bg-card border rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+              <Clock className="h-5 w-5" />
+              Activity
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {lead.lastContactDate && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Last Contact Date</p>
+                  <p className="text-sm text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
                 </div>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {lead.feedback}
-                </p>
-              </div>
-            )}
+              )}
+              {lead.nextAction && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Action</p>
+                  <p className="text-sm text-foreground">{lead.nextAction}</p>
+                </div>
+              )}
+              {lead.dateCreated && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Date Created</p>
+                  <p className="text-sm text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
+                </div>
+              )}
+              {lead.availability && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Availability</p>
+                  <p className="text-sm text-foreground">{lead.availability}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

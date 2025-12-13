@@ -105,28 +105,37 @@ serve(async (req) => {
         status: fields['Status'] || 'New',
         assignedClient: fields['Client'] || 'Unassigned',
         assignedClientId: null,
-        dateAdded: fields['Date Created'] || record.createdTime,
-        companyWebsite: fields['Company Website'] || '',
-        companyLinkedIn: fields['Company LinkedIn'] || null,
-        industry: fields['Industry'] || null,
-        companySize: fields['Company Size'] || null,
-        employeeCount: fields['Employee Count'] || null,
-        country: fields['Country'] || null,
-        location: fields['Address'] || null,
+        
+        // Contact Info
         contactName: fields['Contact Name'] || null,
         contactTitle: fields['Contact Title'] || null,
-        jobTitle: fields['Job Title'] || null,
         email: fields['Email'] || '',
-        phone: fields['Phone'] || '',
-        linkedInProfile: fields['Contact LinkedIn'] || '',
+        phone: fields['Phone'] ? String(fields['Phone']) : '',
+        contactLinkedIn: fields['Contact LinkedIn'] || null,
+        
+        // Company Info
+        companyWebsite: fields['Company Website'] || '',
+        companyLinkedIn: fields['Company LinkedIn'] || null,
+        companyDescription: fields['Company Description'] || null,
+        address: Array.isArray(fields['Address']) ? fields['Address'].join(', ') : (fields['Address'] || null),
+        country: fields['Country'] || null,
+        industry: fields['Industry'] || null,
+        employeeCount: fields['Employee Count'] || null,
+        companySize: fields['Company Size'] || null,
+        
+        // Job Info
+        jobTitle: fields['Job Title'] || null,
         jobDescription: fields['Job Description'] || null,
         jobUrl: fields['Job URL'] || null,
         jobType: fields['Job Type'] || null,
         jobLevel: fields['Job Level'] || null,
-        feedback: fields['Feedback'] || null,
+        
+        // AI & Dates
+        aiSummary: fields['AI Summary'] || null,
+        availability: fields['Availability'] || null,
         lastContactDate: fields['Last Contact Date'] || null,
         nextAction: fields['Next Action'] || null,
-        availability: fields['Availability'] || null,
+        dateCreated: fields['Date Created'] || record.createdTime,
       };
     });
 

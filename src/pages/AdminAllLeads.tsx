@@ -17,27 +17,33 @@ interface Lead {
   status: string;
   assignedClient: string;
   assignedClientId: string | null;
-  dateAdded: string;
-  companyWebsite?: string;
-  companyLinkedIn?: string;
-  industry?: string;
-  companySize?: string;
-  employeeCount?: string;
-  country?: string;
-  location?: string;
-  companyDescription?: string;
-  founded?: string;
-  contactName?: string;
-  jobTitle?: string;
-  email?: string;
-  phone?: string;
-  linkedInProfile?: string;
-  jobPostingTitle?: string;
-  jobDescription?: string;
-  jobUrl?: string;
-  activeJobsUrl?: string;
-  jobsOpen?: string;
-  jobOpenings?: any[];
+  
+  contactName: string | null;
+  contactTitle: string | null;
+  email: string;
+  phone: string;
+  contactLinkedIn: string | null;
+  
+  companyWebsite: string;
+  companyLinkedIn: string | null;
+  companyDescription: string | null;
+  address: string | null;
+  country: string | null;
+  industry: string | null;
+  employeeCount: number | null;
+  companySize: string | null;
+  
+  jobTitle: string | null;
+  jobDescription: string | null;
+  jobUrl: string | null;
+  jobType: string | null;
+  jobLevel: string | null;
+  
+  aiSummary: string | null;
+  availability: string | null;
+  lastContactDate: string | null;
+  nextAction: string | null;
+  dateCreated: string;
 }
 
 interface Client {
@@ -407,9 +413,11 @@ const AdminAllLeads = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-sm text-foreground">{lead.location || 'N/A'}</TableCell>
                       <TableCell className="px-4 py-3 text-sm text-foreground">
-                        {new Date(lead.dateAdded).toLocaleDateString()}
+                        {lead.address || lead.country || 'N/A'}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm text-foreground">
+                        {new Date(lead.dateCreated).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">
                         <Button
