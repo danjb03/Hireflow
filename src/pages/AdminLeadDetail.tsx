@@ -3,12 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertTriangle, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -280,7 +280,7 @@ const AdminLeadDetail = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList>
@@ -303,11 +303,12 @@ const AdminLeadDetail = () => {
         </Breadcrumb>
 
         {/* Admin Actions */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="p-6 pb-4">
-            <CardTitle className="text-lg font-semibold">Admin Actions</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Admin Actions</CardTitle>
+            <CardDescription>Manage lead assignment and status</CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent>
             <div className="grid gap-6 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Assign to Client</label>
@@ -328,7 +329,7 @@ const AdminLeadDetail = () => {
                     <Button 
                       onClick={handleAssignClient} 
                       disabled={!selectedClient}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       Assign
                     </Button>
@@ -357,7 +358,7 @@ const AdminLeadDetail = () => {
                   </Select>
                   <Button 
                     onClick={handleUpdateStatus}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     Update
                   </Button>
@@ -376,7 +377,7 @@ const AdminLeadDetail = () => {
                   <Button 
                     onClick={handleUpdateCallbackDateTime} 
                     disabled={!callbackDateTime}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     Update
                   </Button>
@@ -387,30 +388,35 @@ const AdminLeadDetail = () => {
         </Card>
 
         {/* Lead Hero Section */}
-        <Card className="shadow-sm border-border">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-6 flex-wrap gap-4">
+        <Card className="shadow-sm">
+          <CardHeader>
+            <div className="flex justify-between items-start flex-wrap gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <h1 className="text-4xl font-bold text-foreground">{lead.companyName}</h1>
-                  <Badge className={`${getStatusColor(lead.status)} rounded-full`}>{lead.status}</Badge>
+                  <CardTitle className="text-3xl">{lead.companyName}</CardTitle>
+                  <Badge variant="outline" className="gap-1">
+                    {lead.status === 'Approved' && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
+                    {lead.status === 'Needs Work' && <AlertTriangle className="h-3 w-3 text-amber-600" />}
+                    {lead.status === 'Rejected' && <X className="h-3 w-3 text-red-600" />}
+                    {lead.status}
+                  </Badge>
                 </div>
+                <CardDescription className="mt-2">{getLeadDescription()}</CardDescription>
                 {lead.companyWebsite && (
                   <a 
                     href={lead.companyWebsite} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mb-3 transition-colors duration-200"
+                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mt-2"
                   >
                     <Globe className="h-4 w-4" />
                     {lead.companyWebsite}
                   </a>
                 )}
-                <p className="text-muted-foreground text-base mt-2">{getLeadDescription()}</p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="transition-colors duration-200">
+                  <Button variant="destructive" size="sm">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete Lead
                   </Button>
@@ -440,7 +446,7 @@ const AdminLeadDetail = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
-                      <p className="text-xl font-bold text-foreground">
+                      <p className="text-xl font-bold">
                         {new Date(lead.callbackDateTime).toLocaleString('en-US', {
                           month: 'long',
                           day: 'numeric',
@@ -452,26 +458,29 @@ const AdminLeadDetail = () => {
                     </div>
                   </div>
                   {new Date(lead.callbackDateTime) < new Date() ? (
-                    <Badge variant="destructive" className="text-sm rounded-full">Overdue</Badge>
+                    <Badge variant="destructive">Overdue</Badge>
                   ) : (
-                    <Badge className="text-sm bg-emerald-100 text-emerald-700 rounded-full">Upcoming</Badge>
+                    <Badge variant="outline" className="gap-1">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      Upcoming
+                    </Badge>
                   )}
                 </div>
               </div>
             )}
-          </CardContent>
+          </CardHeader>
         </Card>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Contact Details */}
-          <Card className="shadow-sm border-border">
-            <CardHeader className="p-6 pb-4">
-              <CardTitle className="flex items-center gap-2 text-xl">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Contact Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 pt-0">
+            <CardContent>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {lead.contactName && (
                   <div className="space-y-1">
@@ -518,18 +527,18 @@ const AdminLeadDetail = () => {
             </CardContent>
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
             {/* Left Column - Company Info */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Company Information */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="p-6 pb-4">
+              <Card className="shadow-sm">
+                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
                     Company Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 pt-0 space-y-4">
+                <CardContent className="space-y-4">
                   <div className="grid gap-4">
                     {lead.industry && (
                       <div>
@@ -602,32 +611,32 @@ const AdminLeadDetail = () => {
             </div>
 
             {/* Right Column - Interaction Details */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Call Notes */}
               {lead.callNotes && (
-                <Card className="shadow-sm border-border">
-                  <CardHeader className="p-6 pb-4">
+                <Card className="shadow-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Call Notes
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 pt-0">
-                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
+                  <CardContent>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
                   </CardContent>
                 </Card>
               )}
 
               {/* Job Openings */}
               {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
-                <Card className="shadow-sm border-border">
-                  <CardHeader className="p-6 pb-4">
+                <Card className="shadow-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Briefcase className="h-5 w-5" />
                       Job Openings
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 pt-0 space-y-4">
+                  <CardContent className="space-y-4">
                     {lead.jobsOpen && (
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Open Positions</p>
@@ -694,15 +703,15 @@ const AdminLeadDetail = () => {
 
               {/* Client Feedback */}
               {lead.feedback && (
-                <Card className="shadow-sm border-border">
-                  <CardHeader className="p-6 pb-4">
+                <Card className="shadow-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Client Feedback
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 pt-0">
-                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
+                  <CardContent>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
                       {lead.feedback}
                     </p>
                   </CardContent>

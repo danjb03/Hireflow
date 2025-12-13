@@ -20,6 +20,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -47,13 +48,14 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <Sidebar collapsible="icon" className="bg-slate-900 border-r border-slate-800">
-          <SidebarHeader className="border-b border-slate-800">
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg" asChild className="hover:bg-white/10">
+                <SidebarMenuButton size="lg" asChild>
                   <a href="/admin" className="flex items-center gap-2">
                     <img src={hireflowLogo} alt="Hireflow" className="h-5" />
+                    <span className="font-semibold">Hireflow</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -62,16 +64,17 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
           <SidebarContent>
             <NavMain items={menuItems} />
           </SidebarContent>
-          <SidebarFooter className="border-t border-slate-800">
+          <SidebarFooter>
             <NavUser user={userData} />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-6">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
             <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
             <div className="flex-1" />
           </header>
-          <main className="p-6">
+          <main className="px-4 lg:px-6 py-6">
             {children}
           </main>
         </SidebarInset>

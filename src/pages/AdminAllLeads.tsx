@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, FileText } from "lucide-react";
+import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ArrowUpRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -235,7 +235,7 @@ const AdminAllLeads = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">All Leads</h1>
@@ -293,36 +293,41 @@ const AdminAllLeads = () => {
               </div>
             </div>
           ) : (
-            <div className="border border-border rounded-lg bg-card shadow-sm">
+            <div className="overflow-hidden rounded-lg border">
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-medium">Company</TableHead>
-                    <TableHead className="font-medium">Status</TableHead>
-                    <TableHead className="font-medium">Client</TableHead>
-                    <TableHead className="font-medium">Contact</TableHead>
-                    <TableHead className="font-medium">Location</TableHead>
-                    <TableHead className="font-medium">Added</TableHead>
-                    <TableHead className="text-right font-medium">Actions</TableHead>
+                <TableHeader className="bg-muted sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Added</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {currentLeads.map((lead) => (
                     <TableRow 
                       key={lead.id} 
-                      className="cursor-pointer hover:bg-muted/50 transition-colors duration-200" 
+                      className="cursor-pointer" 
                       onClick={() => navigate(`/admin/leads/${lead.id}`)}
                     >
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
-                          <span className="text-foreground">{lead.companyName}</span>
+                          <span>{lead.companyName}</span>
                           {lead.industry && (
                             <span className="text-xs text-muted-foreground">{lead.industry}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${getStatusColor(lead.status)} rounded-full`}>{lead.status}</Badge>
+                        <Badge variant="outline" className="gap-1">
+                          {lead.status === 'Approved' && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
+                          {lead.status === 'Needs Work' && <AlertTriangle className="h-3 w-3 text-amber-600" />}
+                          {lead.status === 'Rejected' && <X className="h-3 w-3 text-red-600" />}
+                          {lead.status}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {lead.assignedClient === "Unassigned" ? (
@@ -365,13 +370,13 @@ const AdminAllLeads = () => {
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/admin/leads/${lead.id}`);
                           }}
                         >
-                          View
+                          <ArrowUpRight className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>

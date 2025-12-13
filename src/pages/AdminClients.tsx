@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -231,18 +231,18 @@ const AdminClients = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Clients</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
           <Button 
             onClick={() => navigate("/admin/invite")}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Mail className="h-4 w-4 mr-2" />
             Invite Client
@@ -250,74 +250,75 @@ const AdminClients = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Clients</CardTitle>
-              </div>
-              <div className="text-3xl font-bold text-foreground">{activeClients.length}</div>
-              <p className="text-xs text-muted-foreground mt-2">With assigned names</p>
-            </CardContent>
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-4">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Active Clients</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums">{activeClients.length}</CardTitle>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              With assigned names
+            </CardFooter>
           </Card>
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Pending Users</CardTitle>
-              </div>
-              <div className="text-3xl font-bold text-foreground">{pendingUsers.length}</div>
-              <p className="text-xs text-muted-foreground mt-2">Awaiting approval</p>
-            </CardContent>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Pending Users</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums">{pendingUsers.length}</CardTitle>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              Awaiting approval
+            </CardFooter>
           </Card>
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-              </div>
-              <div className="text-3xl font-bold text-foreground">{clients.length}</div>
-              <p className="text-xs text-muted-foreground mt-2">All accounts</p>
-            </CardContent>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Total Users</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums">{clients.length}</CardTitle>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              All accounts
+            </CardFooter>
           </Card>
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Available Names</CardTitle>
-              </div>
-              <div className="text-3xl font-bold text-foreground">{airtableOptions.length}</div>
-              <p className="text-xs text-muted-foreground mt-2">From Airtable</p>
-            </CardContent>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Available Names</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums">{airtableOptions.length}</CardTitle>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              From Airtable
+            </CardFooter>
           </Card>
         </div>
 
         {/* Pending Users Section */}
         {pendingUsers.length > 0 && (
-          <Card className="border-warning/20 shadow-sm border-border">
-            <CardHeader className="p-6 pb-4">
+          <Card className="shadow-sm">
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <UserX className="h-5 w-5 text-warning" />
-                  <CardTitle className="text-base">Pending Users</CardTitle>
-                  <Badge variant="outline" className="ml-2 rounded-full">{pendingUsers.length}</Badge>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserX className="h-5 w-5 text-amber-600" />
+                    Pending Users
+                  </CardTitle>
+                  <CardDescription>Review and approve or delete new signups</CardDescription>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Review and approve or delete new signups
-                </p>
+                <Badge variant="outline">{pendingUsers.length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-medium">Email</TableHead>
-                    <TableHead className="font-medium">Client Name</TableHead>
-                    <TableHead className="font-medium">Signed Up</TableHead>
-                    <TableHead className="text-right font-medium">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pendingUsers.map((user) => (
-                    <TableRow key={user.id} className="hover:bg-muted/50 transition-colors duration-200">
-                      <TableCell className="font-medium text-foreground">{user.email}</TableCell>
+            <CardContent>
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead>Signed Up</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.email}</TableCell>
                       <TableCell>
                         {editingClient === user.id ? (
                           <div className="flex items-center gap-2">
@@ -390,37 +391,42 @@ const AdminClients = () => {
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Clients Needing Help */}
         {activeClients.filter(needsHelp).length > 0 && (
-          <Card className="border-destructive/20 bg-destructive/5 shadow-sm border-border">
-            <CardHeader className="p-6 pb-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <CardTitle className="text-base">Clients Needing Help</CardTitle>
-                <Badge variant="destructive" className="ml-2 rounded-full">
-                  {activeClients.filter(needsHelp).length}
-                </Badge>
+          <Card className="shadow-sm border-destructive/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    Clients Needing Help
+                  </CardTitle>
+                  <CardDescription>Clients requiring immediate attention</CardDescription>
+                </div>
+                <Badge variant="destructive">{activeClients.filter(needsHelp).length}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-medium">Client</TableHead>
-                    <TableHead className="font-medium">Status</TableHead>
-                    <TableHead className="font-medium">Progress</TableHead>
-                    <TableHead className="font-medium">Days Remaining</TableHead>
-                    <TableHead className="text-right font-medium">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+            <CardContent>
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Progress</TableHead>
+                      <TableHead>Days Remaining</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {activeClients.filter(needsHelp).map((client) => {
                     const completion = getCompletionPercentage(
@@ -432,17 +438,17 @@ const AdminClients = () => {
                       : null;
                     
                     return (
-                      <TableRow key={client.id} className="bg-destructive/5 hover:bg-destructive/10 transition-colors duration-200">
+                      <TableRow key={client.id} className="bg-destructive/5">
                         <TableCell className="font-medium">
                           <div>
-                            <div className="text-foreground">{client.client_name}</div>
+                            <div>{client.client_name}</div>
                             <div className="text-xs text-muted-foreground">{client.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`${getStatusColor(client.client_status)} rounded-full`}>
+                          <Badge variant="outline" className="gap-1">
                             {getStatusIcon(client.client_status)}
-                            <span className="ml-1 capitalize">{client.client_status || 'on_track'}</span>
+                            <span className="capitalize">{client.client_status || 'on_track'}</span>
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -487,35 +493,38 @@ const AdminClients = () => {
                       </TableRow>
                     );
                   })}
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Active Clients Table */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="p-6 pb-4">
-            <CardTitle className="text-base">Active Clients</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Active Clients</CardTitle>
+            <CardDescription>All active client accounts</CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent>
             {activeClients.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                 <p>No active clients yet. Approve pending users or invite new clients.</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-medium">Email</TableHead>
-                    <TableHead className="font-medium">Client Name</TableHead>
-                    <TableHead className="font-medium">Status</TableHead>
-                    <TableHead className="font-medium">Progress</TableHead>
-                    <TableHead className="font-medium">Created</TableHead>
-                    <TableHead className="text-right font-medium">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Progress</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {activeClients.map((client) => {
                     const completion = getCompletionPercentage(
@@ -527,9 +536,9 @@ const AdminClients = () => {
                     return (
                       <TableRow 
                         key={client.id}
-                        className={`${isHighlighted ? "bg-warning/5 border-l-4 border-l-warning" : ""} hover:bg-muted/50 transition-colors duration-200`}
+                        className={isHighlighted ? "bg-warning/5 border-l-4 border-l-warning" : ""}
                       >
-                        <TableCell className="font-medium text-foreground">{client.email}</TableCell>
+                        <TableCell className="font-medium">{client.email}</TableCell>
                         <TableCell>
                           {editingClient === client.id ? (
                             <div className="flex items-center gap-2">
@@ -611,30 +620,27 @@ const AdminClients = () => {
                           <div className="flex items-center justify-end gap-2">
                             {editingClient !== client.id && (
                               <Button
-                                size="sm"
+                                size="icon"
                                 variant="ghost"
                                 onClick={() => {
                                   setEditingClient(client.id);
                                   setEditingName(client.client_name || "");
                                 }}
-                                className="transition-colors duration-200"
                               >
-                                Edit
+                                <Save className="h-4 w-4" />
                               </Button>
                             )}
                             <Button
-                              size="sm"
+                              size="icon"
                               variant="ghost"
                               onClick={() => setResettingPassword(client.id)}
-                              className="transition-colors duration-200"
                             >
                               <Key className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon"
                               variant="ghost"
                               onClick={() => setDeleteClient(client)}
-                              className="transition-colors duration-200"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -643,8 +649,9 @@ const AdminClients = () => {
                       </TableRow>
                     );
                   })}
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

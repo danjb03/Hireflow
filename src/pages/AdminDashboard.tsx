@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Users, FileText, PlusCircle, TrendingUp, AlertTriangle, Smile, Frown, Clock, CheckCircle2 } from "lucide-react";
+import { Loader2, Users, FileText, PlusCircle, TrendingUp, TrendingDown, AlertTriangle, Smile, Frown, Clock, CheckCircle2, ArrowUpRight, X } from "lucide-react";
 import { getCompletionPercentage, getDaysRemaining, getPriorityScore } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -256,7 +256,7 @@ const AdminDashboard = () => {
           </div>
           <Button 
             onClick={() => navigate("/admin/submit-lead")}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Submit Lead
@@ -264,79 +264,123 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Clients</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-4">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Total Clients</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.totalClients}</CardTitle>
+                <Badge variant="outline" className="gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                </Badge>
               </div>
-              <div className="text-3xl font-bold text-foreground">{stats.totalClients}</div>
-            </CardContent>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              Active client accounts
+            </CardFooter>
           </Card>
 
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Total Leads</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.totalLeads}</CardTitle>
+                <Badge variant="outline" className="gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                </Badge>
               </div>
-              <div className="text-3xl font-bold text-foreground">{stats.totalLeads}</div>
-              <p className="text-xs text-muted-foreground mt-2">Across all clients</p>
-            </CardContent>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              Across all clients
+            </CardFooter>
           </Card>
 
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Performance</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Approved Leads</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.statusBreakdown.Approved}</CardTitle>
+                <Badge variant="outline" className="gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                </Badge>
               </div>
-              <div className="text-3xl font-bold text-foreground">{stats.statusBreakdown.Approved}</div>
-              <p className="text-xs text-muted-foreground mt-2">Approved leads</p>
-            </CardContent>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              Successfully approved
+            </CardFooter>
+          </Card>
+
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
+            <CardHeader>
+              <CardDescription>Needs Work</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.statusBreakdown['Needs Work']}</CardTitle>
+                <Badge variant="outline" className="gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardFooter className="text-xs text-muted-foreground">
+              Requiring attention
+            </CardFooter>
           </Card>
         </div>
 
         {/* Status Breakdown */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="p-6 pb-4">
-            <CardTitle className="text-base font-medium">Leads by Status</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Leads by Status</CardTitle>
+            <CardDescription>Breakdown of lead statuses across the system</CardDescription>
           </CardHeader>
-          <CardContent className="p-6 pt-0">
+          <CardContent>
             <div className="flex flex-wrap gap-6">
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Approved}</div>
-                <Badge className={`${getLeadStatusColor("Approved")} rounded-full`}>Approved</Badge>
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved}</div>
+                <Badge variant="outline" className="gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  Approved
+                </Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown['Needs Work']}</div>
-                <Badge className={`${getLeadStatusColor("Needs Work")} rounded-full`}>Needs Work</Badge>
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work']}</div>
+                <Badge variant="outline" className="gap-1">
+                  <AlertTriangle className="h-3 w-3 text-amber-600" />
+                  Needs Work
+                </Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Rejected}</div>
-                <Badge className={`${getLeadStatusColor("Rejected")} rounded-full`}>Rejected</Badge>
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected}</div>
+                <Badge variant="outline" className="gap-1">
+                  <X className="h-3 w-3 text-red-600" />
+                  Rejected
+                </Badge>
               </div>
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold text-foreground">{stats.statusBreakdown.Unknown}</div>
-                <Badge className={`${getLeadStatusColor("Unknown")} rounded-full`}>Unknown</Badge>
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown}</div>
+                <Badge variant="outline" className="gap-1">
+                  <FileText className="h-3 w-3 text-muted-foreground" />
+                  Unknown
+                </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Client Status Overview - Prioritized View */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="p-6 pb-4">
+        <Card className="shadow-sm">
+          <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium">Client Status Overview</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")} className="transition-colors duration-200">
+              <div>
+                <CardTitle>Client Status Overview</CardTitle>
+                <CardDescription>Monitor client progress and status</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")}>
                 View All Clients
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="space-y-6 p-6">
+          <CardContent>
+            <div className="space-y-6">
               {(['urgent', 'unhappy', 'at_risk', 'on_track', 'happy'] as ClientStatus[]).map((status) => {
                 const statusClients = clientsByStatus[status] || [];
                 if (statusClients.length === 0) return null;
@@ -348,15 +392,15 @@ const AdminDashboard = () => {
                       <h3 className="font-semibold text-lg text-foreground">{getStatusLabel(status)}</h3>
                       <Badge variant="outline" className="ml-2 rounded-full">{statusClients.length}</Badge>
                     </div>
-                    <div className="border border-border rounded-lg overflow-hidden">
+                    <div className="overflow-hidden rounded-lg border">
                       <Table>
-                        <TableHeader>
-                          <TableRow className="bg-muted/50 hover:bg-muted/50">
-                            <TableHead className="font-medium">Client</TableHead>
-                            <TableHead className="font-medium">Progress</TableHead>
-                            <TableHead className="font-medium">Leads/Day</TableHead>
-                            <TableHead className="font-medium">Days Remaining</TableHead>
-                            <TableHead className="font-medium">Status</TableHead>
+                        <TableHeader className="bg-muted sticky top-0 z-10">
+                          <TableRow>
+                            <TableHead>Client</TableHead>
+                            <TableHead>Progress</TableHead>
+                            <TableHead>Leads/Day</TableHead>
+                            <TableHead>Days Remaining</TableHead>
+                            <TableHead>Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -372,7 +416,7 @@ const AdminDashboard = () => {
                             return (
                               <TableRow 
                                 key={client.id}
-                                className={`${status === 'urgent' ? "bg-destructive/5" : ""} hover:bg-muted/50 transition-colors duration-200`}
+                                className={status === 'urgent' ? "bg-destructive/5" : ""}
                               >
                                 <TableCell className="font-medium">
                                   <div>
@@ -438,6 +482,7 @@ const AdminDashboard = () => {
               
               {clients.filter(c => c.client_name).length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p>No active clients yet. Invite clients to get started.</p>
                 </div>
               )}
@@ -446,35 +491,35 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Quick Actions Grid */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/leads")}>
-            <CardContent className="p-6">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-3">
+          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/leads")}>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="h-4 w-4" />
                 All Leads
               </CardTitle>
-              <p className="text-sm text-muted-foreground">View and manage all leads in the system</p>
-            </CardContent>
+              <CardDescription>View and manage all leads in the system</CardDescription>
+            </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/clients")}>
-            <CardContent className="p-6">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
+          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/clients")}>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" />
                 Manage Clients
               </CardTitle>
-              <p className="text-sm text-muted-foreground">View and configure client accounts</p>
-            </CardContent>
+              <CardDescription>View and configure client accounts</CardDescription>
+            </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 shadow-sm border-border rounded-lg" onClick={() => navigate("/admin/invite")}>
-            <CardContent className="p-6">
-              <CardTitle className="text-sm font-medium flex items-center gap-2 mb-2">
-                <PlusCircle className="h-4 w-4 text-muted-foreground" />
+          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/invite")}>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
                 Invite Client
               </CardTitle>
-              <p className="text-sm text-muted-foreground">Send invitation to new client</p>
-            </CardContent>
+              <CardDescription>Send invitation to new client</CardDescription>
+            </CardHeader>
           </Card>
         </div>
       </div>
