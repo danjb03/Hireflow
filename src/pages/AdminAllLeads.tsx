@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, ExternalLink } from "lucide-react";
+import { Search, Loader2, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -18,8 +18,6 @@ interface Lead {
   assignedClient: string;
   assignedClientId: string | null;
   dateAdded: string;
-  
-  // Company Information
   companyWebsite?: string;
   companyLinkedIn?: string;
   industry?: string;
@@ -29,15 +27,11 @@ interface Lead {
   location?: string;
   companyDescription?: string;
   founded?: string;
-  
-  // Contact Details
   contactName?: string;
   jobTitle?: string;
   email?: string;
   phone?: string;
   linkedInProfile?: string;
-  
-  // Job Information
   jobPostingTitle?: string;
   jobDescription?: string;
   jobUrl?: string;
@@ -58,38 +52,66 @@ const AdminAllLeads = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [leadsPerPage] = useState(50);
   const [userEmail, setUserEmail] = useState<string>("");
-  const isInitialMount = useRef(true);
+  const [initialized, setInitialized] = useState(false);
+  const leadsPerPage = 50;
 
+  // Single initialization effect
   useEffect(() => {
-    checkAdminAndLoadData();
-    const getUserEmail = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) setUserEmail(user.email);
+    if (initialized) return;
+    
+    const init = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate("/login");
+          return;
+        }
+
+        setUserEmail(user.email || "");
+
+        const { data: isAdmin } = await supabase.rpc("is_admin", {
+          _user_id: user.id,
+        });
+
+        if (!isAdmin) {
+          navigate("/dashboard");
+          return;
+        }
+
+        // Load clients
+        const { data: clientData } = await supabase
+          .from("profiles")
+          .select("id, email, client_name")
+          .not("client_name", "is", null)
+          .neq("client_name", "");
+        
+        setClients(clientData || []);
+
+        // Load leads
+        await fetchLeads("", "", "");
+        
+        setInitialized(true);
+      } catch (error) {
+        console.error("Error initializing:", error);
+        setLoading(false);
+      }
     };
-    getUserEmail();
-  }, []);
 
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+    init();
+  }, [initialized, navigate]);
 
-  const loadLeads = useCallback(async () => {
+  const fetchLeads = async (status: string, client: string, search: string) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (statusFilter) params.append("status", statusFilter);
-      if (clientFilter) params.append("client", clientFilter);
-      if (debouncedSearch) params.append("search", debouncedSearch);
+      if (status) params.append("status", status);
+      if (client) params.append("client", client);
+      if (search) params.append("search", search);
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -125,66 +147,33 @@ const AdminAllLeads = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, statusFilter, clientFilter, navigate]);
+  };
 
-  // Reload when filters change (but not on initial mount)
-  useEffect(() => {
-    // Skip initial mount - it's handled by checkAdminAndLoadData
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    
-    // Skip if still loading from initial load
-    if (loading) return;
-    
-    loadLeads();
+  const handleStatusChange = (value: string) => {
+    const newStatus = value === "all" ? "" : value;
+    setStatusFilter(newStatus);
     setCurrentPage(1);
-  }, [debouncedSearch, statusFilter, clientFilter, loadLeads, loading]);
-
-  const checkAdminAndLoadData = async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate("/login");
-        return;
-      }
-
-      const { data: isAdmin } = await supabase.rpc("is_admin", {
-        _user_id: user.id,
-      });
-
-      if (!isAdmin) {
-        navigate("/dashboard");
-        return;
-      }
-
-      await Promise.all([loadLeads(), loadClients()]);
-    } catch (error) {
-      console.error("Error in checkAdminAndLoadData:", error);
-      setLoading(false);
-    }
+    fetchLeads(newStatus, clientFilter, searchTerm);
   };
 
-  const loadClients = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, client_name")
-        .not("client_name", "is", null)
-        .neq("client_name", "");
-
-      if (error) throw error;
-
-      setClients(data || []);
-    } catch (error) {
-      console.error("Error loading clients:", error);
-    }
+  const handleClientChange = (value: string) => {
+    const newClient = value === "all" ? "" : value;
+    setClientFilter(newClient);
+    setCurrentPage(1);
+    fetchLeads(statusFilter, newClient, searchTerm);
   };
 
-  const handleAssignClient = useCallback(async (leadId: string, clientId: string) => {
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    // Debounce search
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+      fetchLeads(statusFilter, clientFilter, value);
+    }, 500);
+    return () => clearTimeout(timer);
+  };
+
+  const handleAssignClient = async (leadId: string, clientId: string) => {
     try {
       const { error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId, clientId },
@@ -197,7 +186,7 @@ const AdminAllLeads = () => {
         description: "Lead assigned to client",
       });
 
-      loadLeads();
+      fetchLeads(statusFilter, clientFilter, searchTerm);
     } catch (error) {
       console.error("Error assigning lead:", error);
       toast({
@@ -206,29 +195,6 @@ const AdminAllLeads = () => {
         variant: "destructive",
       });
     }
-  }, [loadLeads]);
-
-  const getDisplayUrl = (url: string | undefined): string | null => {
-    if (!url || url.trim() === '') return null;
-    
-    try {
-      const urlWithProtocol = url.startsWith('http://') || url.startsWith('https://') 
-        ? url 
-        : `https://${url}`;
-      
-      const parsedUrl = new URL(urlWithProtocol);
-      return parsedUrl.hostname.replace('www.', '');
-    } catch (error) {
-      return url.replace('www.', '').replace('http://', '').replace('https://', '');
-    }
-  };
-
-  const getFullUrl = (url: string | undefined): string | null => {
-    if (!url || url.trim() === '') return null;
-    
-    return url.startsWith('http://') || url.startsWith('https://') 
-      ? url 
-      : `https://${url}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -242,7 +208,7 @@ const AdminAllLeads = () => {
     return colors[status] || "bg-blue-100 text-blue-700";
   };
 
-  const getClientColor = useCallback((clientName: string) => {
+  const getClientColor = (clientName: string) => {
     const colors = [
       "bg-primary/10 text-primary border-2 border-primary/30",
       "bg-purple-500/10 text-purple-600 border-2 border-purple-500/30",
@@ -255,16 +221,12 @@ const AdminAllLeads = () => {
     ];
     const hash = clientName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
-  }, []);
+  };
 
-  // Memoize pagination calculations
-  const { currentLeads, totalPages } = useMemo(() => {
-    const indexOfLastLead = currentPage * leadsPerPage;
-    const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-    const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
-    const totalPages = Math.ceil(leads.length / leadsPerPage);
-    return { currentLeads, totalPages };
-  }, [leads, currentPage, leadsPerPage]);
+  const indexOfLastLead = currentPage * leadsPerPage;
+  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+  const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
+  const totalPages = Math.ceil(leads.length / leadsPerPage);
 
   return (
     <AdminLayout userEmail={userEmail}>
@@ -274,7 +236,6 @@ const AdminAllLeads = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">All Leads</h1>
@@ -284,9 +245,8 @@ const AdminAllLeads = () => {
             </div>
           </div>
 
-          {/* Filters */}
           <div className="flex items-center gap-4">
-            <Tabs value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
+            <Tabs value={statusFilter || "all"} onValueChange={handleStatusChange}>
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="NEW">New</TabsTrigger>
@@ -303,12 +263,12 @@ const AdminAllLeads = () => {
                 <Input
                   placeholder="Search by company..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearch(e.target.value)}
                   className="pl-9"
                 />
               </div>
               
-              <Select value={clientFilter || "all"} onValueChange={(value) => setClientFilter(value === "all" ? "" : value)}>
+              <Select value={clientFilter || "all"} onValueChange={handleClientChange}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="All Clients" />
                 </SelectTrigger>
@@ -325,7 +285,6 @@ const AdminAllLeads = () => {
             </div>
           </div>
 
-          {/* Table */}
           {leads.length === 0 ? (
             <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
               <div className="text-center">
@@ -369,20 +328,13 @@ const AdminAllLeads = () => {
                         {lead.assignedClient === "Unassigned" ? (
                           clients.length > 0 ? (
                             <div onClick={(e) => e.stopPropagation()}>
-                              <Select 
-                                onValueChange={(value) => {
-                                  handleAssignClient(lead.id, value);
-                                }}
-                              >
+                              <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
                                 <SelectTrigger className="w-40">
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
                                 <SelectContent className="z-50">
                                   {clients.map((client) => (
-                                    <SelectItem 
-                                      key={client.id} 
-                                      value={client.id}
-                                    >
+                                    <SelectItem key={client.id} value={client.id}>
                                       {client.client_name || client.email}
                                     </SelectItem>
                                   ))}
@@ -418,7 +370,6 @@ const AdminAllLeads = () => {
                             e.stopPropagation();
                             navigate(`/admin/leads/${lead.id}`);
                           }}
-                          className="transition-colors duration-200"
                         >
                           View
                         </Button>
@@ -430,7 +381,6 @@ const AdminAllLeads = () => {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <Button
@@ -438,7 +388,6 @@ const AdminAllLeads = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="transition-colors duration-200"
               >
                 Previous
               </Button>
@@ -450,7 +399,6 @@ const AdminAllLeads = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="transition-colors duration-200"
               >
                 Next
               </Button>
