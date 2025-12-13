@@ -46,13 +46,20 @@ const AdminInvite = () => {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation: Don't allow submission if clientName is empty
+    if (!clientName.trim()) {
+      toast.error("Client Name is required");
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       // Prepare onboarding data
       const onboardingData: any = {
         email,
-        clientName,
+        clientName: clientName.trim(),
         leadsPurchased: leadsPurchased || 0,
         onboardingDate: onboardingDate || null,
         targetDeliveryDate: targetDeliveryDate || null,
@@ -115,6 +122,21 @@ const AdminInvite = () => {
           <CardContent className="p-6 pt-0">
             <form onSubmit={handleInvite} className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="clientName">Client Name *</Label>
+                <Input
+                  id="clientName"
+                  placeholder="e.g. Acme Corp"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  required
+                  disabled={!!generatedPassword}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This exact name will be used to assign leads to this client
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
@@ -125,22 +147,6 @@ const AdminInvite = () => {
                   required
                   disabled={!!generatedPassword}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name</Label>
-                <Input
-                  id="clientName"
-                  type="text"
-                  placeholder="Client Company Name"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
-                  disabled={!!generatedPassword}
-                />
-                <p className="text-xs text-muted-foreground">
-                  This will be used to identify the client in the system
-                </p>
               </div>
 
               {/* Onboarding Information */}

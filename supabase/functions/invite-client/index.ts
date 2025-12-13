@@ -43,6 +43,7 @@ serve(async (req) => {
     if (authData.user) {
       // Prepare profile update with onboarding data
       const profileUpdate: any = {
+        id: authData.user.id,
         client_name: clientName,
         initial_password: tempPassword
       };
@@ -54,10 +55,10 @@ serve(async (req) => {
       if (leadsPerDay !== null && leadsPerDay !== undefined) profileUpdate.leads_per_day = leadsPerDay;
       if (clientStatus) profileUpdate.client_status = clientStatus;
 
+      // Use upsert to ensure profile is created/updated with client_name
       await supabaseAdmin
         .from("profiles")
-        .update(profileUpdate)
-        .eq("id", authData.user.id);
+        .upsert(profileUpdate, { onConflict: 'id' });
 
       await supabaseAdmin
         .from("user_roles")
