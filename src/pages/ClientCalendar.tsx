@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 
 interface Lead {
@@ -12,7 +12,7 @@ interface Lead {
   companyName: string;
   contactName: string;
   status: string;
-  callbackDateTime: string;
+  availability: string | null;
 }
 
 const ClientCalendar = () => {
@@ -46,9 +46,9 @@ const ClientCalendar = () => {
 
       if (error) throw error;
 
-      // Filter leads that have callback dates
-      const leadsWithDates = (data.leads || []).filter((lead: any) => lead.callbackDateTime);
-      setLeadsWithCallbacks(leadsWithDates);
+      // Filter leads that have availability
+      const leadsWithAvailability = (data.leads || []).filter((lead: any) => lead.availability);
+      setLeadsWithCallbacks(leadsWithAvailability);
     } catch (error: any) {
       toast.error("Failed to load callbacks: " + error.message);
     } finally {
@@ -68,14 +68,10 @@ const ClientCalendar = () => {
   };
 
   const getLeadsForDate = (date: Date) => {
-    return leadsWithCallbacks.filter(lead => {
-      const callbackDate = new Date(lead.callbackDateTime);
-      return (
-        callbackDate.getDate() === date.getDate() &&
-        callbackDate.getMonth() === date.getMonth() &&
-        callbackDate.getFullYear() === date.getFullYear()
-      );
-    });
+    // Since availability is now text, we can't filter by date
+    // Return all leads with availability for now
+    // This might need to be redesigned if date-based filtering is needed
+    return leadsWithCallbacks;
   };
 
   const previousMonth = () => {
@@ -214,13 +210,12 @@ const ClientCalendar = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">{lead.contactName}</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {new Date(lead.callbackDateTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </p>
+                    {lead.availability && (
+                      <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        {lead.availability}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

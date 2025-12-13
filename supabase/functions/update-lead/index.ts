@@ -59,6 +59,7 @@ serve(async (req) => {
       feedback: 'Feedback',
       lastContactDate: 'Last Contact Date',
       nextAction: 'Next Action',
+      availability: 'Availability',
     };
 
     // Build Airtable fields object

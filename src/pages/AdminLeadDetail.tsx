@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, X, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -31,7 +32,7 @@ interface LeadData {
   phone: string;
   linkedInProfile: string;
   callNotes: string | null;
-  callbackDateTime: string | null;
+  availability: string | null;
   jobOpenings: Array<{ title: string; url: string; type?: string }>;
   jobPostingTitle: string | null;
   jobDescription: string | null;
@@ -56,7 +57,7 @@ const AdminLeadDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [callbackDateTime, setCallbackDateTime] = useState("");
+  const [availability, setAvailability] = useState("");
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
@@ -102,14 +103,7 @@ const AdminLeadDetail = () => {
 
       setLead(data.lead);
       setSelectedStatus(data.lead.status);
-      if (data.lead.callbackDateTime) {
-        // Convert to local datetime-local format
-        const date = new Date(data.lead.callbackDateTime);
-        const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-          .toISOString()
-          .slice(0, 16);
-        setCallbackDateTime(localDateTime);
-      }
+      setAvailability(data.lead.availability || "");
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -188,15 +182,13 @@ const AdminLeadDetail = () => {
     }
   };
 
-  const handleUpdateCallbackDateTime = async () => {
-    if (!callbackDateTime) return;
-
+  const handleUpdateAvailability = async () => {
     try {
       const { error } = await supabase.functions.invoke("update-lead", {
         body: { 
           leadId: id, 
           updates: { 
-            callbackDateTime: new Date(callbackDateTime).toISOString() 
+            availability: availability 
           } 
         },
       });
@@ -205,15 +197,15 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: "Callback date updated successfully",
+        description: "Availability updated successfully",
       });
 
       loadLead();
     } catch (error) {
-      console.error("Error updating callback date:", error);
+      console.error("Error updating availability:", error);
       toast({
         title: "Error",
-        description: "Failed to update callback date",
+        description: "Failed to update availability",
         variant: "destructive",
       });
     }
@@ -377,17 +369,16 @@ const AdminLeadDetail = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">Callback Date & Time</label>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">Availability</label>
               <div className="flex gap-2">
-                <input
-                  type="datetime-local"
-                  value={callbackDateTime}
-                  onChange={(e) => setCallbackDateTime(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                <Input 
+                  placeholder="e.g. Mon-Fri 9am-5pm, Weekends after 2pm" 
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  className="flex-1"
                 />
                 <Button 
-                  onClick={handleUpdateCallbackDateTime} 
-                  disabled={!callbackDateTime}
+                  onClick={handleUpdateAvailability}
                   className="bg-primary hover:bg-primary/90"
                 >
                   Update
@@ -443,35 +434,19 @@ const AdminLeadDetail = () => {
             </AlertDialog>
           </div>
 
-          {/* Callback Schedule - Prominent Display */}
-          {lead.callbackDateTime && (
+          {/* Availability - Prominent Display */}
+          {lead.availability && (
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <Clock className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
-                    <p className="text-xl font-bold text-foreground">
-                      {new Date(lead.callbackDateTime).toLocaleString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-3 rounded-full">
+                  <Clock className="h-5 w-5 text-primary" />
                 </div>
-                {new Date(lead.callbackDateTime) < new Date() ? (
-                  <Badge variant="destructive" className="rounded-full">Overdue</Badge>
-                ) : (
-                  <Badge variant="outline" className="gap-1.5 rounded-full border-emerald-200 text-emerald-700">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Upcoming
-                  </Badge>
-                )}
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Availability</p>
+                  <p className="text-xl font-bold text-foreground">
+                    {lead.availability}
+                  </p>
+                </div>
               </div>
             </div>
           )}

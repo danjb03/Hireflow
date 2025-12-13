@@ -126,6 +126,7 @@ serve(async (req) => {
         feedback: fields['Feedback'] || null,
         lastContactDate: fields['Last Contact Date'] || null,
         nextAction: fields['Next Action'] || null,
+        availability: fields['Availability'] || null,
       };
     });
 

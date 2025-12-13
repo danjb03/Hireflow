@@ -20,7 +20,8 @@ import {
   Users,
   FileText,
   Linkedin,
-  ExternalLink
+  ExternalLink,
+  Clock
 } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 
@@ -43,7 +44,7 @@ interface LeadDetail {
   phone: string;
   linkedInProfile: string;
   callNotes: string | null;
-  callbackDateTime: string | null;
+  availability: string | null;
   jobOpenings: Array<{ title: string; url: string; type?: string }>;
   jobUrl: string | null;
   activeJobsUrl: string | null;
@@ -184,32 +185,19 @@ const ClientLeadDetail = () => {
               </div>
             </div>
 
-            {/* Callback Schedule - Prominent Display */}
-            {lead.callbackDateTime && (
+            {/* Availability - Prominent Display */}
+            {lead.availability && (
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-3 rounded-full">
-                      <span className="text-2xl">📅</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
-                      <p className="text-xl font-bold text-foreground">
-                        {new Date(lead.callbackDateTime).toLocaleString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <Clock className="h-5 w-5 text-primary" />
                   </div>
-                  {new Date(lead.callbackDateTime) < new Date() ? (
-                    <Badge variant="destructive" className="text-sm">Overdue</Badge>
-                  ) : (
-                    <Badge className="text-sm bg-green-500/10 text-green-500 border-green-500/20">Upcoming</Badge>
-                  )}
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Availability</p>
+                    <p className="text-xl font-bold text-foreground">
+                      {lead.availability}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -259,6 +247,13 @@ const ClientLeadDetail = () => {
                   </a>
                 </div>
               )}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Availability</p>
+                <p className="text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  {lead.availability || "Not specified"}
+                </p>
+              </div>
             </div>
             {lead.linkedInProfile && (
               <div className="mt-4 pt-4 border-t">
