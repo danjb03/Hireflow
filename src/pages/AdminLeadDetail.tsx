@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertTriangle, X } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertTriangle, X, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -245,13 +245,29 @@ const AdminLeadDetail = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      Approved: "bg-emerald-100 text-emerald-700",
-      Rejected: "bg-red-100 text-red-700",
-      'Needs Work': "bg-amber-100 text-amber-700",
-      NEW: "bg-blue-100 text-blue-700",
-      Lead: "bg-blue-100 text-blue-700",
+      Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      Rejected: "bg-red-100 text-red-700 border-red-200",
+      'Needs Work': "bg-amber-100 text-amber-700 border-amber-200",
+      NEW: "bg-blue-100 text-blue-700 border-blue-200",
+      Lead: "bg-blue-100 text-blue-700 border-blue-200",
     };
-    return colors[status] || "bg-blue-100 text-blue-700";
+    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Approved':
+        return <CheckCircle2 className="h-4 w-4" />;
+      case 'Needs Work':
+        return <AlertTriangle className="h-4 w-4" />;
+      case 'Rejected':
+        return <X className="h-4 w-4" />;
+      case 'NEW':
+      case 'Lead':
+        return <Clock className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
   };
 
   const getLeadDescription = () => {
@@ -280,19 +296,19 @@ const AdminLeadDetail = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-6">
         {/* Breadcrumb */}
         <Breadcrumb>
-          <BreadcrumbList>
+          <BreadcrumbList className="text-sm text-muted-foreground">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href="/admin">Dashboard</a>
+                <a href="/admin" className="hover:text-foreground transition-colors">Dashboard</a>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href="/admin/leads">All Leads</a>
+                <a href="/admin/leads" className="hover:text-foreground transition-colors">All Leads</a>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -303,13 +319,9 @@ const AdminLeadDetail = () => {
         </Breadcrumb>
 
         {/* Admin Actions */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Admin Actions</CardTitle>
-            <CardDescription>Manage lead assignment and status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-3">
+        <Card className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Assign to Client</label>
                 {clients.length > 0 ? (
@@ -336,7 +348,7 @@ const AdminLeadDetail = () => {
                   </div>
                 ) : (
                   <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md border border-border">
-                    No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline hover:text-primary/80 transition-colors duration-200">Client Management</button> to configure client names.
+                    No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline hover:text-primary/80 transition-colors">Client Management</button> to configure client names.
                   </div>
                 )}
               </div>
@@ -387,27 +399,25 @@ const AdminLeadDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Lead Hero Section */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex justify-between items-start flex-wrap gap-4">
+        {/* Company Header Card */}
+        <Card className="rounded-xl shadow-sm border bg-card">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <CardTitle className="text-3xl">{lead.companyName}</CardTitle>
-                  <Badge variant="outline" className="gap-1">
-                    {lead.status === 'Approved' && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
-                    {lead.status === 'Needs Work' && <AlertTriangle className="h-3 w-3 text-amber-600" />}
-                    {lead.status === 'Rejected' && <X className="h-3 w-3 text-red-600" />}
-                    {lead.status}
+                  <h1 className="text-3xl font-bold text-foreground">{lead.companyName}</h1>
+                  <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1.5 px-2.5 py-1`}>
+                    {getStatusIcon(lead.status)}
+                    <span>{lead.status}</span>
                   </Badge>
                 </div>
-                <CardDescription className="mt-2">{getLeadDescription()}</CardDescription>
+                <p className="text-muted-foreground text-base mb-3">{getLeadDescription()}</p>
                 {lead.companyWebsite && (
                   <a 
                     href={lead.companyWebsite} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline inline-flex items-center gap-1 text-sm mt-2"
+                    className="text-primary hover:underline inline-flex items-center gap-1.5 text-sm transition-colors"
                   >
                     <Globe className="h-4 w-4" />
                     {lead.companyWebsite}
@@ -416,8 +426,8 @@ const AdminLeadDetail = () => {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
+                  <Button variant="destructive" size="sm" className="shrink-0">
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Delete Lead
                   </Button>
                 </AlertDialogTrigger>
@@ -438,15 +448,15 @@ const AdminLeadDetail = () => {
 
             {/* Callback Schedule - Prominent Display */}
             {lead.callbackDateTime && (
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
                     <div className="bg-primary/10 p-3 rounded-full">
-                      <span className="text-2xl">📅</span>
+                      <Clock className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Scheduled Callback</p>
-                      <p className="text-xl font-bold">
+                      <p className="text-xl font-bold text-foreground">
                         {new Date(lead.callbackDateTime).toLocaleString('en-US', {
                           month: 'long',
                           day: 'numeric',
@@ -458,58 +468,64 @@ const AdminLeadDetail = () => {
                     </div>
                   </div>
                   {new Date(lead.callbackDateTime) < new Date() ? (
-                    <Badge variant="destructive">Overdue</Badge>
+                    <Badge variant="destructive" className="rounded-full">Overdue</Badge>
                   ) : (
-                    <Badge variant="outline" className="gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    <Badge variant="outline" className="gap-1.5 rounded-full border-emerald-200 text-emerald-700">
+                      <CheckCircle2 className="h-3 w-3" />
                       Upcoming
                     </Badge>
                   )}
                 </div>
               </div>
             )}
-          </CardHeader>
+          </CardContent>
         </Card>
 
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-6">
           {/* Contact Details */}
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="rounded-xl shadow-sm border bg-card">
+            <CardHeader className="p-6 pb-4">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Contact Details
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <CardContent className="p-6 pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {lead.contactName && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">Name</p>
-                    <p className="text-foreground font-semibold text-lg">{lead.contactName}</p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</p>
+                    <p className="text-sm font-medium text-foreground">{lead.contactName}</p>
                   </div>
                 )}
                 {lead.jobTitle && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                    <p className="flex items-center gap-2 text-foreground font-medium">
-                      <Briefcase className="h-4 w-4 text-primary" />
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Job Title</p>
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
                       {lead.jobTitle}
                     </p>
                   </div>
                 )}
                 {lead.email && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline font-medium break-all">
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</p>
+                    <a 
+                      href={`mailto:${lead.email}`} 
+                      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors break-all"
+                    >
                       <Mail className="h-4 w-4 flex-shrink-0" />
                       {lead.email}
                     </a>
                   </div>
                 )}
                 {lead.phone && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                    <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline font-medium">
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</p>
+                    <a 
+                      href={`tel:${lead.phone}`} 
+                      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
+                    >
                       <Phone className="h-4 w-4" />
                       {lead.phone}
                     </a>
@@ -517,207 +533,207 @@ const AdminLeadDetail = () => {
                 )}
               </div>
               {lead.linkedInProfile && (
-                <div className="mt-4 pt-4 border-t">
-                  <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline font-medium">
-                    <Linkedin className="h-5 w-5" />
-                    View LinkedIn Profile
-                  </a>
+                <div className="mt-6 pt-6 border-t">
+                  <Button variant="outline" asChild className="gap-2">
+                    <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer">
+                      <Linkedin className="h-4 w-4" />
+                      View LinkedIn Profile
+                    </a>
+                  </Button>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Company Info */}
-            <div className="space-y-4 md:space-y-6">
-              {/* Company Information */}
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Company Information
+            <Card className="rounded-xl shadow-sm border bg-card">
+              <CardHeader className="p-6 pb-4">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Company Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 pt-0">
+                <div className="grid grid-cols-2 gap-4">
+                  {lead.industry && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Industry</p>
+                      <p className="text-sm text-foreground">{lead.industry}</p>
+                    </div>
+                  )}
+                  {lead.companySize && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company Size</p>
+                      <p className="flex items-center gap-1.5 text-sm text-foreground">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        {lead.companySize}
+                      </p>
+                    </div>
+                  )}
+                  {lead.employeeCount && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Employee Count</p>
+                      <p className="text-sm text-foreground">{lead.employeeCount}</p>
+                    </div>
+                  )}
+                  {lead.country && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Country</p>
+                      <p className="text-sm text-foreground">{lead.country}</p>
+                    </div>
+                  )}
+                  {lead.location && (
+                    <div className="space-y-1.5 col-span-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Address / Location</p>
+                      <p className="flex items-center gap-1.5 text-sm text-foreground">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        {lead.location}
+                      </p>
+                    </div>
+                  )}
+                  {lead.founded && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Founded</p>
+                      <p className="text-sm text-foreground">{lead.founded}</p>
+                    </div>
+                  )}
+                  {lead.companyLinkedIn && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company LinkedIn</p>
+                      <a 
+                        href={lead.companyLinkedIn} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-primary hover:underline inline-flex items-center gap-1.5 text-sm transition-colors"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                        View Profile
+                      </a>
+                    </div>
+                  )}
+                </div>
+                {lead.companyDescription && (
+                  <>
+                    <Separator className="my-6" />
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Company Description</p>
+                      <p className="text-sm text-foreground leading-relaxed">{lead.companyDescription}</p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Right Column - Job Openings */}
+            {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
+              <Card className="rounded-xl shadow-sm border bg-card">
+                <CardHeader className="p-6 pb-4">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Briefcase className="h-5 w-5" />
+                    Job Openings
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4">
-                    {lead.industry && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Industry</p>
-                        <p className="text-foreground">{lead.industry}</p>
+                <CardContent className="p-6 pt-0 space-y-4">
+                  {lead.jobsOpen && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Open Positions</p>
+                      <p className="text-2xl font-bold text-foreground">{lead.jobsOpen}</p>
+                    </div>
+                  )}
+                  
+                  {lead.jobPostingTitle && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Job Title</p>
+                      <p className="text-sm font-medium text-foreground">{lead.jobPostingTitle}</p>
+                    </div>
+                  )}
+                  
+                  {lead.jobDescription && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Job Description</p>
+                      <div className="max-h-48 overflow-y-auto">
+                        <p className="text-sm text-foreground leading-relaxed">{lead.jobDescription}</p>
                       </div>
-                    )}
-                    {lead.companySize && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Company Size</p>
-                        <p className="flex items-center gap-1 text-foreground">
-                          <Users className="h-4 w-4" />
-                          {lead.companySize}
-                        </p>
-                      </div>
-                    )}
-                    {lead.employeeCount && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Employee Count</p>
-                        <p className="text-foreground">{lead.employeeCount}</p>
-                      </div>
-                    )}
-                    {lead.country && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Country</p>
-                        <p className="text-foreground">{lead.country}</p>
-                      </div>
-                    )}
-                    {lead.location && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Address / Location</p>
-                        <p className="flex items-center gap-1 text-foreground">
-                          <MapPin className="h-4 w-4" />
-                          {lead.location}
-                        </p>
-                      </div>
-                    )}
-                    {lead.founded && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Founded</p>
-                        <p className="text-foreground">{lead.founded}</p>
-                      </div>
-                    )}
-                    {lead.companyLinkedIn && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Company LinkedIn</p>
-                        <a 
-                          href={lead.companyLinkedIn} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                          View Profile
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                  {lead.companyDescription && (
-                    <>
-                      <Separator />
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-2">Company Description</p>
-                        <p className="text-foreground text-sm leading-relaxed">{lead.companyDescription}</p>
-                      </div>
-                    </>
+                    </div>
+                  )}
+                  
+                  {lead.jobOpenings && lead.jobOpenings.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Available Positions</p>
+                      <ul className="space-y-3">
+                        {lead.jobOpenings.map((job, index) => (
+                          <li key={index} className="border-l-2 border-primary pl-3">
+                            <a 
+                              href={job.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-primary hover:underline font-medium text-sm transition-colors"
+                            >
+                              {job.title}
+                            </a>
+                            {job.type && <p className="text-xs text-muted-foreground mt-1">{job.type}</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {lead.jobUrl && (
+                    <Button variant="outline" asChild className="gap-2">
+                      <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
+                        View Job Posting URL
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  
+                  {lead.activeJobsUrl && (
+                    <Button variant="outline" asChild className="gap-2">
+                      <a href={lead.activeJobsUrl} target="_blank" rel="noopener noreferrer">
+                        Find Active Job Openings
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
                   )}
                 </CardContent>
               </Card>
-            </div>
+            )}
+          </div>
 
-            {/* Right Column - Interaction Details */}
-            <div className="space-y-4 md:space-y-6">
-              {/* Call Notes */}
-              {lead.callNotes && (
-                <Card className="shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Call Notes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{lead.callNotes}</p>
-                  </CardContent>
-                </Card>
-              )}
+          {/* Additional Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Call Notes */}
+            {lead.callNotes && (
+              <Card className="rounded-xl shadow-sm border bg-card">
+                <CardHeader className="p-6 pb-4">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Call Notes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{lead.callNotes}</p>
+                </CardContent>
+              </Card>
+            )}
 
-              {/* Job Openings */}
-              {(lead.jobOpenings?.length > 0 || lead.jobUrl || lead.jobsOpen || lead.activeJobsUrl || lead.jobPostingTitle || lead.jobDescription) && (
-                <Card className="shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Briefcase className="h-5 w-5" />
-                      Job Openings
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {lead.jobsOpen && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Open Positions</p>
-                        <p className="text-2xl font-bold text-foreground">{lead.jobsOpen}</p>
-                      </div>
-                    )}
-                    
-                    {lead.jobPostingTitle && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                        <p className="text-foreground font-medium">{lead.jobPostingTitle}</p>
-                      </div>
-                    )}
-                    
-                    {lead.jobDescription && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-2">Job Description</p>
-                        <p className="text-foreground text-sm leading-relaxed">{lead.jobDescription}</p>
-                      </div>
-                    )}
-                    
-                    {lead.jobOpenings && lead.jobOpenings.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-2">Available Positions</p>
-                        <ul className="space-y-3">
-                          {lead.jobOpenings.map((job, index) => (
-                            <li key={index} className="border-l-2 border-primary pl-3">
-                              <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                                {job.title}
-                              </a>
-                              {job.type && <p className="text-sm text-muted-foreground">{job.type}</p>}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    {lead.jobUrl && (
-                      <a 
-                        href={lead.jobUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-primary hover:underline inline-flex items-center gap-1"
-                      >
-                        View Job Posting URL
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                    
-                    {lead.activeJobsUrl && (
-                      <a 
-                        href={lead.activeJobsUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-primary hover:underline inline-flex items-center gap-1"
-                      >
-                        Find Active Job Openings
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Client Feedback */}
-              {lead.feedback && (
-                <Card className="shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Client Feedback
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {lead.feedback}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            {/* Client Feedback */}
+            {lead.feedback && (
+              <Card className="rounded-xl shadow-sm border bg-card">
+                <CardHeader className="p-6 pb-4">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Client Feedback
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                    {lead.feedback}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
