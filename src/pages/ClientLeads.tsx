@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Loader2, Search, Mail, Phone, Linkedin, MapPin, Building2, Calendar, ExternalLink } from "lucide-react";
+import { Loader2, Search, Mail, Phone, Linkedin, MapPin, Building2, Calendar, ExternalLink, FileText } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 
 interface Lead {
