@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Mail, Trash2, Key, Save, X, UserX, CheckCircle2, AlertTriangle, Smile, Frown, Clock } from "lucide-react";
+import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertTriangle, Smile, Frown, Clock } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getCompletionPercentage, getDaysRemaining } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
