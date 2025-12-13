@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertTriangle, Smile, Frown, Clock } from "lucide-react";
+import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertTriangle, Smile, Frown, Clock, Building2, ExternalLink, Edit, Search } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getCompletionPercentage, getDaysRemaining } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
@@ -231,18 +231,18 @@ const AdminClients = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+            <p className="text-muted-foreground mt-1">
               {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
           <Button 
             onClick={() => navigate("/admin/invite")}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="bg-primary hover:bg-primary/90"
           >
             <Mail className="h-4 w-4 mr-2" />
             Invite Client
@@ -500,161 +500,187 @@ const AdminClients = () => {
           </Card>
         )}
 
-        {/* Active Clients Table */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Active Clients</CardTitle>
-            <CardDescription>All active client accounts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {activeClients.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p>No active clients yet. Approve pending users or invite new clients.</p>
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-lg border">
-                <Table>
-                  <TableHeader className="bg-muted sticky top-0 z-10">
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Client Name</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                <TableBody>
-                  {activeClients.map((client) => {
-                    const completion = getCompletionPercentage(
-                      client.leads_fulfilled || 0,
-                      client.leads_purchased || 0
-                    );
-                    const isHighlighted = needsHelp(client);
-                    
-                    return (
-                      <TableRow 
-                        key={client.id}
-                        className={isHighlighted ? "bg-warning/5 border-l-4 border-l-warning" : ""}
-                      >
-                        <TableCell className="font-medium">{client.email}</TableCell>
-                        <TableCell>
-                          {editingClient === client.id ? (
-                            <div className="flex items-center gap-2">
-                              <Select
-                                value={editingName}
-                                onValueChange={setEditingName}
-                              >
-                                <SelectTrigger className="w-48">
-                                  <SelectValue placeholder="Select name" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {loadingOptions ? (
-                                    <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-                                  ) : (
-                                    airtableOptions.map((option) => (
-                                      <SelectItem key={option} value={option}>
-                                        {option}
-                                      </SelectItem>
-                                    ))
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                size="sm"
-                                onClick={() => handleUpdateClient(client.id, editingName)}
-                                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setEditingClient(null)}
-                                className="transition-colors duration-200"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{client.client_name}</Badge>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={client.client_status || 'on_track'}
-                            onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
-                            disabled={updatingStatus === client.id}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="happy">Happy</SelectItem>
-                              <SelectItem value="on_track">On Track</SelectItem>
-                              <SelectItem value="at_risk">At Risk</SelectItem>
-                              <SelectItem value="unhappy">Unhappy</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {client.leads_purchased ? (
-                            <div className="text-sm">
-                              <div className="font-medium">{completion}%</div>
-                              <div className="text-xs text-muted-foreground">
-                                {client.leads_fulfilled || 0} / {client.leads_purchased}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {new Date(client.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {editingClient !== client.id && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => {
-                                  setEditingClient(client.id);
-                                  setEditingName(client.client_name || "");
-                                }}
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => setResettingPassword(client.id)}
+        {/* Active Clients Grid */}
+        {activeClients.length === 0 ? (
+          <div className="bg-muted/30 border-dashed border-2 rounded-xl p-12 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <p className="text-muted-foreground mb-4">No active clients yet. Approve pending users or invite new clients.</p>
+            <Button 
+              onClick={() => navigate("/admin/invite")}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Invite Client
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2">Active Clients</h2>
+              <p className="text-sm text-muted-foreground">All active client accounts</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeClients.map((client) => {
+                const completion = getCompletionPercentage(
+                  client.leads_fulfilled || 0,
+                  client.leads_purchased || 0
+                );
+                const daysRemaining = client.target_delivery_date 
+                  ? getDaysRemaining(new Date(client.target_delivery_date))
+                  : null;
+                const isActive = client.client_name && !needsHelp(client);
+                
+                return (
+                  <div 
+                    key={client.id}
+                    className="bg-card border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    {/* Client Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1 min-w-0">
+                        {editingClient === client.id ? (
+                          <div className="flex items-center gap-2 mb-2">
+                            <Select
+                              value={editingName}
+                              onValueChange={setEditingName}
                             >
-                              <Key className="h-4 w-4" />
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select name" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {loadingOptions ? (
+                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                ) : (
+                                  airtableOptions.map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateClient(client.id, editingName)}
+                              className="bg-primary hover:bg-primary/90"
+                            >
+                              <Save className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="icon"
+                              size="sm"
                               variant="ghost"
-                              onClick={() => setDeleteClient(client)}
+                              onClick={() => setEditingClient(null)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <X className="h-4 w-4" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        ) : (
+                          <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
+                        )}
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <Mail className="h-3 w-3" />
+                          {client.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="mb-4">
+                      {isActive ? (
+                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Active
+                        </Badge>
+                      ) : needsHelp(client) ? (
+                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                          <Clock className="h-3 w-3" />
+                          Needs Attention
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-slate-100 text-slate-700 border-slate-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                          <Clock className="h-3 w-3" />
+                          Pending
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Stats */}
+                    <div className="space-y-2 mb-4">
+                      {client.leads_purchased && (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{completion}%</span> complete • {client.leads_fulfilled || 0} / {client.leads_purchased} leads
+                        </div>
+                      )}
+                      {daysRemaining !== null && (
+                        <div className="text-sm text-muted-foreground">
+                          {daysRemaining < 0 
+                            ? `${Math.abs(daysRemaining)} days overdue`
+                            : `${daysRemaining} days remaining`
+                          }
+                        </div>
+                      )}
+                      <div className="text-sm text-muted-foreground">
+                        Created {new Date(client.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {/* Status Select */}
+                    <div className="mb-4">
+                      <Select
+                        value={client.client_status || 'on_track'}
+                        onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
+                        disabled={updatingStatus === client.id}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="happy">Happy</SelectItem>
+                          <SelectItem value="on_track">On Track</SelectItem>
+                          <SelectItem value="at_risk">At Risk</SelectItem>
+                          <SelectItem value="unhappy">Unhappy</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-4 border-t">
+                      {editingClient !== client.id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingClient(client.id);
+                            setEditingName(client.client_name || "");
+                          }}
+                          className="flex-1"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setResettingPassword(client.id)}
+                      >
+                        <Key className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteClient(client)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}
