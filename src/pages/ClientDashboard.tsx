@@ -25,6 +25,7 @@ interface RecentLead {
 const ClientDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalLeads: 0,
@@ -35,10 +36,10 @@ const ClientDashboard = () => {
   const [recentLeads, setRecentLeads] = useState<RecentLead[]>([]);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    checkOnboarding();
+  }, [navigate]);
 
-  const checkAuth = async () => {
+  const checkOnboarding = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -47,6 +48,20 @@ const ClientDashboard = () => {
     }
 
     setUser(session.user);
+
+    // Check onboarding status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (!profile?.onboarding_completed) {
+      navigate('/onboarding');
+      return;
+    }
+
+    setCheckingOnboarding(false);
     await fetchDashboardData();
   };
 
@@ -116,13 +131,11 @@ const ClientDashboard = () => {
     });
   };
 
-  if (isLoading) {
+  if (checkingOnboarding || isLoading) {
     return (
-      <ClientLayout userEmail={user?.email}>
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </ClientLayout>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 

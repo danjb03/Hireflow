@@ -1,4 +1,7 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import { 
   LayoutDashboard, 
   Users, 
@@ -27,6 +30,51 @@ interface ClientLayoutProps {
 }
 
 const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/login");
+        return;
+      }
+
+      // Skip onboarding check if already on onboarding page
+      if (location.pathname.includes('/onboarding')) {
+        setCheckingOnboarding(false);
+        return;
+      }
+
+      // Check onboarding status
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .single();
+
+      // If onboarding not completed and not already on onboarding page, redirect
+      if (!profile?.onboarding_completed) {
+        navigate('/onboarding');
+        return;
+      }
+
+      setCheckingOnboarding(false);
+    };
+
+    checkOnboarding();
+  }, [navigate, location.pathname]);
+
+  if (checkingOnboarding) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
   const menuItems = [
     { title: "Dashboard", url: "/client/dashboard", icon: LayoutDashboard },
     { title: "Leads", url: "/client/leads", icon: Users },

@@ -18,6 +18,7 @@ const ClientLeads = lazyRetry(() => import("./pages/ClientLeads"), "ClientLeads"
 const ClientLeadDetail = lazyRetry(() => import("./pages/ClientLeadDetail"), "ClientLeadDetail");
 const ClientCalendar = lazyRetry(() => import("./pages/ClientCalendar"), "ClientCalendar");
 const ClientSettings = lazyRetry(() => import("./pages/ClientSettings"), "ClientSettings");
+const ClientOnboarding = lazyRetry(() => import("./pages/ClientOnboarding"), "ClientOnboarding");
 const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"), "AdminDashboard");
 const AdminClients = lazyRetry(() => import("./pages/AdminClients"), "AdminClients");
 const AdminInvite = lazyRetry(() => import("./pages/AdminInvite"), "AdminInvite");
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/lead/:id" element={<LeadDetail />} />
             {/* New client portal routes */}
+            <Route path="/onboarding" element={<ClientOnboarding />} />
             <Route path="/client/dashboard" element={<ClientDashboard />} />
             <Route path="/client/leads" element={<ClientLeads />} />
             <Route path="/client/leads/:id" element={<ClientLeadDetail />} />
