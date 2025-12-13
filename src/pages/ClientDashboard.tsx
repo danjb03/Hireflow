@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, TrendingUp, Users, Calendar, Target, ArrowRight } from "lucide-react";
+import { Loader2, TrendingUp, Users, Calendar, Target, ArrowRight, FileText } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 
 interface DashboardStats {
@@ -128,14 +128,14 @@ const ClientDashboard = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-6 lg:p-8 space-y-8">
-        {/* Hero Section */}
+      <div className="p-6 space-y-6">
+        {/* Welcome Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Welcome back!
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
           </h1>
           <p className="text-muted-foreground mt-1">
-            Today is {new Date().toLocaleDateString("en-US", { 
+            {new Date().toLocaleDateString("en-US", { 
               weekday: "long", 
               year: "numeric", 
               month: "long", 
@@ -146,76 +146,48 @@ const ClientDashboard = () => {
 
         {/* Key Metrics Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Leads
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stats.totalLeads}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                All-time leads
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
+            <div className="absolute top-6 right-6">
+              <Users className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
+            <p className="text-sm text-muted-foreground">Total Leads</p>
+          </div>
 
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Leads
-              </CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stats.activeLeads}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.totalLeads > 0 ? Math.round((stats.activeLeads / stats.totalLeads) * 100) : 0}% of total
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
+            <div className="absolute top-6 right-6">
+              <Target className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.activeLeads}</div>
+            <p className="text-sm text-muted-foreground">Active Leads</p>
+          </div>
 
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Upcoming Callbacks
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stats.upcomingCallbacks}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                This week
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
+            <div className="absolute top-6 right-6">
+              <Calendar className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.upcomingCallbacks}</div>
+            <p className="text-sm text-muted-foreground">Upcoming Callbacks</p>
+          </div>
 
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Conversion Rate
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stats.conversionRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Leads to booked
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
+            <div className="absolute top-6 right-6">
+              <TrendingUp className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.conversionRate}%</div>
+            <p className="text-sm text-muted-foreground">Conversion Rate</p>
+          </div>
         </div>
 
         {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest leads</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="bg-card border rounded-xl shadow-sm">
+          <div className="text-xl font-semibold p-6 border-b">Recent Activity</div>
+          <div className="p-6">
             {recentLeads.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No recent leads</p>
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-muted-foreground">No recent leads</p>
+              </div>
             ) : (
               <div className="space-y-4">
                 {recentLeads.map((lead) => (
@@ -238,15 +210,15 @@ const ClientDashboard = () => {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Quick Actions */}
         <div className="flex gap-4">
-          <Button onClick={() => navigate("/client/leads")} size="lg" className="bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white">
+          <Button onClick={() => navigate("/client/leads")} className="bg-primary hover:bg-primary/90">
             View All Leads
           </Button>
-          <Button onClick={() => navigate("/client/calendar")} variant="outline" size="lg">
+          <Button onClick={() => navigate("/client/calendar")} variant="outline">
             Check Calendar
           </Button>
         </div>
