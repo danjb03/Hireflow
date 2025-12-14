@@ -173,7 +173,7 @@ const ClientLeads = () => {
           <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableRow>
                   <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Company</TableHead>
                   <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Contact</TableHead>
                   <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Status</TableHead>

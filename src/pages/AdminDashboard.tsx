@@ -386,7 +386,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="overflow-hidden rounded-lg border">
                       <Table>
-                        <TableHeader className="bg-muted sticky top-0 z-10">
+                        <TableHeader>
                           <TableRow>
                             <TableHead>Client</TableHead>
                             <TableHead>Progress</TableHead>
