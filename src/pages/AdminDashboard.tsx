@@ -325,30 +325,30 @@ const AdminDashboard = () => {
             <CardDescription>Breakdown of lead statuses across the system</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-6">
-              <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved}</div>
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved ?? 0}</div>
                 <Badge variant="outline" className="gap-1">
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   Approved
                 </Badge>
               </div>
-              <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work']}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work'] ?? 0}</div>
                 <Badge variant="outline" className="gap-1">
                   <AlertTriangle className="h-3 w-3 text-amber-600" />
                   Needs Work
                 </Badge>
               </div>
-              <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected ?? 0}</div>
                 <Badge variant="outline" className="gap-1">
                   <X className="h-3 w-3 text-red-600" />
                   Rejected
                 </Badge>
               </div>
-              <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown ?? 0}</div>
                 <Badge variant="outline" className="gap-1">
                   <FileText className="h-3 w-3 text-muted-foreground" />
                   Unknown
