@@ -231,28 +231,20 @@ const AdminAllLeads = () => {
   };
 
 
-  // Create a map of client names for quick lookup
-  const clientNameMap = new Map<string, Client>();
-  clients.forEach(client => {
-    if (client.client_name) {
-      clientNameMap.set(client.client_name, client);
-    }
-  });
-
   // Helper function to get client name from assignedClient value
   const getClientDisplayName = (assignedClient: string): string => {
     if (assignedClient === "Unassigned" || !assignedClient) {
       return "Unassigned";
     }
     
-    // Check if it's already a client name
-    if (clientNameMap.has(assignedClient)) {
-      return assignedClient;
+    // If it looks like an Airtable record ID (starts with "rec"), it means the backend
+    // couldn't resolve it - show a fallback. Otherwise, it should be the client name.
+    if (assignedClient.startsWith('rec')) {
+      // Try to find client by matching - this shouldn't happen if backend works correctly
+      const client = clients.find(c => c.client_name === assignedClient);
+      return client?.client_name || assignedClient;
     }
     
-    // If it looks like an Airtable record ID (starts with "rec"), try to find by matching
-    // For now, just return the value as-is if we can't find a match
-    // The issue is that Airtable might be returning the record ID instead of the name
     return assignedClient;
   };
 
