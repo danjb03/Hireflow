@@ -34,23 +34,27 @@ serve(async (req) => {
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    // Delete from Airtable
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    // Instead of deleting, mark as "Not Qualified" so it's filtered out from main leads view
+    const tableName = encodeURIComponent('Qualified Lead Table');
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}/${leadId}`;
     const response = await fetch(airtableUrl, {
-      method: 'DELETE',
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${airtableToken}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        fields: { 'Status': 'Not Qualified' }
+      })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Airtable error:', errorText);
-      throw new Error(`Failed to delete lead: ${response.status}`);
+      throw new Error(`Failed to mark lead as not qualified: ${response.status}`);
     }
 
-    console.log(`Successfully deleted lead ${leadId}`);
+    console.log(`Successfully marked lead ${leadId} as Not Qualified`);
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

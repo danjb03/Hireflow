@@ -232,15 +232,15 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: "Lead deleted successfully",
+        description: "Lead marked as Not Qualified and removed from active leads",
       });
 
       navigate("/admin/leads");
     } catch (error) {
-      console.error("Error deleting lead:", error);
+      console.error("Error marking lead as not qualified:", error);
       toast({
         title: "Error",
-        description: "Failed to delete lead",
+        description: "Failed to mark lead as not qualified",
         variant: "destructive",
       });
     }
@@ -251,10 +251,11 @@ const AdminLeadDetail = () => {
       Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
       Rejected: "bg-red-100 text-red-700 border-red-200",
       'Needs Work': "bg-amber-100 text-amber-700 border-amber-200",
-      NEW: "bg-blue-100 text-blue-700 border-blue-200",
-      Lead: "bg-blue-100 text-blue-700 border-blue-200",
+      NEW: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      Lead: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      'Not Qualified': "bg-gray-100 text-gray-700 border-gray-200",
     };
-    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
+    return colors[status] || "bg-emerald-100 text-emerald-700 border-emerald-200";
   };
 
   const getStatusIcon = (status: string) => {
@@ -442,19 +443,19 @@ const AdminLeadDetail = () => {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="shrink-0">
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Lead
+                  Mark as Not Qualified
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                  <AlertDialogTitle>Mark as Not Qualified</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this lead? This action cannot be undone.
+                    This will mark the lead as "Not Qualified" and remove it from the active leads view. The lead will still exist in Airtable but won't appear in the main leads list.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteLead}>Delete</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDeleteLead} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Mark as Not Qualified</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

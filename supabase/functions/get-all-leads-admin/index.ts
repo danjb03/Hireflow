@@ -51,8 +51,16 @@ serve(async (req) => {
 
     let filterParts: string[] = [];
     
-    if (statusFilter) {
-      filterParts.push(`{Status} = '${statusFilter.replace(/'/g, "\\'")}'`);
+    // Exclude "Not Qualified" leads by default unless specifically filtering for them
+    if (statusFilter === 'Not Qualified') {
+      filterParts.push(`{Status} = 'Not Qualified'`);
+    } else {
+      // Exclude "Not Qualified" from all other views
+      filterParts.push(`{Status} != 'Not Qualified'`);
+      
+      if (statusFilter) {
+        filterParts.push(`{Status} = '${statusFilter.replace(/'/g, "\\'")}'`);
+      }
     }
     
     if (clientFilter) {
