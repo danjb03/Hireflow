@@ -106,23 +106,40 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // Collect all unique client record IDs to fetch client names
+    // Collect all unique client identifiers (record IDs or names) to fetch client names
     const clientRecordIds = new Set<string>();
+    const clientNames = new Set<string>();
     data.records.forEach((record: any) => {
       const clientField = record.fields['Client'];
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {
           // Linked record field - extract record IDs
-          clientField.forEach((id: string) => clientRecordIds.add(id));
-        } else if (typeof clientField === 'string' && clientField.startsWith('rec')) {
-          // Single record ID
-          clientRecordIds.add(clientField);
+          clientField.forEach((id: string) => {
+            if (typeof id === 'string' && id.startsWith('rec')) {
+              clientRecordIds.add(id);
+            } else if (typeof id === 'string') {
+              clientNames.add(id);
+            }
+          });
+        } else if (typeof clientField === 'string') {
+          if (clientField.startsWith('rec')) {
+            // Single record ID
+            clientRecordIds.add(clientField);
+          } else {
+            // It's already a name
+            clientNames.add(clientField);
+          }
         }
       }
     });
 
-    // Fetch client names from Clients table
+    // Fetch client names from Clients table for record IDs
     const clientNameMap = new Map<string, string>();
+    
+    // First, add any client names we already have
+    clientNames.forEach(name => clientNameMap.set(name, name));
+    
+    // Then fetch names for record IDs
     if (clientRecordIds.size > 0) {
       const clientIdsArray = Array.from(clientRecordIds);
       // Fetch in batches of 10 (Airtable limit)
@@ -147,11 +164,45 @@ serve(async (req) => {
                 clientNameMap.set(clientRecord.id, clientName);
               }
             });
+          } else {
+            console.error('Failed to fetch clients:', clientsResponse.status, await clientsResponse.text());
           }
         } catch (error) {
           console.error('Error fetching client names:', error);
         }
       }
+    }
+    
+    // Also try to get client names from Supabase profiles as fallback
+    // This helps if Airtable lookup fails or if client_name was set directly
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      const { data: profiles } = await supabaseAdmin
+        .from('profiles')
+        .select('client_name, airtable_client_id')
+        .not('client_name', 'is', null)
+        .neq('client_name', '');
+      
+      if (profiles) {
+        profiles.forEach((profile: any) => {
+          if (profile.client_name) {
+            // Map by airtable_client_id if available
+            if (profile.airtable_client_id) {
+              clientNameMap.set(profile.airtable_client_id, profile.client_name);
+            }
+            // Also create reverse lookup: if the Client field contains the client_name, use it
+            // This handles cases where Client field is set to the name string
+            clientNameMap.set(profile.client_name, profile.client_name);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching client names from Supabase (non-critical):', error);
+      // Don't throw - this is just a fallback
     }
 
     const leads = data.records.map((record: any) => {
