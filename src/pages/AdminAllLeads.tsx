@@ -15,7 +15,7 @@ interface Lead {
   id: string;
   companyName: string;
   status: string;
-  assignedClient: string;
+  assignedClient: string | null | undefined;
   assignedClientId: string | null;
   
   contactName: string | null;
@@ -232,20 +232,24 @@ const AdminAllLeads = () => {
 
 
   // Helper function to get client name from assignedClient value
-  const getClientDisplayName = (assignedClient: string): string => {
-    if (assignedClient === "Unassigned" || !assignedClient) {
+  const getClientDisplayName = (assignedClient: string | null | undefined): string => {
+    // Handle null, undefined, or empty values
+    if (!assignedClient || assignedClient === "Unassigned") {
       return "Unassigned";
     }
     
+    // Ensure it's a string before calling string methods
+    const clientValue = String(assignedClient);
+    
     // If it looks like an Airtable record ID (starts with "rec"), it means the backend
     // couldn't resolve it - show a fallback. Otherwise, it should be the client name.
-    if (assignedClient.startsWith('rec')) {
+    if (clientValue.startsWith('rec')) {
       // Try to find client by matching - this shouldn't happen if backend works correctly
-      const client = clients.find(c => c.client_name === assignedClient);
-      return client?.client_name || assignedClient;
+      const client = clients.find(c => c.client_name === clientValue);
+      return client?.client_name || clientValue;
     }
     
-    return assignedClient;
+    return clientValue;
   };
 
   const indexOfLastLead = currentPage * leadsPerPage;
