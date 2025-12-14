@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertTriangle, Smile, Frown, Clock, Building2, ExternalLink, Edit, Search } from "lucide-react";
+import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertTriangle, Smile, Frown, Clock, Building2, ExternalLink, Edit, Search, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getCompletionPercentage, getDaysRemaining } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
@@ -27,6 +27,26 @@ interface Client {
   leads_per_day?: number | null;
   leads_fulfilled?: number | null;
   client_status?: ClientStatus | null;
+  airtable_client_id?: string | null;
+}
+
+interface AirtableClientData {
+  'Contact Person'?: string;
+  'Phone'?: string;
+  'Company Website'?: string;
+  'Company Name'?: string;
+  'Location'?: string;
+  'Markets they serve (locations)'?: string;
+  'Industries they serve'?: string;
+  'Sub-industries/specializations'?: string;
+  'Types of roles they hire for'?: string;
+  'Contingent or temporary staffing?'?: string;
+  'Last 5 roles placed'?: string;
+  'Last 5 companies worked with (for lookalike targeting)'?: string;
+  '5 current candidates (for candidate-led campaigns)'?: string;
+  'Their USPs in their own words'?: string;
+  'Niches they\'ve done well in'?: string;
+  'Typical outreach/acquisition methods'?: string;
 }
 
 const AdminClients = () => {
@@ -41,6 +61,9 @@ const AdminClients = () => {
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [airtableData, setAirtableData] = useState<Record<string, AirtableClientData>>({});
+  const [loadingAirtableData, setLoadingAirtableData] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     checkAdminAndLoadClients();
@@ -113,6 +136,58 @@ const AdminClients = () => {
       console.error("Error loading clients:", error);
       toast.error("Failed to load clients");
     }
+  };
+
+  const fetchAirtableClientData = async (clientId: string, airtableClientId: string | null | undefined) => {
+    if (!airtableClientId) {
+      // No Airtable ID, set empty data
+      setAirtableData(prev => ({
+        ...prev,
+        [clientId]: {}
+      }));
+      return;
+    }
+    
+    if (airtableData[clientId]) return; // Already loaded
+    
+    setLoadingAirtableData(prev => new Set(prev).add(clientId));
+    try {
+      const { data, error } = await supabase.functions.invoke("get-airtable-client-data", {
+        body: { airtableClientId }
+      });
+
+      if (error) throw error;
+
+      setAirtableData(prev => ({
+        ...prev,
+        [clientId]: data?.fields || {}
+      }));
+    } catch (error: any) {
+      console.error("Error loading Airtable data:", error);
+      // Set empty data on error
+      setAirtableData(prev => ({
+        ...prev,
+        [clientId]: {}
+      }));
+    } finally {
+      setLoadingAirtableData(prev => {
+        const next = new Set(prev);
+        next.delete(clientId);
+        return next;
+      });
+    }
+  };
+
+  const toggleCardExpansion = (clientId: string, airtableClientId?: string | null) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(clientId)) {
+      newExpanded.delete(clientId);
+    } else {
+      newExpanded.add(clientId);
+      // Fetch Airtable data when expanding
+      fetchAirtableClientData(clientId, airtableClientId);
+    }
+    setExpandedCards(newExpanded);
   };
 
   const handleUpdateStatus = async (clientId: string, newStatus: ClientStatus) => {
@@ -522,150 +597,327 @@ const AdminClients = () => {
                   : null;
                 const isActive = client.client_name && !needsHelp(client);
                 
+                const isExpanded = expandedCards.has(client.id);
+                const clientAirtableData = airtableData[client.id];
+                const isLoadingAirtable = loadingAirtableData.has(client.id);
+                
                 return (
                   <div 
                     key={client.id}
-                    className="bg-card border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                    className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-shadow"
                   >
-                    {/* Client Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1 min-w-0">
-                        {editingClient === client.id ? (
-                          <div className="flex items-center gap-2 mb-2">
-                            <Select
-                              value={editingName}
-                              onValueChange={setEditingName}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select name" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {loadingOptions ? (
-                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-                                ) : (
-                                  airtableOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateClient(client.id, editingName)}
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              <Save className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setEditingClient(null)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
+                    <div className="p-6">
+                      {/* Client Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 min-w-0">
+                          {editingClient === client.id ? (
+                            <div className="flex items-center gap-2 mb-2">
+                              <Select
+                                value={editingName}
+                                onValueChange={setEditingName}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select name" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {loadingOptions ? (
+                                    <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                  ) : (
+                                    airtableOptions.map((option) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                onClick={() => handleUpdateClient(client.id, editingName)}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setEditingClient(null)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
+                          )}
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Mail className="h-3 w-3" />
+                            {client.email}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mb-4">
+                        {isActive ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Active
+                          </Badge>
+                        ) : needsHelp(client) ? (
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                            <Clock className="h-3 w-3" />
+                            Needs Attention
+                          </Badge>
                         ) : (
-                          <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
+                          <Badge className="bg-slate-100 text-slate-700 border-slate-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
+                            <Clock className="h-3 w-3" />
+                            Pending
+                          </Badge>
                         )}
-                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                          <Mail className="h-3 w-3" />
-                          {client.email}
-                        </p>
                       </div>
-                    </div>
 
-                    {/* Status Badge */}
-                    <div className="mb-4">
-                      {isActive ? (
-                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Active
-                        </Badge>
-                      ) : needsHelp(client) ? (
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                          <Clock className="h-3 w-3" />
-                          Needs Attention
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-slate-100 text-slate-700 border-slate-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                          <Clock className="h-3 w-3" />
-                          Pending
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="space-y-2 mb-4">
-                      {client.leads_purchased && (
+                      {/* Stats */}
+                      <div className="space-y-2 mb-4">
+                        {client.leads_purchased && (
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-medium text-foreground">{completion}%</span> complete • {client.leads_fulfilled || 0} / {client.leads_purchased} leads
+                          </div>
+                        )}
+                        {daysRemaining !== null && (
+                          <div className="text-sm text-muted-foreground">
+                            {daysRemaining < 0 
+                              ? `${Math.abs(daysRemaining)} days overdue`
+                              : `${daysRemaining} days remaining`
+                            }
+                          </div>
+                        )}
                         <div className="text-sm text-muted-foreground">
-                          <span className="font-medium text-foreground">{completion}%</span> complete • {client.leads_fulfilled || 0} / {client.leads_purchased} leads
+                          Created {new Date(client.created_at).toLocaleDateString()}
                         </div>
-                      )}
-                      {daysRemaining !== null && (
-                        <div className="text-sm text-muted-foreground">
-                          {daysRemaining < 0 
-                            ? `${Math.abs(daysRemaining)} days overdue`
-                            : `${daysRemaining} days remaining`
-                          }
-                        </div>
-                      )}
-                      <div className="text-sm text-muted-foreground">
-                        Created {new Date(client.created_at).toLocaleDateString()}
                       </div>
-                    </div>
 
-                    {/* Status Select */}
-                    <div className="mb-4">
-                      <Select
-                        value={client.client_status || 'on_track'}
-                        onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
-                        disabled={updatingStatus === client.id}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="happy">Happy</SelectItem>
-                          <SelectItem value="on_track">On Track</SelectItem>
-                          <SelectItem value="at_risk">At Risk</SelectItem>
-                          <SelectItem value="unhappy">Unhappy</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      {/* Status Select */}
+                      <div className="mb-4">
+                        <Select
+                          value={client.client_status || 'on_track'}
+                          onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
+                          disabled={updatingStatus === client.id}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="happy">Happy</SelectItem>
+                            <SelectItem value="on_track">On Track</SelectItem>
+                            <SelectItem value="at_risk">At Risk</SelectItem>
+                            <SelectItem value="unhappy">Unhappy</SelectItem>
+                            <SelectItem value="urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 pt-4 border-t">
-                      {editingClient !== client.id && (
+                      {/* Expand/Collapse Button */}
+                      <div className="mb-4">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setEditingClient(client.id);
-                            setEditingName(client.client_name || "");
-                          }}
-                          className="flex-1"
+                          className="w-full"
+                          onClick={() => toggleCardExpansion(client.id, client.airtable_client_id || undefined)}
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-2" />
+                              Hide Onboarding Info
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-2" />
+                              View Onboarding Info
+                            </>
+                          )}
                         </Button>
+                      </div>
+
+                      {/* Expanded Onboarding Information */}
+                      {isExpanded && (
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Info className="h-4 w-4 text-primary" />
+                            <h4 className="font-semibold">Onboarding & Campaign Information</h4>
+                          </div>
+
+                          {/* Onboarding Dates & Leads Info */}
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            {client.onboarding_date && (
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Onboarding Date</p>
+                                <p className="font-medium">{new Date(client.onboarding_date).toLocaleDateString()}</p>
+                              </div>
+                            )}
+                            {client.target_delivery_date && (
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Target Delivery Date</p>
+                                <p className="font-medium">{new Date(client.target_delivery_date).toLocaleDateString()}</p>
+                              </div>
+                            )}
+                            {client.leads_purchased !== null && (
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Leads Purchased</p>
+                                <p className="font-medium">{client.leads_purchased}</p>
+                              </div>
+                            )}
+                            {client.leads_per_day !== null && (
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Leads Per Day</p>
+                                <p className="font-medium">{client.leads_per_day}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Airtable Client Data */}
+                          {isLoadingAirtable ? (
+                            <div className="flex items-center justify-center py-4">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              <span className="ml-2 text-sm text-muted-foreground">Loading client data...</span>
+                            </div>
+                          ) : clientAirtableData ? (
+                            <div className="space-y-3 text-sm">
+                              {clientAirtableData['Contact Person'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Contact Person</p>
+                                  <p className="font-medium">{clientAirtableData['Contact Person']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Phone'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Phone</p>
+                                  <p className="font-medium">{clientAirtableData['Phone']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Company Website'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Company Website</p>
+                                  <a href={clientAirtableData['Company Website']} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                                    {clientAirtableData['Company Website']}
+                                  </a>
+                                </div>
+                              )}
+                              {clientAirtableData['Company Name'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Company Name</p>
+                                  <p className="font-medium">{clientAirtableData['Company Name']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Location'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Location</p>
+                                  <p className="font-medium">{clientAirtableData['Location']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Markets they serve (locations)'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Markets Served</p>
+                                  <p className="font-medium">{clientAirtableData['Markets they serve (locations)']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Industries they serve'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Industries Served</p>
+                                  <p className="font-medium">{clientAirtableData['Industries they serve']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Sub-industries/specializations'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Sub-industries/Specializations</p>
+                                  <p className="font-medium">{clientAirtableData['Sub-industries/specializations']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Types of roles they hire for'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Types of Roles</p>
+                                  <p className="font-medium">{clientAirtableData['Types of roles they hire for']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Contingent or temporary staffing?'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Staffing Model</p>
+                                  <p className="font-medium">{clientAirtableData['Contingent or temporary staffing?']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Last 5 roles placed'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Last 5 Roles Placed</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 roles placed']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Last 5 companies worked with (for lookalike targeting)'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Last 5 Companies Worked With</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 companies worked with (for lookalike targeting)']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['5 current candidates (for candidate-led campaigns)'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Current Candidates</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['5 current candidates (for candidate-led campaigns)']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Their USPs in their own words'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Unique Selling Points</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Their USPs in their own words']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Niches they\'ve done well in'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Niches They've Done Well In</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Niches they\'ve done well in']}</p>
+                                </div>
+                              )}
+                              {clientAirtableData['Typical outreach/acquisition methods'] && (
+                                <div>
+                                  <p className="text-muted-foreground text-xs mb-1">Outreach Methods</p>
+                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Typical outreach/acquisition methods']}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : client.airtable_client_id ? (
+                            <p className="text-sm text-muted-foreground">No additional client data available</p>
+                          ) : null}
+                        </div>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setResettingPassword(client.id)}
-                      >
-                        <Key className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteClient(client)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 pt-4 border-t mt-4">
+                        {editingClient !== client.id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingClient(client.id);
+                              setEditingName(client.client_name || "");
+                            }}
+                            className="flex-1"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setResettingPassword(client.id)}
+                        >
+                          <Key className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteClient(client)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
