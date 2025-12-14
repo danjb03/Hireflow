@@ -97,14 +97,83 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    
+    // Collect all unique client record IDs to fetch client names
+    const clientRecordIds = new Set<string>();
+    data.records.forEach((record: any) => {
+      const clientField = record.fields['Client'];
+      if (clientField) {
+        if (Array.isArray(clientField) && clientField.length > 0) {
+          // Linked record field - extract record IDs
+          clientField.forEach((id: string) => clientRecordIds.add(id));
+        } else if (typeof clientField === 'string' && clientField.startsWith('rec')) {
+          // Single record ID
+          clientRecordIds.add(clientField);
+        }
+      }
+    });
+
+    // Fetch client names from Clients table
+    const clientNameMap = new Map<string, string>();
+    if (clientRecordIds.size > 0) {
+      const clientIdsArray = Array.from(clientRecordIds);
+      // Fetch in batches of 10 (Airtable limit)
+      for (let i = 0; i < clientIdsArray.length; i += 10) {
+        const batch = clientIdsArray.slice(i, i + 10);
+        const recordFilter = batch.map(id => `RECORD_ID() = '${id}'`).join(',');
+        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=OR(${recordFilter})`;
+        
+        try {
+          const clientsResponse = await fetch(clientsUrl, {
+            headers: {
+              'Authorization': `Bearer ${airtableToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (clientsResponse.ok) {
+            const clientsData = await clientsResponse.json();
+            clientsData.records.forEach((clientRecord: any) => {
+              const clientName = clientRecord.fields['Client Name'] || clientRecord.fields['Name'] || '';
+              if (clientName) {
+                clientNameMap.set(clientRecord.id, clientName);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching client names:', error);
+        }
+      }
+    }
+
     const leads = data.records.map((record: any) => {
       const fields = record.fields;
+      
+      // Resolve client name from Client field
+      let assignedClient = 'Unassigned';
+      const clientField = fields['Client'];
+      if (clientField) {
+        if (Array.isArray(clientField) && clientField.length > 0) {
+          // Linked record - get name from first record
+          const clientId = clientField[0];
+          assignedClient = clientNameMap.get(clientId) || clientId;
+        } else if (typeof clientField === 'string') {
+          if (clientField.startsWith('rec')) {
+            // It's a record ID, look it up
+            assignedClient = clientNameMap.get(clientField) || clientField;
+          } else {
+            // It's already a name
+            assignedClient = clientField;
+          }
+        }
+      }
+      
       return {
         id: record.id,
         companyName: fields['Company Name'] || '',
         status: fields['Status'] || 'New',
-        assignedClient: fields['Client'] || 'Unassigned',
-        assignedClientId: null,
+        assignedClient: assignedClient,
+        assignedClientId: Array.isArray(clientField) ? clientField[0] : (typeof clientField === 'string' && clientField.startsWith('rec') ? clientField : null),
         
         // Contact Info
         contactName: fields['Contact Name'] || null,

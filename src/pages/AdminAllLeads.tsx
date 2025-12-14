@@ -231,6 +231,31 @@ const AdminAllLeads = () => {
   };
 
 
+  // Create a map of client names for quick lookup
+  const clientNameMap = new Map<string, Client>();
+  clients.forEach(client => {
+    if (client.client_name) {
+      clientNameMap.set(client.client_name, client);
+    }
+  });
+
+  // Helper function to get client name from assignedClient value
+  const getClientDisplayName = (assignedClient: string): string => {
+    if (assignedClient === "Unassigned" || !assignedClient) {
+      return "Unassigned";
+    }
+    
+    // Check if it's already a client name
+    if (clientNameMap.has(assignedClient)) {
+      return assignedClient;
+    }
+    
+    // If it looks like an Airtable record ID (starts with "rec"), try to find by matching
+    // For now, just return the value as-is if we can't find a match
+    // The issue is that Airtable might be returning the record ID instead of the name
+    return assignedClient;
+  };
+
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
@@ -334,7 +359,7 @@ const AdminAllLeads = () => {
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50 border-b">
+                  <TableRow className="border-b">
                     <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Company
                     </TableHead>
@@ -380,7 +405,7 @@ const AdminAllLeads = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        {lead.assignedClient === "Unassigned" ? (
+                        {getClientDisplayName(lead.assignedClient) === "Unassigned" ? (
                           clients.length > 0 ? (
                             <div onClick={(e) => e.stopPropagation()}>
                               <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
@@ -401,7 +426,7 @@ const AdminAllLeads = () => {
                           )
                         ) : (
                           <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-3 py-1 text-xs font-medium">
-                            {lead.assignedClient}
+                            {getClientDisplayName(lead.assignedClient)}
                           </Badge>
                         )}
                       </TableCell>
