@@ -351,30 +351,30 @@ const AdminClients = () => {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs mb-2">Active Clients</CardDescription>
+              <CardDescription className="text-base mb-2">Active Clients</CardDescription>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{activeClients.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">With assigned names</p>
+              <p className="text-base text-muted-foreground mt-auto">With assigned names</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs mb-2">Pending Users</CardDescription>
+              <CardDescription className="text-base mb-2">Pending Users</CardDescription>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{pendingUsers.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Awaiting approval</p>
+              <p className="text-base text-muted-foreground mt-auto">Awaiting approval</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs mb-2">Total Users</CardDescription>
+              <CardDescription className="text-base mb-2">Total Users</CardDescription>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{clients.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">All accounts</p>
+              <p className="text-base text-muted-foreground mt-auto">All accounts</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs mb-2">Available Names</CardDescription>
+              <CardDescription className="text-base mb-2">Available Names</CardDescription>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClients.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">From Airtable</p>
+              <p className="text-base text-muted-foreground mt-auto">From Airtable</p>
             </CardContent>
           </Card>
         </div>
@@ -421,9 +421,9 @@ const AdminClients = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {loadingOptions ? (
-                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                  <div className="p-2 text-base text-muted-foreground">Loading...</div>
                                 ) : airtableClients.length === 0 ? (
-                                  <div className="p-2 text-sm text-muted-foreground">No clients in Airtable</div>
+                                  <div className="p-2 text-base text-muted-foreground">No clients in Airtable</div>
                                 ) : (
                                   airtableClients.map((client) => (
                                     <SelectItem key={client.id} value={client.id}>
@@ -454,10 +454,10 @@ const AdminClients = () => {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Not assigned</span>
+                          <span className="text-base text-muted-foreground">Not assigned</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-base text-muted-foreground">
                         {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
                       </TableCell>
                       <TableCell className="text-right">
@@ -537,7 +537,7 @@ const AdminClients = () => {
                         <TableCell className="font-medium">
                           <div>
                             <div>{client.client_name}</div>
-                            <div className="text-xs text-muted-foreground">{client.email}</div>
+                            <div className="text-base text-muted-foreground">{client.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -548,14 +548,14 @@ const AdminClients = () => {
                         </TableCell>
                         <TableCell>
                           {client.leads_purchased ? (
-                            <div className="text-sm">
+                            <div className="text-base">
                               <div className="font-medium">{completion}%</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-base text-muted-foreground">
                                 {client.leads_fulfilled || 0} / {client.leads_purchased}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
+                            <span className="text-base text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -564,7 +564,7 @@ const AdminClients = () => {
                               {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                             </span>
                           ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
+                            <span className="text-base text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -612,7 +612,7 @@ const AdminClients = () => {
           <div>
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-2">Active Clients</h2>
-              <p className="text-sm text-muted-foreground">All active client accounts</p>
+              <p className="text-base text-muted-foreground">All active client accounts</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {activeClients.map((client) => {
@@ -649,9 +649,9 @@ const AdminClients = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {loadingOptions ? (
-                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                  <div className="p-2 text-base text-muted-foreground">Loading...</div>
                                 ) : airtableClients.length === 0 ? (
-                                  <div className="p-2 text-sm text-muted-foreground">No clients in Airtable</div>
+                                  <div className="p-2 text-base text-muted-foreground">No clients in Airtable</div>
                                 ) : (
                                   airtableClients.map((airtableClient) => (
                                     <SelectItem key={airtableClient.id} value={airtableClient.id}>
@@ -683,7 +683,7 @@ const AdminClients = () => {
                         ) : (
                           <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
                         )}
-                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <p className="text-base text-muted-foreground flex items-center gap-2">
                             <Mail className="h-3 w-3" />
                             {client.email}
                           </p>
@@ -713,19 +713,19 @@ const AdminClients = () => {
                       {/* Stats */}
                       <div className="space-y-2 mb-4">
                         {client.leads_purchased && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-base text-muted-foreground">
                             <span className="font-medium text-foreground">{completion}%</span> complete • {client.leads_fulfilled || 0} / {client.leads_purchased} leads
                           </div>
                         )}
                         {daysRemaining !== null && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-base text-muted-foreground">
                             {daysRemaining < 0 
                               ? `${Math.abs(daysRemaining)} days overdue`
                               : `${daysRemaining} days remaining`
                             }
                           </div>
                         )}
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-base text-muted-foreground">
                           Created {new Date(client.created_at).toLocaleDateString()}
                         </div>
                       </div>
@@ -781,28 +781,28 @@ const AdminClients = () => {
                           </div>
 
                           {/* Onboarding Dates & Leads Info */}
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4 text-base">
                             {client.onboarding_date && (
                               <div>
-                                <p className="text-muted-foreground text-xs mb-1">Onboarding Date</p>
+                                <p className="text-muted-foreground text-base mb-1">Onboarding Date</p>
                                 <p className="font-medium">{new Date(client.onboarding_date).toLocaleDateString()}</p>
                               </div>
                             )}
                             {client.target_delivery_date && (
                               <div>
-                                <p className="text-muted-foreground text-xs mb-1">Target Delivery Date</p>
+                                <p className="text-muted-foreground text-base mb-1">Target Delivery Date</p>
                                 <p className="font-medium">{new Date(client.target_delivery_date).toLocaleDateString()}</p>
                               </div>
                             )}
                             {client.leads_purchased !== null && (
                               <div>
-                                <p className="text-muted-foreground text-xs mb-1">Leads Purchased</p>
+                                <p className="text-muted-foreground text-base mb-1">Leads Purchased</p>
                                 <p className="font-medium">{client.leads_purchased}</p>
                               </div>
                             )}
                             {client.leads_per_day !== null && (
                               <div>
-                                <p className="text-muted-foreground text-xs mb-1">Leads Per Day</p>
+                                <p className="text-muted-foreground text-base mb-1">Leads Per Day</p>
                                 <p className="font-medium">{client.leads_per_day}</p>
                               </div>
                             )}
@@ -812,25 +812,25 @@ const AdminClients = () => {
                           {isLoadingAirtable ? (
                             <div className="flex items-center justify-center py-4">
                               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              <span className="ml-2 text-sm text-muted-foreground">Loading client data...</span>
+                              <span className="ml-2 text-base text-muted-foreground">Loading client data...</span>
                             </div>
                           ) : clientAirtableData ? (
-                            <div className="space-y-3 text-sm">
+                            <div className="space-y-3 text-base">
                               {clientAirtableData['Contact Person'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Contact Person</p>
+                                  <p className="text-muted-foreground text-base mb-1">Contact Person</p>
                                   <p className="font-medium">{clientAirtableData['Contact Person']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Phone'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Phone</p>
+                                  <p className="text-muted-foreground text-base mb-1">Phone</p>
                                   <p className="font-medium">{clientAirtableData['Phone']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Company Website'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Company Website</p>
+                                  <p className="text-muted-foreground text-base mb-1">Company Website</p>
                                   <a href={clientAirtableData['Company Website']} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                                     {clientAirtableData['Company Website']}
                                   </a>
@@ -838,85 +838,85 @@ const AdminClients = () => {
                               )}
                               {clientAirtableData['Company Name'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Company Name</p>
+                                  <p className="text-muted-foreground text-base mb-1">Company Name</p>
                                   <p className="font-medium">{clientAirtableData['Company Name']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Location'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Location</p>
+                                  <p className="text-muted-foreground text-base mb-1">Location</p>
                                   <p className="font-medium">{clientAirtableData['Location']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Markets they serve (locations)'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Markets Served</p>
+                                  <p className="text-muted-foreground text-base mb-1">Markets Served</p>
                                   <p className="font-medium">{clientAirtableData['Markets they serve (locations)']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Industries they serve'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Industries Served</p>
+                                  <p className="text-muted-foreground text-base mb-1">Industries Served</p>
                                   <p className="font-medium">{clientAirtableData['Industries they serve']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Sub-industries/specializations'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Sub-industries/Specializations</p>
+                                  <p className="text-muted-foreground text-base mb-1">Sub-industries/Specializations</p>
                                   <p className="font-medium">{clientAirtableData['Sub-industries/specializations']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Types of roles they hire for'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Types of Roles</p>
+                                  <p className="text-muted-foreground text-base mb-1">Types of Roles</p>
                                   <p className="font-medium">{clientAirtableData['Types of roles they hire for']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Contingent or temporary staffing?'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Staffing Model</p>
+                                  <p className="text-muted-foreground text-base mb-1">Staffing Model</p>
                                   <p className="font-medium">{clientAirtableData['Contingent or temporary staffing?']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Last 5 roles placed'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Last 5 Roles Placed</p>
+                                  <p className="text-muted-foreground text-base mb-1">Last 5 Roles Placed</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 roles placed']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Last 5 companies worked with (for lookalike targeting)'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Last 5 Companies Worked With</p>
+                                  <p className="text-muted-foreground text-base mb-1">Last 5 Companies Worked With</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 companies worked with (for lookalike targeting)']}</p>
                                 </div>
                               )}
                               {clientAirtableData['5 current candidates (for candidate-led campaigns)'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Current Candidates</p>
+                                  <p className="text-muted-foreground text-base mb-1">Current Candidates</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['5 current candidates (for candidate-led campaigns)']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Their USPs in their own words'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Unique Selling Points</p>
+                                  <p className="text-muted-foreground text-base mb-1">Unique Selling Points</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['Their USPs in their own words']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Niches they\'ve done well in'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Niches They've Done Well In</p>
+                                  <p className="text-muted-foreground text-base mb-1">Niches They've Done Well In</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['Niches they\'ve done well in']}</p>
                                 </div>
                               )}
                               {clientAirtableData['Typical outreach/acquisition methods'] && (
                                 <div>
-                                  <p className="text-muted-foreground text-xs mb-1">Outreach Methods</p>
+                                  <p className="text-muted-foreground text-base mb-1">Outreach Methods</p>
                                   <p className="font-medium whitespace-pre-line">{clientAirtableData['Typical outreach/acquisition methods']}</p>
                                 </div>
                               )}
                             </div>
                           ) : client.airtable_client_id ? (
-                            <p className="text-sm text-muted-foreground">No additional client data available</p>
+                            <p className="text-base text-muted-foreground">No additional client data available</p>
                           ) : null}
                         </div>
                       )}

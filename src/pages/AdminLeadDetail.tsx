@@ -302,7 +302,7 @@ const AdminLeadDetail = () => {
       <div className="space-y-6">
         {/* Breadcrumb */}
         <Breadcrumb>
-          <BreadcrumbList className="text-sm text-muted-foreground">
+          <BreadcrumbList className="text-base text-muted-foreground">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <a href="/admin" className="hover:text-foreground transition-colors">Dashboard</a>
@@ -325,7 +325,7 @@ const AdminLeadDetail = () => {
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 border rounded-xl p-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">Assign to Client</label>
+              <label className="text-base font-medium text-muted-foreground mb-2 block">Assign to Client</label>
               {clients.length > 0 ? (
                 <div className="flex gap-2">
                   <Select value={selectedClient} onValueChange={setSelectedClient}>
@@ -349,14 +349,14 @@ const AdminLeadDetail = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
+                <div className="bg-muted/50 rounded-lg p-3 text-base text-muted-foreground">
                   No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline hover:text-primary/80 transition-colors">Client Management</button> to configure client names.
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">Update Stage</label>
+              <label className="text-base font-medium text-muted-foreground mb-2 block">Update Stage</label>
               <div className="flex gap-2">
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                   <SelectTrigger className="flex-1">
@@ -380,7 +380,7 @@ const AdminLeadDetail = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">Availability</label>
+              <label className="text-base font-medium text-muted-foreground mb-2 block">Availability</label>
               <div className="flex gap-2">
                 <Input 
                   placeholder="e.g. Mon-Fri 9am-5pm, Weekends after 2pm" 
@@ -419,7 +419,7 @@ const AdminLeadDetail = () => {
                     href={lead.companyWebsite} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline flex items-center gap-2 text-sm"
+                    className="text-primary hover:underline flex items-center gap-2 text-base"
                   >
                     <Globe className="h-4 w-4" />
                     {lead.companyWebsite}
@@ -430,7 +430,7 @@ const AdminLeadDetail = () => {
                     href={lead.companyLinkedIn} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline flex items-center gap-2 text-sm"
+                    className="text-primary hover:underline flex items-center gap-2 text-base"
                   >
                     <Linkedin className="h-4 w-4" />
                     Company LinkedIn
@@ -471,20 +471,20 @@ const AdminLeadDetail = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {lead.contactName && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Name</p>
-                  <p className="text-sm font-medium flex items-center gap-2">{lead.contactName}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Name</p>
+                  <p className="text-base font-medium flex items-center gap-2">{lead.contactName}</p>
                 </div>
               )}
               {lead.contactTitle && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Title</p>
-                  <p className="text-sm font-medium">{lead.contactTitle}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Title</p>
+                  <p className="text-base font-medium">{lead.contactTitle}</p>
                 </div>
               )}
               {lead.jobTitle && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
-                  <p className="text-sm font-medium flex items-center gap-2">
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
+                  <p className="text-base font-medium flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                     {lead.jobTitle}
                   </p>
@@ -492,10 +492,10 @@ const AdminLeadDetail = () => {
               )}
               {lead.email && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Email</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Email</p>
                   <a 
                     href={`mailto:${lead.email}`} 
-                    className="text-primary hover:underline text-sm font-medium flex items-center gap-2"
+                    className="text-primary hover:underline text-base font-medium flex items-center gap-2"
                   >
                     <Mail className="h-4 w-4 flex-shrink-0" />
                     {lead.email}
@@ -504,10 +504,10 @@ const AdminLeadDetail = () => {
               )}
               {lead.phone && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Phone</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Phone</p>
                   <a 
                     href={`tel:${lead.phone}`} 
-                    className="text-primary hover:underline text-sm font-medium flex items-center gap-2"
+                    className="text-primary hover:underline text-base font-medium flex items-center gap-2"
                   >
                     <Phone className="h-4 w-4" />
                     {lead.phone}
@@ -537,14 +537,14 @@ const AdminLeadDetail = () => {
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {lead.industry && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Industry</p>
-                    <p className="text-sm text-foreground">{lead.industry}</p>
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Industry</p>
+                    <p className="text-base text-foreground">{lead.industry}</p>
                   </div>
                 )}
                 {lead.companySize && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Company Size</p>
-                    <p className="flex items-center gap-2 text-sm text-foreground">
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Company Size</p>
+                    <p className="flex items-center gap-2 text-base text-foreground">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       {lead.companySize}
                     </p>
@@ -552,20 +552,20 @@ const AdminLeadDetail = () => {
                 )}
                 {lead.employeeCount && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Employee Count</p>
-                    <p className="text-sm text-foreground">{lead.employeeCount}</p>
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Employee Count</p>
+                    <p className="text-base text-foreground">{lead.employeeCount}</p>
                   </div>
                 )}
                 {lead.country && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Country</p>
-                    <p className="text-sm text-foreground">{lead.country}</p>
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Country</p>
+                    <p className="text-base text-foreground">{lead.country}</p>
                   </div>
                 )}
                 {lead.address && (
                   <div className="space-y-1 col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Address / Location</p>
-                    <p className="flex items-center gap-2 text-sm text-foreground">
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Address / Location</p>
+                    <p className="flex items-center gap-2 text-base text-foreground">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       {lead.address}
                     </p>
@@ -573,12 +573,12 @@ const AdminLeadDetail = () => {
                 )}
                 {lead.companyLinkedIn && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Company LinkedIn</p>
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Company LinkedIn</p>
                     <a 
                       href={lead.companyLinkedIn} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-2 text-sm"
+                      className="text-primary hover:underline inline-flex items-center gap-2 text-base"
                     >
                       <Linkedin className="h-4 w-4" />
                       View Profile
@@ -590,8 +590,8 @@ const AdminLeadDetail = () => {
                 <>
                   <Separator className="my-6" />
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Company Description</p>
-                    <p className="text-sm text-foreground leading-relaxed">{lead.companyDescription}</p>
+                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-2">Company Description</p>
+                    <p className="text-base text-foreground leading-relaxed">{lead.companyDescription}</p>
                   </div>
                 </>
               )}
@@ -607,29 +607,29 @@ const AdminLeadDetail = () => {
                 <div className="space-y-4">
                   {lead.jobTitle && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
-                      <p className="text-sm font-medium text-foreground">{lead.jobTitle}</p>
+                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
+                      <p className="text-base font-medium text-foreground">{lead.jobTitle}</p>
                     </div>
                   )}
                   
                   {lead.jobType && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Type</p>
-                      <p className="text-sm text-foreground">{lead.jobType}</p>
+                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Type</p>
+                      <p className="text-base text-foreground">{lead.jobType}</p>
                     </div>
                   )}
                   
                   {lead.jobLevel && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Level</p>
-                      <p className="text-sm text-foreground">{lead.jobLevel}</p>
+                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Level</p>
+                      <p className="text-base text-foreground">{lead.jobLevel}</p>
                     </div>
                   )}
                   
                   {lead.jobDescription && (
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-2">Job Description</p>
+                      <div className="max-h-40 overflow-y-auto text-base text-foreground leading-relaxed whitespace-pre-wrap">
                         {lead.jobDescription}
                       </div>
                     </div>
@@ -655,7 +655,7 @@ const AdminLeadDetail = () => {
                 <Sparkles className="h-5 w-5 text-purple-600" />
                 AI Summary
               </div>
-              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
+              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
             </div>
           )}
 
@@ -668,26 +668,26 @@ const AdminLeadDetail = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {lead.lastContactDate && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Last Contact Date</p>
-                  <p className="text-sm text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Last Contact Date</p>
+                  <p className="text-base text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
                 </div>
               )}
               {lead.nextAction && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Action</p>
-                  <p className="text-sm text-foreground">{lead.nextAction}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Action</p>
+                  <p className="text-base text-foreground">{lead.nextAction}</p>
                 </div>
               )}
               {lead.dateCreated && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Date Created</p>
-                  <p className="text-sm text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Date Created</p>
+                  <p className="text-base text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
                 </div>
               )}
               {lead.availability && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Availability</p>
-                  <p className="text-sm text-foreground">{lead.availability}</p>
+                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Availability</p>
+                  <p className="text-base text-foreground">{lead.availability}</p>
                 </div>
               )}
             </div>

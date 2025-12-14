@@ -140,7 +140,7 @@ const ResetPassword = () => {
         <div className="text-center space-y-2">
           <Lock className="h-12 w-12 text-primary mx-auto" />
           <h1 className="text-2xl font-semibold tracking-tight">Reset Your Password</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Enter your new password below
           </p>
         </div>

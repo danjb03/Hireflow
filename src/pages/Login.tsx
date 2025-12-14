@@ -118,7 +118,7 @@ const Login = () => {
               variant="link"
               onClick={() => setIsSignUp(!isSignUp)}
               disabled={isLoading}
-              className="text-sm"
+              className="text-base"
             >
               {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
             </Button>

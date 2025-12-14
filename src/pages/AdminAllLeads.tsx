@@ -352,7 +352,7 @@ const AdminAllLeads = () => {
             <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
               <div className="text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-sm">No leads found</p>
+                <p className="text-base">No leads found</p>
               </div>
             </div>
           ) : (
@@ -360,25 +360,25 @@ const AdminAllLeads = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b">
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Company
                     </TableHead>
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Status
                     </TableHead>
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Client
                     </TableHead>
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Contact
                     </TableHead>
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Location
                     </TableHead>
-                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Added
                     </TableHead>
-                    <TableHead className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-right text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -394,12 +394,12 @@ const AdminAllLeads = () => {
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">{lead.companyName}</span>
                           {lead.industry && (
-                            <span className="text-sm text-muted-foreground">{lead.industry}</span>
+                            <span className="text-base text-muted-foreground">{lead.industry}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium`}>
+                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2.5 py-0.5 text-base font-medium`}>
                           {getStatusIcon(lead.status)}
                           <span>{lead.status}</span>
                         </Badge>
@@ -422,10 +422,10 @@ const AdminAllLeads = () => {
                               </Select>
                             </div>
                           ) : (
-                            <span className="text-xs text-muted-foreground">No clients</span>
+                            <span className="text-base text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-3 py-1 text-xs font-medium">
+                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-3 py-1 text-base font-medium">
                             {getClientDisplayName(lead.assignedClient)}
                           </Badge>
                         )}
@@ -434,14 +434,14 @@ const AdminAllLeads = () => {
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">{lead.contactName || 'N/A'}</span>
                           {lead.email && (
-                            <span className="text-sm text-muted-foreground">{lead.email}</span>
+                            <span className="text-base text-muted-foreground">{lead.email}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-sm text-foreground">
+                      <TableCell className="px-4 py-3 text-base text-foreground">
                         {lead.address || lead.country || 'N/A'}
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-sm text-foreground">
+                      <TableCell className="px-4 py-3 text-base text-foreground">
                         {new Date(lead.dateCreated).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">
@@ -474,7 +474,7 @@ const AdminAllLeads = () => {
               >
                 Previous
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-base text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </span>
               <Button

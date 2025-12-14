@@ -184,7 +184,7 @@ const ClientLeadDetail = () => {
                       href={lead.companyWebsite} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
+                      className="text-primary hover:underline inline-flex items-center gap-1 text-base"
                     >
                       <Globe className="h-4 w-4" />
                       {lead.companyWebsite}
@@ -195,7 +195,7 @@ const ClientLeadDetail = () => {
                       href={lead.companyLinkedIn} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
+                      className="text-primary hover:underline inline-flex items-center gap-1 text-base"
                     >
                       <Linkedin className="h-4 w-4" />
                       Company LinkedIn
@@ -213,7 +213,7 @@ const ClientLeadDetail = () => {
                     <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Availability</p>
+                    <p className="text-base font-medium text-muted-foreground">Availability</p>
                     <p className="text-xl font-bold text-foreground">
                       {lead.availability}
                     </p>
@@ -236,19 +236,19 @@ const ClientLeadDetail = () => {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {lead.contactName && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Contact Name</p>
+                  <p className="text-base font-medium text-muted-foreground">Contact Name</p>
                   <p className="text-foreground font-semibold text-lg">{lead.contactName}</p>
                 </div>
               )}
               {lead.contactTitle && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Contact Title</p>
+                  <p className="text-base font-medium text-muted-foreground">Contact Title</p>
                   <p className="text-foreground font-medium">{lead.contactTitle}</p>
                 </div>
               )}
               {lead.jobTitle && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Job Title (Role Hiring)</p>
+                  <p className="text-base font-medium text-muted-foreground">Job Title (Role Hiring)</p>
                   <p className="flex items-center gap-2 text-foreground font-medium">
                     <Briefcase className="h-4 w-4 text-primary" />
                     {lead.jobTitle}
@@ -257,7 +257,7 @@ const ClientLeadDetail = () => {
               )}
               {lead.email && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
+                  <p className="text-base font-medium text-muted-foreground">Email</p>
                   <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline font-medium break-all">
                     <Mail className="h-4 w-4 flex-shrink-0" />
                     {lead.email}
@@ -266,7 +266,7 @@ const ClientLeadDetail = () => {
               )}
               {lead.phone && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                  <p className="text-base font-medium text-muted-foreground">Phone</p>
                   <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline font-medium">
                     <Phone className="h-4 w-4" />
                     {lead.phone}
@@ -274,8 +274,8 @@ const ClientLeadDetail = () => {
                 </div>
               )}
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Availability</p>
-                <p className="text-sm flex items-center gap-2">
+                <p className="text-base font-medium text-muted-foreground">Availability</p>
+                <p className="text-base flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   {lead.availability || "Not specified"}
                 </p>
@@ -307,13 +307,13 @@ const ClientLeadDetail = () => {
                 <div className="grid gap-4">
                   {lead.industry && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Industry</p>
+                      <p className="text-base font-medium text-muted-foreground">Industry</p>
                       <p className="text-foreground">{lead.industry}</p>
                     </div>
                   )}
                   {lead.companySize && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Company Size</p>
+                      <p className="text-base font-medium text-muted-foreground">Company Size</p>
                       <p className="flex items-center gap-1 text-foreground">
                         <Users className="h-4 w-4" />
                         {lead.companySize}
@@ -322,19 +322,19 @@ const ClientLeadDetail = () => {
                   )}
                   {lead.employeeCount && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Employee Count</p>
+                      <p className="text-base font-medium text-muted-foreground">Employee Count</p>
                       <p className="text-foreground">{lead.employeeCount}</p>
                     </div>
                   )}
                   {lead.country && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Country</p>
+                      <p className="text-base font-medium text-muted-foreground">Country</p>
                       <p className="text-foreground">{lead.country}</p>
                     </div>
                   )}
                   {lead.address && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Address / Location</p>
+                      <p className="text-base font-medium text-muted-foreground">Address / Location</p>
                       <p className="flex items-center gap-1 text-foreground">
                         <MapPin className="h-4 w-4" />
                         {lead.address}
@@ -343,7 +343,7 @@ const ClientLeadDetail = () => {
                   )}
                   {lead.companyLinkedIn && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Company LinkedIn</p>
+                      <p className="text-base font-medium text-muted-foreground">Company LinkedIn</p>
                       <a 
                         href={lead.companyLinkedIn} 
                         target="_blank" 
@@ -360,8 +360,8 @@ const ClientLeadDetail = () => {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Description</p>
-                      <p className="text-foreground text-sm leading-relaxed">{lead.companyDescription}</p>
+                      <p className="text-base font-medium text-muted-foreground mb-2">Description</p>
+                      <p className="text-foreground text-base leading-relaxed">{lead.companyDescription}</p>
                     </div>
                   </>
                 )}
@@ -383,29 +383,29 @@ const ClientLeadDetail = () => {
                 <CardContent className="space-y-4">
                   {lead.jobTitle && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                      <p className="text-base font-medium text-muted-foreground">Job Title</p>
                       <p className="text-foreground font-medium">{lead.jobTitle}</p>
                     </div>
                   )}
                   
                   {lead.jobType && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Job Type</p>
+                      <p className="text-base font-medium text-muted-foreground">Job Type</p>
                       <p className="text-foreground">{lead.jobType}</p>
                     </div>
                   )}
                   
                   {lead.jobLevel && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Job Level</p>
+                      <p className="text-base font-medium text-muted-foreground">Job Level</p>
                       <p className="text-foreground">{lead.jobLevel}</p>
                     </div>
                   )}
                   
                   {lead.jobDescription && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                      <p className="text-base font-medium text-muted-foreground mb-2">Job Description</p>
+                      <div className="max-h-40 overflow-y-auto text-base text-foreground leading-relaxed whitespace-pre-wrap">
                         {lead.jobDescription}
                       </div>
                     </div>
@@ -433,7 +433,7 @@ const ClientLeadDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
+                  <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
                 </CardContent>
               </Card>
             )}
@@ -449,19 +449,19 @@ const ClientLeadDetail = () => {
               <CardContent className="space-y-4">
                 {lead.lastContactDate && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Last Contact Date</p>
+                    <p className="text-base font-medium text-muted-foreground">Last Contact Date</p>
                     <p className="text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
                   </div>
                 )}
                 {lead.nextAction && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Next Action</p>
+                    <p className="text-base font-medium text-muted-foreground">Next Action</p>
                     <p className="text-foreground">{lead.nextAction}</p>
                   </div>
                 )}
                 {lead.dateCreated && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Date Created</p>
+                    <p className="text-base font-medium text-muted-foreground">Date Created</p>
                     <p className="text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
                   </div>
                 )}

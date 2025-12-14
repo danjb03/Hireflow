@@ -310,7 +310,7 @@ const ClientOnboarding = () => {
                   onChange={e => updateField('lastCompaniesWorkedWith', e.target.value)}
                   rows={4}
                 />
-                <p className="text-xs text-muted-foreground">This helps us build lookalike searches</p>
+                <p className="text-base text-muted-foreground">This helps us build lookalike searches</p>
               </div>
               <div className="flex gap-4">
                 <Button variant="outline" onClick={prevStep} className="flex-1">Back</Button>
@@ -339,7 +339,7 @@ const ClientOnboarding = () => {
                   onChange={e => updateField('currentCandidates', e.target.value)}
                   rows={5}
                 />
-                <p className="text-xs text-muted-foreground">We'll use these to run candidate-led campaigns</p>
+                <p className="text-base text-muted-foreground">We'll use these to run candidate-led campaigns</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="uniqueSellingPoints">Your Unique Selling Points *</Label>

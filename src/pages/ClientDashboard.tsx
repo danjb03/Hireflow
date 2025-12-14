@@ -164,7 +164,7 @@ const ClientDashboard = () => {
               <Users className="h-5 w-5 text-muted-foreground/50" />
             </div>
             <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
-            <p className="text-sm text-muted-foreground">Total Leads</p>
+            <p className="text-base text-muted-foreground">Total Leads</p>
           </div>
 
           <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
@@ -172,7 +172,7 @@ const ClientDashboard = () => {
               <Target className="h-5 w-5 text-muted-foreground/50" />
             </div>
             <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.activeLeads}</div>
-            <p className="text-sm text-muted-foreground">Active Leads</p>
+            <p className="text-base text-muted-foreground">Active Leads</p>
           </div>
 
           <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
@@ -180,7 +180,7 @@ const ClientDashboard = () => {
               <Calendar className="h-5 w-5 text-muted-foreground/50" />
             </div>
             <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.upcomingCallbacks}</div>
-            <p className="text-sm text-muted-foreground">Upcoming Callbacks</p>
+            <p className="text-base text-muted-foreground">Upcoming Callbacks</p>
           </div>
 
           <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
@@ -188,7 +188,7 @@ const ClientDashboard = () => {
               <TrendingUp className="h-5 w-5 text-muted-foreground/50" />
             </div>
             <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.conversionRate}%</div>
-            <p className="text-sm text-muted-foreground">Conversion Rate</p>
+            <p className="text-base text-muted-foreground">Conversion Rate</p>
           </div>
         </div>
 
@@ -211,7 +211,7 @@ const ClientDashboard = () => {
                   >
                     <div className="flex-1">
                       <p className="font-medium text-foreground">{lead.companyName}</p>
-                      <p className="text-sm text-muted-foreground">{formatDate(lead.dateAdded)}</p>
+                      <p className="text-base text-muted-foreground">{formatDate(lead.dateAdded)}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge className={getStatusColor(lead.status)}>

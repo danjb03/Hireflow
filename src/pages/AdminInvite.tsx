@@ -106,7 +106,7 @@ const AdminInvite = () => {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold">Invite Client</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-base text-muted-foreground mt-1">
             Create a new client account and generate credentials
           </p>
         </div>
@@ -131,7 +131,7 @@ const AdminInvite = () => {
                   required
                   disabled={!!generatedPassword}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-base text-muted-foreground">
                   This exact name will be used to assign leads to this client
                 </p>
               </div>
@@ -152,8 +152,8 @@ const AdminInvite = () => {
               {/* Onboarding Information */}
               <div className="pt-4 border-t space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium mb-3">Onboarding Information</h3>
-                  <p className="text-xs text-muted-foreground mb-4">
+                  <h3 className="text-base font-medium mb-3">Onboarding Information</h3>
+                  <p className="text-base text-muted-foreground mb-4">
                     Set up the client's campaign details and delivery targets
                   </p>
                 </div>
@@ -169,7 +169,7 @@ const AdminInvite = () => {
                     onChange={(e) => setLeadsPurchased(parseInt(e.target.value) || 0)}
                     disabled={!!generatedPassword}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-base text-muted-foreground">
                     Total number of leads the client has purchased
                   </p>
                 </div>
@@ -206,7 +206,7 @@ const AdminInvite = () => {
                         <span className="font-medium">Leads Per Day Required:</span>
                         <span className="text-lg font-bold">{calculatedLeadsPerDay}</span>
                       </div>
-                      <p className="text-xs mt-1 text-muted-foreground">
+                      <p className="text-base mt-1 text-muted-foreground">
                         Based on work days between onboarding and target delivery date
                       </p>
                     </AlertDescription>
@@ -259,7 +259,7 @@ const AdminInvite = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <strong>Temporary Password:</strong>
-                      <code className="relative rounded bg-muted px-2 py-1 font-mono text-sm">
+                      <code className="relative rounded bg-muted px-2 py-1 font-mono text-base">
                         {generatedPassword}
                       </code>
                       <Button
@@ -279,7 +279,7 @@ const AdminInvite = () => {
               </Alert>
 
               <Alert className="bg-warning/10 border-warning/20">
-                <AlertDescription className="text-sm">
+                <AlertDescription className="text-base">
                   <strong>Important:</strong> Make sure to save this password. The client will need to change it on their first login.
                 </AlertDescription>
               </Alert>

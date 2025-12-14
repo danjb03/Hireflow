@@ -92,11 +92,11 @@ const ClientSettings = () => {
               <User className="h-5 w-5" />
               Account Information
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">Your account details</p>
+            <p className="text-base text-muted-foreground mb-4">Your account details</p>
           </div>
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium">Email</Label>
+              <Label className="text-base font-medium">Email</Label>
               <Input 
                 value={user?.email || ""} 
                 disabled 
@@ -104,7 +104,7 @@ const ClientSettings = () => {
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">Member Since</Label>
+              <Label className="text-base font-medium">Member Since</Label>
               <Input 
                 value={new Date(user?.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -125,11 +125,11 @@ const ClientSettings = () => {
               <Lock className="h-5 w-5" />
               Change Password
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">Update your password</p>
+            <p className="text-base text-muted-foreground mb-4">Update your password</p>
           </div>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <Label htmlFor="current-password" className="text-sm font-medium">Current Password</Label>
+              <Label htmlFor="current-password" className="text-base font-medium">Current Password</Label>
               <Input
                 id="current-password"
                 type="password"
@@ -140,7 +140,7 @@ const ClientSettings = () => {
               />
             </div>
             <div>
-              <Label htmlFor="new-password" className="text-sm font-medium">New Password</Label>
+              <Label htmlFor="new-password" className="text-base font-medium">New Password</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -152,7 +152,7 @@ const ClientSettings = () => {
               />
             </div>
             <div>
-              <Label htmlFor="confirm-password" className="text-sm font-medium">Confirm New Password</Label>
+              <Label htmlFor="confirm-password" className="text-base font-medium">Confirm New Password</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -163,7 +163,7 @@ const ClientSettings = () => {
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Password must be at least 6 characters long
             </p>
             <Button type="submit" disabled={isUpdating} className="bg-primary hover:bg-primary/90">
@@ -180,7 +180,7 @@ const ClientSettings = () => {
               <LifeBuoy className="h-5 w-5" />
               Support
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-base text-muted-foreground mb-4">
               If you have any questions or need assistance, please reach out to our support team.
             </p>
             <Button variant="outline" onClick={() => window.location.href = "mailto:daniel@hireflow.uk"}>

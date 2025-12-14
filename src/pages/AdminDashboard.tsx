@@ -252,7 +252,7 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">System overview and quick actions</p>
+            <p className="text-base text-muted-foreground mt-1">System overview and quick actions</p>
           </div>
           <Button 
             onClick={() => navigate("/admin/submit-lead")}
@@ -268,52 +268,52 @@ const AdminDashboard = () => {
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-xs mb-0">Total Clients</CardDescription>
+                <CardDescription className="text-base mb-0">Total Clients</CardDescription>
                 <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalClients}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Active client accounts</p>
+              <p className="text-base text-muted-foreground mt-auto">Active client accounts</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-xs mb-0">Total Leads</CardDescription>
+                <CardDescription className="text-base mb-0">Total Leads</CardDescription>
                 <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalLeads}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Across all clients</p>
+              <p className="text-base text-muted-foreground mt-auto">Across all clients</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-xs mb-0">Approved Leads</CardDescription>
+                <CardDescription className="text-base mb-0">Approved Leads</CardDescription>
                 <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown.Approved}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Successfully approved</p>
+              <p className="text-base text-muted-foreground mt-auto">Successfully approved</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-xs mb-0">Needs Work</CardDescription>
+                <CardDescription className="text-base mb-0">Needs Work</CardDescription>
                 <Badge variant="outline" className="gap-1 h-5">
                   <AlertTriangle className="h-3 w-3" />
                 </Badge>
               </div>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown['Needs Work']}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Requiring attention</p>
+              <p className="text-base text-muted-foreground mt-auto">Requiring attention</p>
             </CardContent>
           </Card>
         </div>
@@ -413,35 +413,35 @@ const AdminDashboard = () => {
                                 <TableCell className="font-medium">
                                   <div>
                                     <div className="text-foreground">{client.client_name}</div>
-                                    <div className="text-xs text-muted-foreground">{client.email}</div>
+                                    <div className="text-base text-muted-foreground">{client.email}</div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_purchased ? (
-                                    <div className="text-sm">
+                                    <div className="text-base">
                                       <div className="font-medium text-foreground">{completion}%</div>
-                                      <div className="text-xs text-muted-foreground">
+                                      <div className="text-base text-muted-foreground">
                                         {client.leads_fulfilled || 0} / {client.leads_purchased}
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-base text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_per_day ? (
-                                    <span className="text-sm font-medium text-foreground">{client.leads_per_day}</span>
+                                    <span className="text-base font-medium text-foreground">{client.leads_per_day}</span>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-base text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {daysRemaining !== null ? (
-                                    <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : "text-sm text-foreground"}>
+                                    <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : "text-base text-foreground"}>
                                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                                     </span>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-base text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
