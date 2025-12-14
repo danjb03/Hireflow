@@ -140,21 +140,28 @@ const AdminLeadDetail = () => {
     if (!selectedClient) return;
 
     try {
-      const { error } = await supabase.functions.invoke("assign-lead-to-client", {
+      const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId: id, clientId: selectedClient },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function error:", error);
+        throw error;
+      }
 
       toast({
         title: "Success",
-        description: "Lead assigned to client",
+        description: "Lead assigned to client successfully",
       });
-    } catch (error) {
+
+      // Reload the lead to show updated client assignment
+      await loadLead();
+    } catch (error: any) {
       console.error("Error assigning lead:", error);
+      const errorMessage = error?.message || error?.error || "Failed to assign lead. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to assign lead",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -622,7 +629,7 @@ const AdminLeadDetail = () => {
                   {lead.jobDescription && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-sm text-muted-foreground bg-muted/30 rounded-lg p-4">
+                      <div className="max-h-40 overflow-y-auto text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                         {lead.jobDescription}
                       </div>
                     </div>

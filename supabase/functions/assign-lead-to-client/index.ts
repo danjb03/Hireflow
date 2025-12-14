@@ -30,29 +30,47 @@ serve(async (req) => {
     const { leadId, clientId } = await req.json();
     if (!leadId || !clientId) throw new Error('Lead ID and Client ID required');
 
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
+
     // Use service role key to bypass RLS for admin operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Get both client_name and airtable_client_id
     const { data: client, error: clientError } = await supabaseAdmin
       .from('profiles')
-      .select('client_name')
+      .select('client_name, airtable_client_id')
       .eq('id', clientId)
       .maybeSingle();
 
-    if (clientError) throw new Error(`Failed to fetch client: ${clientError.message}`);
+    if (clientError) {
+      console.error('Error fetching client:', clientError);
+      throw new Error(`Failed to fetch client: ${clientError.message}`);
+    }
     if (!client) throw new Error('Client not found. Please check the client ID.');
-    if (!client?.client_name || client.client_name.trim() === '') {
-      throw new Error('Client name not configured. Please set a client name in Client Management that exactly matches an Airtable dropdown value.');
+
+    // Determine what value to use for the Client field
+    let clientValue: string | string[];
+    
+    if (client.airtable_client_id) {
+      // If we have the Airtable client record ID, use it (for linked record fields)
+      clientValue = [client.airtable_client_id];
+    } else if (client.client_name && client.client_name.trim() !== '') {
+      // Fall back to client name (for text fields or if ID not available)
+      clientValue = client.client_name.trim();
+    } else {
+      throw new Error('Client name not configured. Please set a client name in Client Management.');
     }
 
-    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
-    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
-    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
-
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const tableName = encodeURIComponent('Qualified Lead Table');
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}/${leadId}`;
+    
+    console.log('Assigning lead:', { leadId, clientId, clientValue, hasAirtableId: !!client.airtable_client_id });
+    
     const response = await fetch(airtableUrl, {
       method: 'PATCH',
       headers: {
@@ -60,11 +78,21 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        fields: { 'Client': client.client_name.trim() }
+        fields: { 'Client': clientValue }
       })
     });
 
-    if (!response.ok) throw new Error(`Failed to assign lead: ${response.status}`);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('Airtable API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorBody,
+        url: airtableUrl,
+        clientValue
+      });
+      throw new Error(`Failed to assign lead: ${response.status} - ${errorBody}`);
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -72,9 +100,13 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error assigning lead to client:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

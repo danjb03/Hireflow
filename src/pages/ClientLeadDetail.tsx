@@ -405,7 +405,7 @@ const ClientLeadDetail = () => {
                   {lead.jobDescription && (
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-sm text-muted-foreground bg-muted/30 rounded-lg p-4">
+                      <div className="max-h-40 overflow-y-auto text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                         {lead.jobDescription}
                       </div>
                     </div>

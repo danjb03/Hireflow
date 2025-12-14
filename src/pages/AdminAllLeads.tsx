@@ -181,23 +181,27 @@ const AdminAllLeads = () => {
 
   const handleAssignClient = async (leadId: string, clientId: string) => {
     try {
-      const { error } = await supabase.functions.invoke("assign-lead-to-client", {
+      const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId, clientId },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function error:", error);
+        throw error;
+      }
 
       toast({
         title: "Success",
-        description: "Lead assigned to client",
+        description: "Lead assigned to client successfully",
       });
 
       fetchLeads(statusFilter, clientFilter, searchTerm);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error assigning lead:", error);
+      const errorMessage = error?.message || error?.error || "Failed to assign lead. Please try again.";
       toast({
         title: "Error",
-        description: "Failed to assign lead",
+        description: errorMessage,
         variant: "destructive",
       });
     }

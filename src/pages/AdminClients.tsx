@@ -80,12 +80,24 @@ const AdminClients = () => {
     try {
       const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function error:", error);
+        throw error;
+      }
+
+      if (!data || !data.clients) {
+        console.warn("No clients data returned from function");
+        setAirtableClients([]);
+        return;
+      }
 
       setAirtableClients(data.clients || []);
     } catch (error: any) {
       console.error("Failed to load Airtable clients:", error);
-      toast.error("Failed to load clients from Airtable");
+      const errorMessage = error?.message || error?.error || "Unknown error";
+      toast.error(`Failed to load clients from Airtable: ${errorMessage}`);
+      // Set empty array so UI doesn't break
+      setAirtableClients([]);
     } finally {
       setLoadingOptions(false);
     }
