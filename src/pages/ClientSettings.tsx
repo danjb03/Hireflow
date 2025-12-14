@@ -183,7 +183,7 @@ const ClientSettings = () => {
             <p className="text-sm text-muted-foreground mb-4">
               If you have any questions or need assistance, please reach out to our support team.
             </p>
-            <Button variant="outline" onClick={() => window.location.href = "mailto:support@hireflow.com"}>
+            <Button variant="outline" onClick={() => window.location.href = "mailto:daniel@hireflow.uk"}>
               Contact Support
             </Button>
           </div>
