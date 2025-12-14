@@ -263,7 +263,7 @@ const AdminClients = () => {
 
       toast.success("Client linked to Airtable record successfully");
       setEditingClient(null);
-      setEditingName("");
+      setEditingAirtableClientId("");
       loadClients();
     } catch (error: any) {
       toast.error("Failed to update client: " + error.message);
@@ -454,10 +454,10 @@ const AdminClients = () => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => {
-                                setEditingClient(user.id);
-                                setEditingName("");
-                              }}
+                          onClick={() => {
+                            setEditingClient(user.id);
+                            setEditingAirtableClientId("");
+                          }}
                               className="text-success hover:text-success transition-colors duration-200"
                             >
                               <CheckCircle2 className="h-4 w-4 mr-1" />
@@ -626,45 +626,51 @@ const AdminClients = () => {
                       {/* Client Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1 min-w-0">
-                          {editingClient === client.id ? (
-                            <div className="flex items-center gap-2 mb-2">
-                              <Select
-                                value={editingName}
-                                onValueChange={setEditingName}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select name" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {loadingOptions ? (
-                                    <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-                                  ) : (
-                                    airtableOptions.map((option) => (
-                                      <SelectItem key={option} value={option}>
-                                        {option}
-                                      </SelectItem>
-                                    ))
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                size="sm"
-                                onClick={() => handleUpdateClient(client.id, editingName)}
-                                className="bg-primary hover:bg-primary/90"
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setEditingClient(null)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
-                          )}
+                        {editingClient === client.id ? (
+                          <div className="flex items-center gap-2 mb-2">
+                            <Select
+                              value={editingAirtableClientId}
+                              onValueChange={setEditingAirtableClientId}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select client from Airtable" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {loadingOptions ? (
+                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                ) : airtableClients.length === 0 ? (
+                                  <div className="p-2 text-sm text-muted-foreground">No clients in Airtable</div>
+                                ) : (
+                                  airtableClients.map((airtableClient) => (
+                                    <SelectItem key={airtableClient.id} value={airtableClient.id}>
+                                      {airtableClient.name} {airtableClient.email && `(${airtableClient.email})`}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateClient(client.id, editingAirtableClientId)}
+                              disabled={!editingAirtableClientId}
+                              className="bg-primary hover:bg-primary/90"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingClient(null);
+                                setEditingAirtableClientId("");
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
+                        )}
                           <p className="text-sm text-muted-foreground flex items-center gap-2">
                             <Mail className="h-3 w-3" />
                             {client.email}
@@ -909,10 +915,11 @@ const AdminClients = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setEditingClient(client.id);
-                              setEditingName(client.client_name || "");
-                            }}
+                          onClick={() => {
+                            setEditingClient(client.id);
+                            // Set the current airtable_client_id if it exists, otherwise empty
+                            setEditingAirtableClientId(client.airtable_client_id || "");
+                          }}
                             className="flex-1"
                           >
                             <Edit className="h-4 w-4 mr-1" />
