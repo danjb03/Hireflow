@@ -166,6 +166,33 @@ const ClientLeadDetail = () => {
           Back to Leads
         </Button>
 
+        {/* Prominent Availability Card */}
+        {lead.availability ? (
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
+            <CardContent className="flex items-center gap-4 py-4">
+              <div className="p-3 bg-emerald-100 rounded-full">
+                <Phone className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
+                <p className="text-xl font-semibold text-emerald-700">{lead.availability}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 border-2 mb-6">
+            <CardContent className="flex items-center gap-4 py-4">
+              <div className="p-3 bg-emerald-100 rounded-full">
+                <Phone className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
+                <p className="text-base text-muted-foreground">No callback scheduled</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Lead Hero Section */}
         <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50">
           <CardContent className="pt-6">
@@ -204,23 +231,6 @@ const ClientLeadDetail = () => {
                 </div>
               </div>
             </div>
-
-            {/* Availability - Prominent Display */}
-            {lead.availability && (
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <Clock className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-base font-medium text-muted-foreground">Availability</p>
-                    <p className="text-xl font-bold text-foreground">
-                      {lead.availability}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -273,13 +283,6 @@ const ClientLeadDetail = () => {
                   </a>
                 </div>
               )}
-              <div className="space-y-1">
-                <p className="text-base font-medium text-muted-foreground">Availability</p>
-                <p className="text-base flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  {lead.availability || "Not specified"}
-                </p>
-              </div>
             </div>
             {lead.contactLinkedIn && (
               <div className="mt-4 pt-4 border-t">

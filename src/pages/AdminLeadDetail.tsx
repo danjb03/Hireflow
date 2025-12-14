@@ -322,6 +322,33 @@ const AdminLeadDetail = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
+        {/* Prominent Availability Card */}
+        {lead.availability ? (
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
+            <CardContent className="flex items-center gap-4 py-4">
+              <div className="p-3 bg-emerald-100 rounded-full">
+                <Phone className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
+                <p className="text-xl font-semibold text-emerald-700">{lead.availability}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 border-2 mb-6">
+            <CardContent className="flex items-center gap-4 py-4">
+              <div className="p-3 bg-emerald-100 rounded-full">
+                <Phone className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
+                <p className="text-base text-muted-foreground">No callback scheduled</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Admin Actions */}
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 border rounded-xl p-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
