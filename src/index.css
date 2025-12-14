@@ -44,7 +44,7 @@ All colors MUST be HSL.
 
     --border: 212 26% 83%;
     --input: 212 26% 83%;
-    --ring: 200 98% 39%;
+    --ring: 152 56% 57%;
 
     --radius: 0.25rem;
 
@@ -62,7 +62,7 @@ All colors MUST be HSL.
 
     --sidebar-border: 212 26% 83%;
 
-    --sidebar-ring: 200 98% 39%;
+    --sidebar-ring: 152 56% 57%;
 
     --chart-1: 198 93% 59%;
 
@@ -139,7 +139,7 @@ All colors MUST be HSL.
 
     --border: 215 19% 34%;
     --input: 215 19% 34%;
-    --ring: 198 93% 59%;
+    --ring: 152 56% 57%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 152 56% 57%;
@@ -147,7 +147,7 @@ All colors MUST be HSL.
     --sidebar-accent: 215 20% 65%;
     --sidebar-accent-foreground: 228 84% 4%;
     --sidebar-border: 215 19% 34%;
-    --sidebar-ring: 198 93% 59%;
+    --sidebar-ring: 152 56% 57%;
     --chart-1: 199 95% 73%;
     --chart-2: 211 96% 78%;
     --chart-3: 215 20% 65%;

@@ -88,7 +88,7 @@ const LeadDetail = () => {
       case "in progress":
         return "bg-yellow-500";
       case "contacted":
-        return "bg-blue-500";
+        return "bg-emerald-500";
       case "new":
         return "bg-gray-500";
       default:
