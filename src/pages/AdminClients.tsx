@@ -250,42 +250,34 @@ const AdminClients = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-4">
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Active Clients</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums">{activeClients.length}</CardTitle>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              With assigned names
-            </CardFooter>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <CardDescription className="text-xs mb-2">Active Clients</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{activeClients.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">With assigned names</p>
+            </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Pending Users</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums">{pendingUsers.length}</CardTitle>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              Awaiting approval
-            </CardFooter>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <CardDescription className="text-xs mb-2">Pending Users</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{pendingUsers.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Awaiting approval</p>
+            </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Total Users</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums">{clients.length}</CardTitle>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              All accounts
-            </CardFooter>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <CardDescription className="text-xs mb-2">Total Users</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{clients.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">All accounts</p>
+            </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Available Names</CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums">{airtableOptions.length}</CardTitle>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              From Airtable
-            </CardFooter>
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <CardDescription className="text-xs mb-2">Available Names</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableOptions.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">From Airtable</p>
+            </CardContent>
           </Card>
         </div>
 
@@ -307,7 +299,7 @@ const AdminClients = () => {
             <CardContent>
               <div className="overflow-hidden rounded-lg border">
                 <Table>
-                  <TableHeader className="bg-muted sticky top-0 z-10">
+                  <TableHeader>
                     <TableRow>
                       <TableHead>Email</TableHead>
                       <TableHead>Client Name</TableHead>
@@ -418,7 +410,7 @@ const AdminClients = () => {
             <CardContent>
               <div className="overflow-hidden rounded-lg border">
                 <Table>
-                  <TableHeader className="bg-muted sticky top-0 z-10">
+                  <TableHeader>
                     <TableRow>
                       <TableHead>Client</TableHead>
                       <TableHead>Status</TableHead>
