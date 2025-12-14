@@ -139,6 +139,8 @@ serve(async (req) => {
     // First, add any client names we already have
     clientNames.forEach(name => clientNameMap.set(name, name));
     
+    console.log(`Found ${clientRecordIds.size} client record IDs and ${clientNames.size} client names to resolve`);
+    
     // Then fetch names for record IDs
     if (clientRecordIds.size > 0) {
       const clientIdsArray = Array.from(clientRecordIds);
@@ -162,6 +164,9 @@ serve(async (req) => {
               const clientName = clientRecord.fields['Client Name'] || clientRecord.fields['Name'] || '';
               if (clientName) {
                 clientNameMap.set(clientRecord.id, clientName);
+                console.log(`Mapped client record ${clientRecord.id} to name: ${clientName}`);
+              } else {
+                console.warn(`Client record ${clientRecord.id} has no name field`);
               }
             });
           } else {
@@ -210,21 +215,48 @@ serve(async (req) => {
       
       // Resolve client name from Client field
       let assignedClient = 'Unassigned';
+      let assignedClientId: string | null = null;
       const clientField = fields['Client'];
+      
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {
-          // Linked record - get name from first record
+          // Linked record - get name from first record ID
           const clientId = clientField[0];
-          assignedClient = clientNameMap.get(clientId) || clientId;
+          assignedClientId = clientId;
+          // Try to get name from map
+          assignedClient = clientNameMap.get(clientId);
+          
+          // If not found, it's a record ID we couldn't resolve
+          if (!assignedClient) {
+            if (clientId.startsWith('rec')) {
+              console.warn(`Client name not found for record ID: ${clientId}`);
+              assignedClient = 'Unknown Client';
+            } else {
+              assignedClient = 'Unassigned';
+            }
+          }
         } else if (typeof clientField === 'string') {
           if (clientField.startsWith('rec')) {
             // It's a record ID, look it up
-            assignedClient = clientNameMap.get(clientField) || clientField;
+            assignedClientId = clientField;
+            assignedClient = clientNameMap.get(clientField);
+            
+            // If not found, show "Unknown Client" instead of the ID
+            if (!assignedClient) {
+              console.warn(`Client name not found for record ID: ${clientField}`);
+              assignedClient = 'Unknown Client';
+            }
           } else {
             // It's already a name
             assignedClient = clientField;
           }
         }
+      }
+      
+      // Final safety check: never show a record ID
+      if (assignedClient && assignedClient.startsWith('rec')) {
+        console.warn(`Client field contains record ID instead of name: ${assignedClient}, showing 'Unknown Client'`);
+        assignedClient = 'Unknown Client';
       }
       
       return {
