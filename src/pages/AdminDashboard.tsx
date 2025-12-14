@@ -264,65 +264,57 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-4">
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Total Clients</CardDescription>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.totalClients}</CardTitle>
-                <Badge variant="outline" className="gap-1">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <div className="flex items-center justify-between mb-2">
+                <CardDescription className="text-xs mb-0">Total Clients</CardDescription>
+                <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              Active client accounts
-            </CardFooter>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalClients}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Active client accounts</p>
+            </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Total Leads</CardDescription>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.totalLeads}</CardTitle>
-                <Badge variant="outline" className="gap-1">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <div className="flex items-center justify-between mb-2">
+                <CardDescription className="text-xs mb-0">Total Leads</CardDescription>
+                <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              Across all clients
-            </CardFooter>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalLeads}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Across all clients</p>
+            </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Approved Leads</CardDescription>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.statusBreakdown.Approved}</CardTitle>
-                <Badge variant="outline" className="gap-1">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <div className="flex items-center justify-between mb-2">
+                <CardDescription className="text-xs mb-0">Approved Leads</CardDescription>
+                <Badge variant="outline" className="gap-1 h-5">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               </div>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              Successfully approved
-            </CardFooter>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown.Approved}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Successfully approved</p>
+            </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-            <CardHeader>
-              <CardDescription>Needs Work</CardDescription>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-semibold tabular-nums">{stats.statusBreakdown['Needs Work']}</CardTitle>
-                <Badge variant="outline" className="gap-1">
+          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <div className="flex items-center justify-between mb-2">
+                <CardDescription className="text-xs mb-0">Needs Work</CardDescription>
+                <Badge variant="outline" className="gap-1 h-5">
                   <AlertTriangle className="h-3 w-3" />
                 </Badge>
               </div>
-            </CardHeader>
-            <CardFooter className="text-xs text-muted-foreground">
-              Requiring attention
-            </CardFooter>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown['Needs Work']}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Requiring attention</p>
+            </CardContent>
           </Card>
         </div>
 
