@@ -54,10 +54,10 @@ const AdminClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingClient, setEditingClient] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
+  const [editingAirtableClientId, setEditingAirtableClientId] = useState<string>("");
   const [deleteClient, setDeleteClient] = useState<Client | null>(null);
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
-  const [airtableOptions, setAirtableOptions] = useState<string[]>([]);
+  const [airtableClients, setAirtableClients] = useState<Array<{id: string, name: string, email?: string | null}>>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -67,7 +67,7 @@ const AdminClients = () => {
 
   useEffect(() => {
     checkAdminAndLoadClients();
-    loadAirtableOptions();
+    loadAirtableClients();
     const getUserEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) setUserEmail(user.email);
@@ -75,17 +75,17 @@ const AdminClients = () => {
     getUserEmail();
   }, []);
 
-  const loadAirtableOptions = async () => {
+  const loadAirtableClients = async () => {
     setLoadingOptions(true);
     try {
-      const { data, error } = await supabase.functions.invoke("get-airtable-client-options");
+      const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
       if (error) throw error;
 
-      setAirtableOptions(data.options || []);
+      setAirtableClients(data.clients || []);
     } catch (error: any) {
-      console.error("Failed to load Airtable options:", error);
-      toast.error("Failed to load client name options from Airtable");
+      console.error("Failed to load Airtable clients:", error);
+      toast.error("Failed to load clients from Airtable");
     } finally {
       setLoadingOptions(false);
     }
@@ -242,17 +242,28 @@ const AdminClients = () => {
            client.client_status === 'at_risk';
   };
 
-  const handleUpdateClient = async (clientId: string, newName: string) => {
+  const handleUpdateClient = async (clientId: string, airtableClientId: string) => {
     try {
+      // Find the client name from the selected Airtable client
+      const selectedClient = airtableClients.find(c => c.id === airtableClientId);
+      if (!selectedClient) {
+        toast.error("Selected client not found");
+        return;
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({ client_name: newName })
+        .update({ 
+          client_name: selectedClient.name,
+          airtable_client_id: airtableClientId
+        })
         .eq("id", clientId);
 
       if (error) throw error;
 
-      toast.success("Client name updated successfully");
+      toast.success("Client linked to Airtable record successfully");
       setEditingClient(null);
+      setEditingName("");
       loadClients();
     } catch (error: any) {
       toast.error("Failed to update client: " + error.message);
@@ -350,7 +361,7 @@ const AdminClients = () => {
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <CardDescription className="text-xs mb-2">Available Names</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableOptions.length}</CardTitle>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClients.length}</CardTitle>
               <p className="text-xs text-muted-foreground mt-auto">From Airtable</p>
             </CardContent>
           </Card>
@@ -390,19 +401,21 @@ const AdminClients = () => {
                         {editingClient === user.id ? (
                           <div className="flex items-center gap-2">
                             <Select
-                              value={editingName}
-                              onValueChange={setEditingName}
+                              value={editingAirtableClientId}
+                              onValueChange={setEditingAirtableClientId}
                             >
                               <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Select name" />
+                                <SelectValue placeholder="Select client from Airtable" />
                               </SelectTrigger>
                               <SelectContent>
                                 {loadingOptions ? (
                                   <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+                                ) : airtableClients.length === 0 ? (
+                                  <div className="p-2 text-sm text-muted-foreground">No clients in Airtable</div>
                                 ) : (
-                                  airtableOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                      {option}
+                                  airtableClients.map((client) => (
+                                    <SelectItem key={client.id} value={client.id}>
+                                      {client.name} {client.email && `(${client.email})`}
                                     </SelectItem>
                                   ))
                                 )}
@@ -410,8 +423,8 @@ const AdminClients = () => {
                             </Select>
                             <Button
                               size="sm"
-                              onClick={() => handleUpdateClient(user.id, editingName)}
-                              disabled={!editingName}
+                              onClick={() => handleUpdateClient(user.id, editingAirtableClientId)}
+                              disabled={!editingAirtableClientId}
                               className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                             >
                               <Save className="h-4 w-4" />
@@ -419,7 +432,10 @@ const AdminClients = () => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setEditingClient(null)}
+                              onClick={() => {
+                                setEditingClient(null);
+                                setEditingAirtableClientId("");
+                              }}
                               className="transition-colors duration-200"
                             >
                               <X className="h-4 w-4" />
