@@ -27,7 +27,7 @@ serve(async (req) => {
     const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
     if (!isAdmin) throw new Error('Admin access required');
 
-    const { leadId, clientId } = await req.json();
+    const { leadId, clientId, orderId } = await req.json();
     if (!leadId || !clientId) throw new Error('Lead ID and Client ID required');
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
@@ -92,6 +92,62 @@ serve(async (req) => {
         clientValue
       });
       throw new Error(`Failed to assign lead: ${response.status} - ${errorBody}`);
+    }
+
+    // If orderId is provided, also update the lead in Supabase to link it to the order
+    if (orderId) {
+      // First, get the client's Supabase client_id from profiles
+      const { data: clientProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('client_name')
+        .eq('id', clientId)
+        .single();
+
+      if (clientProfile?.client_name) {
+        const { data: supabaseClient } = await supabaseAdmin
+          .from('clients')
+          .select('id')
+          .eq('client_name', clientProfile.client_name)
+          .single();
+
+        if (supabaseClient) {
+          // Update lead in Supabase with client_id and order_id
+          const { error: updateError } = await supabaseAdmin
+            .from('leads')
+            .update({
+              client_id: supabaseClient.id,
+              order_id: orderId
+            })
+            .eq('id', leadId);
+
+          if (updateError) {
+            console.error('Error updating lead in Supabase:', updateError);
+            // Don't throw - Airtable update succeeded, Supabase update is secondary
+          }
+        }
+      }
+    } else {
+      // Still update client_id in Supabase even if no order
+      const { data: clientProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('client_name')
+        .eq('id', clientId)
+        .single();
+
+      if (clientProfile?.client_name) {
+        const { data: supabaseClient } = await supabaseAdmin
+          .from('clients')
+          .select('id')
+          .eq('client_name', clientProfile.client_name)
+          .single();
+
+        if (supabaseClient) {
+          await supabaseAdmin
+            .from('leads')
+            .update({ client_id: supabaseClient.id })
+            .eq('id', leadId);
+        }
+      }
     }
 
     return new Response(

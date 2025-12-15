@@ -78,11 +78,33 @@ const AdminClients = () => {
   const loadAirtableClients = async () => {
     setLoadingOptions(true);
     try {
+      // Try to load from Supabase clients table first (preferred)
+      const { data: supabaseClients, error: supabaseError } = await supabase
+        .from("clients")
+        .select("id, client_name, email")
+        .order("client_name");
+
+      if (!supabaseError && supabaseClients && supabaseClients.length > 0) {
+        // Use Supabase clients
+        setAirtableClients(
+          supabaseClients.map(c => ({
+            id: c.id,
+            name: c.client_name,
+            email: c.email || null
+          }))
+        );
+        setLoadingOptions(false);
+        return;
+      }
+
+      // Fallback to Airtable if Supabase clients table is empty or doesn't exist
       const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
       if (error) {
-        console.error("Function error:", error);
-        throw error;
+        console.warn("Airtable function error (non-critical):", error);
+        // Don't show error toast - just log it
+        setAirtableClients([]);
+        return;
       }
 
       if (!data || !data.clients) {
@@ -93,10 +115,8 @@ const AdminClients = () => {
 
       setAirtableClients(data.clients || []);
     } catch (error: any) {
-      console.error("Failed to load Airtable clients:", error);
-      const errorMessage = error?.message || error?.error || "Unknown error";
-      toast.error(`Failed to load clients from Airtable: ${errorMessage}`);
-      // Set empty array so UI doesn't break
+      // Silently fail - this is not critical for the page to function
+      console.warn("Failed to load external clients (non-critical):", error);
       setAirtableClients([]);
     } finally {
       setLoadingOptions(false);
@@ -374,7 +394,7 @@ const AdminClients = () => {
             <CardContent className="flex-1 flex flex-col justify-center p-6">
               <CardDescription className="text-base mb-2">Available Names</CardDescription>
               <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClients.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">From Airtable</p>
+              <p className="text-base text-muted-foreground mt-auto">Client options</p>
             </CardContent>
           </Card>
         </div>
