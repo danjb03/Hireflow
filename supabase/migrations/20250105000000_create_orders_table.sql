@@ -76,8 +76,11 @@ CREATE POLICY "Clients can view their own orders"
   USING (
     client_id IN (
       SELECT c.id FROM public.clients c
-      INNER JOIN public.profiles p ON c.profile_id = p.id OR c.client_name = p.client_name
-      WHERE p.id = auth.uid()
+      WHERE EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.id = auth.uid()
+        AND c.client_name = p.client_name
+      )
     )
   );
 
