@@ -411,9 +411,16 @@ const AdminLeadDetail = () => {
             <div className="space-y-2">
               <label className="text-base font-medium text-muted-foreground mb-2 block">Assign to Client</label>
               {clients.length > 0 ? (
-                <div className="flex gap-2">
-                  <Select value={selectedClient} onValueChange={setSelectedClient}>
-                    <SelectTrigger className="flex-1">
+                <div className="space-y-3">
+                  <Select 
+                    value={selectedClient} 
+                    onValueChange={(value) => {
+                      setSelectedClient(value);
+                      setSelectedOrder("");
+                      loadOrdersForClient(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select client" />
                     </SelectTrigger>
                     <SelectContent>
@@ -424,10 +431,41 @@ const AdminLeadDetail = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button 
-                    onClick={handleAssignClient} 
+                  
+                  {selectedClient && (
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">Assign to Order (Optional)</label>
+                      {loadingOrders ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading orders...
+                        </div>
+                      ) : orders.length > 0 ? (
+                        <Select value={selectedOrder} onValueChange={setSelectedOrder}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select order (optional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">No order (assign to client only)</SelectItem>
+                            {orders.map((order) => (
+                              <SelectItem key={order.id} value={order.id}>
+                                {order.order_number} ({order.leads_delivered}/{order.leads_purchased} leads)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-2">
+                          No active orders with remaining capacity for this client
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <Button
+                    onClick={handleAssignClient}
                     disabled={!selectedClient}
-                    className="bg-primary hover:bg-primary/90"
+                    className="w-full bg-primary hover:bg-primary/90"
                   >
                     Assign
                   </Button>
