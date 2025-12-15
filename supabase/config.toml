@@ -38,3 +38,15 @@ verify_jwt = true
 
 [functions.reset-client-password]
 verify_jwt = true
+
+[functions.get-orders]
+verify_jwt = true
+
+[functions.get-order-details]
+verify_jwt = true
+
+[functions.create-order]
+verify_jwt = true
+
+[functions.update-order]
+verify_jwt = true
