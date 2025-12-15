@@ -7,6 +7,7 @@ import {
   Users, 
   Calendar, 
   Settings,
+  Package,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -78,6 +79,7 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
   const menuItems = [
     { title: "Dashboard", url: "/client/dashboard", icon: LayoutDashboard },
     { title: "Leads", url: "/client/leads", icon: Users },
+    { title: "Orders", url: "/client/orders", icon: Package },
     { title: "Calendar", url: "/client/calendar", icon: Calendar },
     { title: "Settings", url: "/client/settings", icon: Settings },
   ];

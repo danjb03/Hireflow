@@ -4,6 +4,7 @@ import {
   Users, 
   FileText, 
   UserPlus,
+  Package,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -31,6 +32,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
   const menuItems = [
     { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "All Leads", url: "/admin/leads", icon: FileText },
+    { title: "Orders", url: "/admin/orders", icon: Package },
     { title: "Clients", url: "/admin/clients", icon: Users },
     { title: "Invite Client", url: "/admin/invite", icon: UserPlus },
   ];
