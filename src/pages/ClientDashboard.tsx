@@ -124,11 +124,18 @@ const ClientDashboard = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    } catch {
+      return "N/A";
+    }
   };
 
   if (checkingOnboarding || isLoading) {
@@ -141,13 +148,13 @@ const ClientDashboard = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Welcome Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
             Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground font-normal">
             {new Date().toLocaleDateString("en-US", { 
               weekday: "long", 
               year: "numeric", 
@@ -158,80 +165,98 @@ const ClientDashboard = () => {
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
-            <div className="absolute top-6 right-6">
-              <Users className="h-5 w-5 text-muted-foreground/50" />
-            </div>
-            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
-            <p className="text-base text-muted-foreground">Total Leads</p>
-          </div>
+        <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 relative">
+              <div className="absolute top-3 right-3 opacity-40">
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
+                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.totalLeads}</div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
-            <div className="absolute top-6 right-6">
-              <Target className="h-5 w-5 text-muted-foreground/50" />
-            </div>
-            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.activeLeads}</div>
-            <p className="text-base text-muted-foreground">Active Leads</p>
-          </div>
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 relative">
+              <div className="absolute top-3 right-3 opacity-40">
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Leads</p>
+                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.activeLeads}</div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
-            <div className="absolute top-6 right-6">
-              <Calendar className="h-5 w-5 text-muted-foreground/50" />
-            </div>
-            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.upcomingCallbacks}</div>
-            <p className="text-base text-muted-foreground">Upcoming Callbacks</p>
-          </div>
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 relative">
+              <div className="absolute top-3 right-3 opacity-40">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Upcoming Callbacks</p>
+                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.upcomingCallbacks}</div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-gradient-to-br from-card to-muted/20 border rounded-xl p-6 shadow-sm relative">
-            <div className="absolute top-6 right-6">
-              <TrendingUp className="h-5 w-5 text-muted-foreground/50" />
-            </div>
-            <div className="text-4xl font-bold tabular-nums text-foreground mb-1">{stats.conversionRate}%</div>
-            <p className="text-base text-muted-foreground">Conversion Rate</p>
-          </div>
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4 relative">
+              <div className="absolute top-3 right-3 opacity-40">
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Conversion Rate</p>
+                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.conversionRate}%</div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-card border rounded-xl shadow-sm">
-          <div className="text-xl font-semibold p-6 border-b">Recent Activity</div>
-          <div className="p-6">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
             {recentLeads.length === 0 ? (
               <div className="text-center py-8">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground">No recent leads</p>
+                <FileText className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">No recent leads</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {recentLeads.map((lead) => (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors group"
                     onClick={() => navigate(`/client/leads/${lead.id}`)}
                   >
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">{lead.companyName}</p>
-                      <p className="text-base text-muted-foreground">{formatDate(lead.dateAdded)}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground truncate">{lead.companyName}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(lead.dateAdded)}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={getStatusColor(lead.status)}>
+                    <div className="flex items-center gap-2 ml-3">
+                      <Badge variant="outline" className="text-xs px-2 py-0.5">
                         {lead.status}
                       </Badge>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
-        <div className="flex gap-4">
-          <Button onClick={() => navigate("/client/leads")} className="bg-primary hover:bg-primary/90">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button onClick={() => navigate("/client/leads")} size="default" className="flex-1">
             View All Leads
           </Button>
-          <Button onClick={() => navigate("/client/calendar")} variant="outline">
+          <Button onClick={() => navigate("/client/calendar")} variant="outline" size="default" className="flex-1">
             Check Calendar
           </Button>
         </div>

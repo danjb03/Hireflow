@@ -248,16 +248,17 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-3 md:space-y-4 p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="text-base text-muted-foreground mt-1">System overview and quick actions</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">System overview and quick actions</p>
           </div>
           <Button 
             onClick={() => navigate("/admin/submit-lead")}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            size="default"
+            className="w-full sm:w-auto"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Submit Lead
@@ -265,92 +266,92 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-base mb-0">Total Clients</CardDescription>
-                <Badge variant="outline" className="gap-1 h-5">
-                  <TrendingUp className="h-3 w-3" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Clients</p>
+                <Badge variant="outline" className="h-4 px-1.5">
+                  <TrendingUp className="h-2.5 w-2.5" />
                 </Badge>
               </div>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalClients}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Active client accounts</p>
+              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.totalClients}</div>
+              <p className="text-xs text-muted-foreground">Active accounts</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-base mb-0">Total Leads</CardDescription>
-                <Badge variant="outline" className="gap-1 h-5">
-                  <TrendingUp className="h-3 w-3" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
+                <Badge variant="outline" className="h-4 px-1.5">
+                  <TrendingUp className="h-2.5 w-2.5" />
                 </Badge>
               </div>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.totalLeads}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Across all clients</p>
+              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
+              <p className="text-xs text-muted-foreground">Across all clients</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-base mb-0">Approved Leads</CardDescription>
-                <Badge variant="outline" className="gap-1 h-5">
-                  <TrendingUp className="h-3 w-3" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved Leads</p>
+                <Badge variant="outline" className="h-4 px-1.5">
+                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
                 </Badge>
               </div>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown.Approved}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Successfully approved</p>
+              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Approved}</div>
+              <p className="text-xs text-muted-foreground">Successfully approved</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <CardDescription className="text-base mb-0">Needs Work</CardDescription>
-                <Badge variant="outline" className="gap-1 h-5">
-                  <AlertTriangle className="h-3 w-3" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Needs Work</p>
+                <Badge variant="outline" className="h-4 px-1.5">
+                  <AlertTriangle className="h-2.5 w-2.5 text-amber-600" />
                 </Badge>
               </div>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{stats.statusBreakdown['Needs Work']}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Requiring attention</p>
+              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.statusBreakdown['Needs Work']}</div>
+              <p className="text-xs text-muted-foreground">Requiring attention</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Status Breakdown */}
         <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Leads by Status</CardTitle>
-            <CardDescription>Breakdown of lead statuses across the system</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Leads by Status</CardTitle>
+            <CardDescription className="text-sm">Breakdown of lead statuses across the system</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4 md:gap-6">
               <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved ?? 0}</div>
-                <Badge variant="outline" className="gap-1">
+                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved ?? 0}</div>
+                <Badge variant="outline" className="gap-1 text-xs">
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   Approved
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work'] ?? 0}</div>
-                <Badge variant="outline" className="gap-1">
+                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work'] ?? 0}</div>
+                <Badge variant="outline" className="gap-1 text-xs">
                   <AlertTriangle className="h-3 w-3 text-amber-600" />
                   Needs Work
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected ?? 0}</div>
-                <Badge variant="outline" className="gap-1">
+                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected ?? 0}</div>
+                <Badge variant="outline" className="gap-1 text-xs">
                   <X className="h-3 w-3 text-red-600" />
                   Rejected
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown ?? 0}</div>
-                <Badge variant="outline" className="gap-1">
+                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown ?? 0}</div>
+                <Badge variant="outline" className="gap-1 text-xs">
                   <FileText className="h-3 w-3 text-muted-foreground" />
                   Unknown
                 </Badge>
@@ -361,13 +362,13 @@ const AdminDashboard = () => {
 
         {/* Client Status Overview - Prioritized View */}
         <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Client Status Overview</CardTitle>
-                <CardDescription>Monitor client progress and status</CardDescription>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <CardTitle className="text-lg font-semibold">Client Status Overview</CardTitle>
+                <CardDescription className="text-sm">Monitor client progress and status</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")} className="w-full sm:w-auto">
                 View All Clients
               </Button>
             </div>
@@ -379,21 +380,21 @@ const AdminDashboard = () => {
                 if (statusClients.length === 0) return null;
 
                 return (
-                  <div key={status} className="space-y-3">
+                  <div key={status} className="space-y-2">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(status)}
-                      <h3 className="font-semibold text-lg text-foreground">{getStatusLabel(status)}</h3>
-                      <Badge variant="outline" className="ml-2 rounded-full">{statusClients.length}</Badge>
+                      <h3 className="font-semibold text-base text-foreground">{getStatusLabel(status)}</h3>
+                      <Badge variant="outline" className="ml-2 rounded-full text-xs px-2 py-0.5">{statusClients.length}</Badge>
                     </div>
                     <div className="overflow-hidden rounded-lg border">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Client</TableHead>
-                            <TableHead>Progress</TableHead>
-                            <TableHead>Leads/Day</TableHead>
-                            <TableHead>Days Remaining</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead className="text-xs font-semibold">Client</TableHead>
+                            <TableHead className="text-xs font-semibold">Progress</TableHead>
+                            <TableHead className="text-xs font-semibold">Leads/Day</TableHead>
+                            <TableHead className="text-xs font-semibold">Days Remaining</TableHead>
+                            <TableHead className="text-xs font-semibold">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -413,36 +414,36 @@ const AdminDashboard = () => {
                               >
                                 <TableCell className="font-medium">
                                   <div>
-                                    <div className="text-foreground">{client.client_name}</div>
-                                    <div className="text-base text-muted-foreground">{client.email}</div>
+                                    <div className="text-sm text-foreground">{client.client_name}</div>
+                                    <div className="text-xs text-muted-foreground">{client.email}</div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_purchased ? (
-                                    <div className="text-base">
-                                      <div className="font-medium text-foreground">{completion}%</div>
-                                      <div className="text-base text-muted-foreground">
+                                    <div>
+                                      <div className="text-sm font-medium text-foreground">{completion}%</div>
+                                      <div className="text-xs text-muted-foreground">
                                         {client.leads_fulfilled || 0} / {client.leads_purchased}
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="text-base text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {client.leads_per_day ? (
-                                    <span className="text-base font-medium text-foreground">{client.leads_per_day}</span>
+                                    <span className="text-sm font-medium text-foreground">{client.leads_per_day}</span>
                                   ) : (
-                                    <span className="text-base text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {daysRemaining !== null ? (
-                                    <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : "text-base text-foreground"}>
+                                    <span className={daysRemaining < 0 ? "text-sm text-destructive font-semibold" : daysRemaining < 7 ? "text-sm text-warning font-medium" : "text-sm text-foreground"}>
                                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                                     </span>
                                   ) : (
-                                    <span className="text-base text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-muted-foreground">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
@@ -451,7 +452,7 @@ const AdminDashboard = () => {
                                     onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
                                     disabled={updatingStatus === client.id}
                                   >
-                                    <SelectTrigger className="w-32">
+                                    <SelectTrigger className="w-32 h-8 text-xs">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -484,34 +485,34 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 gap-4 @xl:grid-cols-3">
-          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/leads")}>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/leads")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 All Leads
               </CardTitle>
-              <CardDescription>View and manage all leads in the system</CardDescription>
+              <CardDescription className="text-xs">View and manage all leads in the system</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/clients")}>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/clients")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Manage Clients
               </CardTitle>
-              <CardDescription>View and configure client accounts</CardDescription>
+              <CardDescription className="text-xs">View and configure client accounts</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-accent transition-colors shadow-sm" onClick={() => navigate("/admin/invite")}>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/invite")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <PlusCircle className="h-4 w-4" />
                 Invite Client
               </CardTitle>
-              <CardDescription>Send invitation to new client</CardDescription>
+              <CardDescription className="text-xs">Send invitation to new client</CardDescription>
             </CardHeader>
           </Card>
         </div>
