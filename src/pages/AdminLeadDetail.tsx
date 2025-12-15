@@ -58,8 +58,11 @@ const AdminLeadDetail = () => {
   const { id } = useParams();
   const [lead, setLead] = useState<LeadData | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
+  const [orders, setOrders] = useState<Array<{id: string, order_number: string, leads_delivered: number, leads_purchased: number}>>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedClient, setSelectedClient] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [availability, setAvailability] = useState("");
   const [userEmail, setUserEmail] = useState<string>("");
@@ -136,12 +139,60 @@ const AdminLeadDetail = () => {
     }
   };
 
+  const loadOrdersForClient = async (clientId: string) => {
+    if (!clientId) {
+      setOrders([]);
+      return;
+    }
+
+    setLoadingOrders(true);
+    try {
+      // Get client's Supabase client_id
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("client_name")
+        .eq("id", clientId)
+        .single();
+
+      if (profile?.client_name) {
+        const { data: client } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("client_name", profile.client_name)
+          .single();
+
+        if (client) {
+          const { data, error } = await supabase.functions.invoke("get-orders", {
+            body: { client_id: client.id },
+          });
+
+          if (error) throw error;
+
+          // Filter to only show active orders with remaining capacity
+          const activeOrders = (data.orders || []).filter(
+            (o: any) => o.status === "Active" && o.leads_remaining > 0
+          );
+          setOrders(activeOrders);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      setOrders([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   const handleAssignClient = async () => {
     if (!selectedClient) return;
 
     try {
       const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
-        body: { leadId: id, clientId: selectedClient },
+        body: { 
+          leadId: id, 
+          clientId: selectedClient,
+          orderId: selectedOrder || null,
+        },
       });
 
       if (error) {
@@ -151,8 +202,13 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: "Lead assigned to client successfully",
+        description: selectedOrder ? "Lead assigned to client and order successfully" : "Lead assigned to client successfully",
       });
+
+      // Reset selections
+      setSelectedClient("");
+      setSelectedOrder("");
+      setOrders([]);
 
       // Reload the lead to show updated client assignment
       await loadLead();
