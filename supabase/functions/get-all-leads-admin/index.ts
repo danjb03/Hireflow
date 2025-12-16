@@ -65,9 +65,9 @@ serve(async (req) => {
     
     if (clientFilter) {
       if (clientFilter === 'unassigned') {
-        filterParts.push(`OR({Client} = '', {Client} = BLANK())`);
+        filterParts.push(`OR({Clients} = '', {Clients} = BLANK())`);
       } else {
-        filterParts.push(`{Client} = '${clientFilter.replace(/'/g, "\\'")}'`);
+        filterParts.push(`{Clients} = '${clientFilter.replace(/'/g, "\\'")}'`);
       }
     }
     
@@ -110,7 +110,7 @@ serve(async (req) => {
     const clientRecordIds = new Set<string>();
     const clientNames = new Set<string>();
     data.records.forEach((record: any) => {
-      const clientField = record.fields['Client'];
+      const clientField = record.fields['Clients'];
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {
           // Linked record field - extract record IDs
@@ -216,7 +216,7 @@ serve(async (req) => {
       // Resolve client name from Client field
       let assignedClient = 'Unassigned';
       let assignedClientId: string | null = null;
-      const clientField = fields['Client'];
+      const clientField = fields['Clients'];
       
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {

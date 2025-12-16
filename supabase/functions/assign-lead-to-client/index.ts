@@ -85,7 +85,7 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fields: { 'Client': clientValue }
+          fields: { 'Clients': clientValue }
         })
       });
 
@@ -102,7 +102,7 @@ serve(async (req) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            fields: { 'Client': clientValue }
+            fields: { 'Clients': clientValue }
           })
         });
       }
@@ -118,7 +118,7 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fields: { 'Client': clientValue }
+          fields: { 'Clients': clientValue }
         })
       });
     }

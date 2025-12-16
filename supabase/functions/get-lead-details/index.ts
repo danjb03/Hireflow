@@ -49,7 +49,7 @@ serve(async (req) => {
       id: record.id,
       companyName: fields['Company Name'] || '',
       status: fields['Status'] || 'New',
-      clients: fields['Client'] || 'Unassigned',
+      clients: fields['Clients'] || 'Unassigned',
       
       // Contact Info
       contactName: fields['Contact Name'] || null,

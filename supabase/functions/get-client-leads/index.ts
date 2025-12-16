@@ -91,7 +91,7 @@ serve(async (req) => {
       console.log('Client fetching leads for:', profile.client_name);
 
       // Fetch leads filtered by client name using Airtable formula
-      const filterFormula = `{Client} = '${profile.client_name.replace(/'/g, "\\'")}'`;
+      const filterFormula = `{Clients} = '${profile.client_name.replace(/'/g, "\\'")}'`;
       const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
       
       const response = await fetch(airtableUrl, {
@@ -136,7 +136,7 @@ function transformAirtableRecords(records: any[]): any[] {
       id: record.id,
       companyName: fields['Company Name'] || '',
       status: fields['Status'] || 'New',
-      clients: fields['Client'] || 'Unassigned',
+      clients: fields['Clients'] || 'Unassigned',
       
       // Contact Info
       contactName: fields['Contact Name'] || null,
