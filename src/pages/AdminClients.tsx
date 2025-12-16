@@ -78,45 +78,24 @@ const AdminClients = () => {
   const loadAirtableClients = async () => {
     setLoadingOptions(true);
     try {
-      // Try to load from Supabase clients table first (preferred)
-      const { data: supabaseClients, error: supabaseError } = await supabase
-        .from("clients")
-        .select("id, client_name, email")
-        .order("client_name");
-
-      if (!supabaseError && supabaseClients && supabaseClients.length > 0) {
-        // Use Supabase clients
-        setAirtableClients(
-          supabaseClients.map(c => ({
-            id: c.id,
-            name: c.client_name,
-            email: c.email || null
-          }))
-        );
-        setLoadingOptions(false);
-        return;
-      }
-
-      // Fallback to Airtable if Supabase clients table is empty or doesn't exist
+      // Load clients from Airtable (source of truth)
       const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
       if (error) {
-        console.warn("Airtable function error (non-critical):", error);
-        // Don't show error toast - just log it
+        console.warn("Airtable function error:", error);
         setAirtableClients([]);
         return;
       }
 
       if (!data || !data.clients) {
-        console.warn("No clients data returned from function");
+        console.warn("No clients data returned from Airtable");
         setAirtableClients([]);
         return;
       }
 
       setAirtableClients(data.clients || []);
     } catch (error: any) {
-      // Silently fail - this is not critical for the page to function
-      console.warn("Failed to load external clients (non-critical):", error);
+      console.warn("Failed to load clients from Airtable:", error);
       setAirtableClients([]);
     } finally {
       setLoadingOptions(false);
