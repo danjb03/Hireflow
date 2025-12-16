@@ -38,3 +38,9 @@ verify_jwt = true
 
 [functions.reset-client-password]
 verify_jwt = true
+
+[functions.register-client]
+verify_jwt = true
+
+[functions.complete-onboarding]
+verify_jwt = true
