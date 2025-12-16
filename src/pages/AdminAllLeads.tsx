@@ -361,25 +361,25 @@ const AdminAllLeads = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b">
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Company
                     </TableHead>
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Status
                     </TableHead>
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Client
                     </TableHead>
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Contact
                     </TableHead>
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Location
                     </TableHead>
-                    <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Added
                     </TableHead>
-                    <TableHead className="text-right text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
+                    <TableHead className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -393,14 +393,14 @@ const AdminAllLeads = () => {
                     >
                       <TableCell className="px-4 py-3">
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{lead.companyName}</span>
+                          <span className="font-medium text-sm text-foreground">{lead.companyName}</span>
                           {lead.industry && (
-                            <span className="text-base text-muted-foreground">{lead.industry}</span>
+                            <span className="text-xs text-muted-foreground">{lead.industry}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2.5 py-0.5 text-base font-medium`}>
+                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2 py-0.5 text-xs font-medium`}>
                           {getStatusIcon(lead.status)}
                           <span>{lead.status}</span>
                         </Badge>
@@ -410,7 +410,7 @@ const AdminAllLeads = () => {
                           clients.length > 0 ? (
                             <div onClick={(e) => e.stopPropagation()}>
                               <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                                <SelectTrigger className="w-40 h-8">
+                                <SelectTrigger className="w-36 h-7 text-xs">
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
                                 <SelectContent className="z-50">
@@ -423,26 +423,26 @@ const AdminAllLeads = () => {
                               </Select>
                             </div>
                           ) : (
-                            <span className="text-base text-muted-foreground">No clients</span>
+                            <span className="text-xs text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-3 py-1 text-base font-medium">
+                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 text-xs font-medium">
                             {getClientDisplayName(lead.assignedClient)}
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell className="px-4 py-3">
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{lead.contactName || 'N/A'}</span>
+                          <span className="font-medium text-sm text-foreground">{lead.contactName || 'N/A'}</span>
                           {lead.email && (
-                            <span className="text-base text-muted-foreground">{lead.email}</span>
+                            <span className="text-xs text-muted-foreground">{lead.email}</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-base text-foreground">
+                      <TableCell className="px-4 py-3 text-sm text-foreground">
                         {lead.address || lead.country || 'N/A'}
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-base text-foreground">
+                      <TableCell className="px-4 py-3 text-sm text-foreground">
                         {new Date(lead.dateCreated).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">

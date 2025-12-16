@@ -24,11 +24,11 @@ export function NavMain({ items }: NavMainProps) {
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <NavLink 
+                <NavLink
                   to={item.url}
                   end
                   activeClassName="bg-accent text-accent-foreground font-medium"
-                  className="hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                  className="hover:bg-accent hover:text-accent-foreground transition-colors duration-200 text-[15px]"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>
