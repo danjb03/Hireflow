@@ -26,11 +26,6 @@ const AdminSubmitLead = lazyRetry(() => import("./pages/AdminSubmitLead"), "Admi
 const SubmitLead = lazyRetry(() => import("./pages/SubmitLead"), "SubmitLead");
 const AdminAllLeads = lazyRetry(() => import("./pages/AdminAllLeads"), "AdminAllLeads");
 const AdminLeadDetail = lazyRetry(() => import("./pages/AdminLeadDetail"), "AdminLeadDetail");
-const AdminOrders = lazyRetry(() => import("./pages/AdminOrders"), "AdminOrders");
-const AdminOrderDetail = lazyRetry(() => import("./pages/AdminOrderDetail"), "AdminOrderDetail");
-const AdminCreateOrder = lazyRetry(() => import("./pages/AdminCreateOrder"), "AdminCreateOrder");
-const ClientOrders = lazyRetry(() => import("./pages/ClientOrders"), "ClientOrders");
-const ClientOrderDetail = lazyRetry(() => import("./pages/ClientOrderDetail"), "ClientOrderDetail");
 const NotFound = lazyRetry(() => import("./pages/NotFound"), "NotFound");
 
 // Optimized QueryClient configuration for better caching
@@ -78,12 +73,6 @@ const App = () => (
             <Route path="/admin/submit-lead" element={<AdminSubmitLead />} />
             <Route path="/admin/leads" element={<AdminAllLeads />} />
             <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/orders/new" element={<AdminCreateOrder />} />
-            <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
-            {/* Client routes */}
-            <Route path="/client/orders" element={<ClientOrders />} />
-            <Route path="/client/orders/:id" element={<ClientOrderDetail />} />
             {/* Authenticated routes */}
             <Route path="/submit-lead" element={<SubmitLead />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -58,11 +58,8 @@ const AdminLeadDetail = () => {
   const { id } = useParams();
   const [lead, setLead] = useState<LeadData | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
-  const [orders, setOrders] = useState<Array<{id: string, order_number: string, leads_delivered: number, leads_purchased: number}>>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedClient, setSelectedClient] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [availability, setAvailability] = useState("");
   const [userEmail, setUserEmail] = useState<string>("");
@@ -139,59 +136,14 @@ const AdminLeadDetail = () => {
     }
   };
 
-  const loadOrdersForClient = async (clientId: string) => {
-    if (!clientId) {
-      setOrders([]);
-      return;
-    }
-
-    setLoadingOrders(true);
-    try {
-      // Get client's Supabase client_id
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("client_name")
-        .eq("id", clientId)
-        .single();
-
-      if (profile?.client_name) {
-        const { data: client } = await supabase
-          .from("clients")
-          .select("id")
-          .eq("client_name", profile.client_name)
-          .single();
-
-        if (client) {
-          const { data, error } = await supabase.functions.invoke("get-orders", {
-            body: { client_id: client.id },
-          });
-
-          if (error) throw error;
-
-          // Filter to only show active orders with remaining capacity
-          const activeOrders = (data.orders || []).filter(
-            (o: any) => o.status === "Active" && o.leads_remaining > 0
-          );
-          setOrders(activeOrders);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading orders:", error);
-      setOrders([]);
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
-
   const handleAssignClient = async () => {
     if (!selectedClient) return;
 
     try {
       const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
-        body: { 
-          leadId: id, 
+        body: {
+          leadId: id,
           clientId: selectedClient,
-          orderId: selectedOrder || null,
         },
       });
 
@@ -202,13 +154,11 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: selectedOrder ? "Lead assigned to client and order successfully" : "Lead assigned to client successfully",
+        description: "Lead assigned to client successfully",
       });
 
-      // Reset selections
+      // Reset selection
       setSelectedClient("");
-      setSelectedOrder("");
-      setOrders([]);
 
       // Reload the lead to show updated client assignment
       await loadLead();
@@ -412,13 +362,9 @@ const AdminLeadDetail = () => {
               <label className="text-base font-medium text-muted-foreground mb-2 block">Assign to Client</label>
               {clients.length > 0 ? (
                 <div className="space-y-3">
-                  <Select 
-                    value={selectedClient} 
-                    onValueChange={(value) => {
-                      setSelectedClient(value);
-                      setSelectedOrder("");
-                      loadOrdersForClient(value);
-                    }}
+                  <Select
+                    value={selectedClient}
+                    onValueChange={setSelectedClient}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select client" />
@@ -431,37 +377,6 @@ const AdminLeadDetail = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  
-                  {selectedClient && (
-                    <div className="space-y-2">
-                      <label className="text-sm text-muted-foreground">Assign to Order (Optional)</label>
-                      {loadingOrders ? (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Loading orders...
-                        </div>
-                      ) : orders.length > 0 ? (
-                        <Select value={selectedOrder} onValueChange={setSelectedOrder}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select order (optional)" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="">No order (assign to client only)</SelectItem>
-                            {orders.map((order) => (
-                              <SelectItem key={order.id} value={order.id}>
-                                {order.order_number} ({order.leads_delivered}/{order.leads_purchased} leads)
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-2">
-                          No active orders with remaining capacity for this client
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
                   <Button
                     onClick={handleAssignClient}
                     disabled={!selectedClient}
