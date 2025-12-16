@@ -53,34 +53,75 @@ serve(async (req) => {
     }
     if (!client) throw new Error('Client not found. Please check the client ID.');
 
-    // Determine what value to use for the Client field
-    let clientValue: string | string[];
-    
-    if (client.airtable_client_id) {
-      // If we have the Airtable client record ID, use it (for linked record fields)
-      clientValue = [client.airtable_client_id];
-    } else if (client.client_name && client.client_name.trim() !== '') {
-      // Fall back to client name (for text fields or if ID not available)
-      clientValue = client.client_name.trim();
-    } else {
+    console.log('Client profile found:', {
+      clientId,
+      client_name: client.client_name,
+      airtable_client_id: client.airtable_client_id
+    });
+
+    // Get the client name to use - this is the value that will be matched in Airtable
+    const clientName = client.client_name?.trim();
+
+    if (!clientName) {
       throw new Error('Client name not configured. Please set a client name in Client Management.');
     }
 
     const tableName = encodeURIComponent('Qualified Lead Table');
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}/${leadId}`;
-    
-    console.log('Assigning lead:', { leadId, clientId, clientValue, hasAirtableId: !!client.airtable_client_id });
-    
-    const response = await fetch(airtableUrl, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${airtableToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        fields: { 'Client': clientValue }
-      })
-    });
+
+    // Try with airtable_client_id first (linked record), fall back to client name (text field)
+    let response;
+    let clientValue: any;
+
+    if (client.airtable_client_id) {
+      // Try as linked record field first
+      clientValue = [client.airtable_client_id];
+      console.log('Attempting to assign with Airtable client ID (linked record):', clientValue);
+
+      response = await fetch(airtableUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: { 'Client': clientValue }
+        })
+      });
+
+      // If linked record fails, try as text
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.log('Linked record approach failed, trying as text field. Error:', errorBody);
+
+        clientValue = clientName;
+        response = await fetch(airtableUrl, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${airtableToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            fields: { 'Client': clientValue }
+          })
+        });
+      }
+    } else {
+      // No Airtable client ID, use client name directly
+      clientValue = clientName;
+      console.log('Assigning with client name (text field):', clientValue);
+
+      response = await fetch(airtableUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: { 'Client': clientValue }
+        })
+      });
+    }
 
     if (!response.ok) {
       const errorBody = await response.text();
@@ -91,8 +132,11 @@ serve(async (req) => {
         url: airtableUrl,
         clientValue
       });
-      throw new Error(`Failed to assign lead: ${response.status} - ${errorBody}`);
+      throw new Error(`Failed to assign lead in Airtable: ${response.status} - ${errorBody}`);
     }
+
+    const result = await response.json();
+    console.log('Successfully assigned lead:', result.id, 'to client:', clientValue);
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -103,7 +147,7 @@ serve(async (req) => {
     console.error('Error assigning lead to client:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: errorMessage,
         details: error instanceof Error ? error.stack : undefined
       }),
