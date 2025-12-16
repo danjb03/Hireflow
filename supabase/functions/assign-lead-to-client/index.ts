@@ -40,7 +40,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get both client_name and airtable_client_id
+    // Get both client_name and airtable_client_id from profile
     const { data: client, error: clientError } = await supabaseAdmin
       .from('profiles')
       .select('client_name, airtable_client_id')
@@ -59,69 +59,68 @@ serve(async (req) => {
       airtable_client_id: client.airtable_client_id
     });
 
-    // Get the client name to use - this is the value that will be matched in Airtable
     const clientName = client.client_name?.trim();
-
     if (!clientName) {
       throw new Error('Client name not configured. Please set a client name in Client Management.');
     }
 
+    // Get the Airtable client record ID
+    let airtableClientId = client.airtable_client_id;
+
+    // If no airtable_client_id in profile, look it up from Airtable Clients table by name
+    if (!airtableClientId) {
+      console.log('No airtable_client_id in profile, looking up by client name:', clientName);
+
+      const filterFormula = `{Client Name} = '${clientName.replace(/'/g, "\\'")}'`;
+      const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`;
+
+      const clientsResponse = await fetch(clientsUrl, {
+        headers: {
+          'Authorization': `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (clientsResponse.ok) {
+        const clientsData = await clientsResponse.json();
+        if (clientsData.records && clientsData.records.length > 0) {
+          airtableClientId = clientsData.records[0].id;
+          console.log('Found Airtable client record ID:', airtableClientId);
+
+          // Update the profile with the airtable_client_id for future use
+          await supabaseAdmin
+            .from('profiles')
+            .update({ airtable_client_id: airtableClientId })
+            .eq('id', clientId);
+          console.log('Updated profile with airtable_client_id');
+        } else {
+          console.warn('No matching client found in Airtable Clients table for name:', clientName);
+          throw new Error(`Client "${clientName}" not found in Airtable. Please ensure the client exists in the Airtable Clients table.`);
+        }
+      } else {
+        const errorBody = await clientsResponse.text();
+        console.error('Failed to look up client in Airtable:', errorBody);
+        throw new Error('Failed to look up client in Airtable');
+      }
+    }
+
+    // Now we have the Airtable client record ID - use it as a linked record array
+    const clientValue = [airtableClientId];
+    console.log('Assigning lead with Airtable client ID:', clientValue);
+
     const tableName = encodeURIComponent('Qualified Lead Table');
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}/${leadId}`;
 
-    // Try with airtable_client_id first (linked record), fall back to client name (text field)
-    let response;
-    let clientValue: any;
-
-    if (client.airtable_client_id) {
-      // Try as linked record field first
-      clientValue = [client.airtable_client_id];
-      console.log('Attempting to assign with Airtable client ID (linked record):', clientValue);
-
-      response = await fetch(airtableUrl, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fields: { 'Clients': clientValue }
-        })
-      });
-
-      // If linked record fails, try as text
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.log('Linked record approach failed, trying as text field. Error:', errorBody);
-
-        clientValue = clientName;
-        response = await fetch(airtableUrl, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${airtableToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            fields: { 'Clients': clientValue }
-          })
-        });
-      }
-    } else {
-      // No Airtable client ID, use client name directly
-      clientValue = clientName;
-      console.log('Assigning with client name (text field):', clientValue);
-
-      response = await fetch(airtableUrl, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fields: { 'Clients': clientValue }
-        })
-      });
-    }
+    const response = await fetch(airtableUrl, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fields: { 'Clients': clientValue }
+      })
+    });
 
     if (!response.ok) {
       const errorBody = await response.text();
