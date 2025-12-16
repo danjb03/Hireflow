@@ -1,138 +1,167 @@
 # Hireflow - Lead Management Platform
 
-A modern lead management platform for managing and distributing qualified leads to clients. Built with React, TypeScript, and powered by Lovable Cloud.
+A B2B lead management platform for distributing qualified leads to recruitment clients. Built with React, TypeScript, Supabase, and Airtable.
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## Documentation
+
+- [Architecture Overview](docs/ARCHITECTURE.md) - System design, data flow, authentication
+- [API Reference](docs/API.md) - Edge functions, Airtable integration
+- [Style Guide](docs/STYLE_GUIDE.md) - Coding conventions and patterns
 
 ## Overview
 
-Hireflow is a B2B lead generation platform that allows administrators to manage leads from Airtable and distribute them to clients. Clients can view, approve, reject, or request changes to their assigned leads through a dedicated dashboard.
+Hireflow connects lead generation with recruitment agencies. Administrators manage leads sourced from Airtable and distribute them to clients. Clients review, approve, or reject leads through their dedicated portal.
+
+### Data Architecture
+
+| System | Purpose | Data |
+|--------|---------|------|
+| **Airtable** | Source of truth | Leads, Clients |
+| **Supabase** | Auth & user management | Users, Profiles, Roles |
 
 ## Features
 
-### Admin Portal
-- **Dashboard**: Overview of system stats, recent leads, and quick actions
-- **Lead Management**: View all leads, assign to clients, update statuses
-- **Client Management**: Invite new clients, manage existing client accounts
-- **Lead Submission**: Submit new leads directly to Airtable
+### Admin Portal (`/admin/*`)
+- **Dashboard** - System stats, recent activity
+- **All Leads** - View, filter, assign leads to clients
+- **Lead Detail** - Full lead info, status updates, client assignment
+- **Clients** - Manage client accounts, view onboarding data
+- **Invite Client** - Create new client accounts
 
-### Client Portal
-- **Dashboard**: Overview of assigned leads and key metrics
-- **Lead Inbox**: View and manage assigned leads
-- **Lead Actions**: Approve, reject, or request changes on leads with feedback
-- **Calendar**: Schedule and manage callbacks
-- **Settings**: Account settings and preferences
+### Client Portal (`/client/*`)
+- **Dashboard** - Lead overview, metrics
+- **Leads** - View assigned leads, filter by status
+- **Lead Detail** - Review lead, approve/reject with feedback
+- **Calendar** - Callback scheduling
+- **Settings** - Account preferences
 
 ### Lead Statuses
-- **New** (Blue) - Fresh lead awaiting review
-- **Approved** (Green) - Lead accepted by client
-- **Rejected** (Red) - Lead declined by client
-- **Needs Work** (Orange) - Lead requires additional information
+| Status | Description |
+|--------|-------------|
+| New | Fresh lead awaiting review |
+| Approved | Client accepted the lead |
+| Rejected | Client declined the lead |
+| Needs Work | Lead requires changes |
+| Not Qualified | Archived (hidden from main views) |
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **State Management**: TanStack Query (React Query)
-- **Routing**: React Router v6
-- **Backend**: Lovable Cloud (Supabase)
-- **Database**: Airtable (leads), PostgreSQL (users/auth)
-- **Authentication**: Supabase Auth
+### Frontend
+- React 18 + TypeScript
+- Vite (build tool)
+- TailwindCSS + shadcn/ui
+- React Router v6
+- TanStack Query (caching)
+- React Hook Form + Zod
+
+### Backend
+- Supabase (PostgreSQL + Auth)
+- Deno Edge Functions
+- Airtable API
 
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── admin/          # Admin-specific components
-│   ├── landing/        # Landing page sections
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-├── integrations/       # Supabase client & types
-├── lib/                # Utility functions
-├── pages/              # Page components
-│   ├── Admin*.tsx      # Admin portal pages
-│   ├── Client*.tsx     # Client portal pages
-│   └── Index.tsx       # Landing page
-└── assets/             # Images and static assets
+│   ├── admin/           # Admin nav components
+│   ├── landing/         # Landing page sections
+│   └── ui/              # shadcn/ui components (40+)
+├── hooks/               # Custom hooks (toast, mobile)
+├── integrations/
+│   └── supabase/        # Client init & types
+├── lib/                 # Utilities (lazyRetry, clientOnboarding)
+├── pages/
+│   ├── Admin*.tsx       # Admin pages (5)
+│   ├── Client*.tsx      # Client pages (6)
+│   └── *.tsx            # Auth, landing, legacy
+├── AdminLayout.tsx      # Admin page wrapper
+├── ClientLayout.tsx     # Client page wrapper
+└── App.tsx              # Routes & providers
 
 supabase/
-├── functions/          # Edge functions for API operations
-│   ├── assign-lead-to-client/
-│   ├── get-all-leads-admin/
+├── functions/           # 14 Edge functions
 │   ├── get-client-leads/
-│   ├── get-lead-details/
+│   ├── get-all-leads-admin/
+│   ├── assign-lead-to-client/
 │   ├── submit-lead/
-│   ├── update-lead/
-│   ├── update-lead-feedback/
-│   ├── update-lead-status/
+│   ├── update-lead*/
+│   ├── delete-lead/
+│   ├── invite-client/
+│   ├── register-client/
+│   ├── get-airtable-*/
 │   └── ...
-└── config.toml         # Supabase configuration
+├── migrations/          # DB schema
+└── config.toml          # Function config
 ```
-
-## Architecture
-
-### Data Flow
-1. Leads are stored in Airtable's "Qualified Lead Table"
-2. Edge functions handle all Airtable API communication
-3. Each lead has a "Client" field for assignment filtering
-4. Clients only see leads where their assigned name matches
-
-### Authentication
-- Users authenticate via Supabase Auth
-- Profiles stored in PostgreSQL with role assignments
-- Roles: `admin` or `client`
-- RLS policies protect data access
-
-### Key Airtable Fields
-- `Client` - Single select dropdown for client assignment
-- `Status` - Lead status (New, Approved, Rejected, Needs work)
-- `Contact LinkedIn` - LinkedIn profile URL
-- `Date Created` - When the lead was added
-- `Address` - Lead location
 
 ## Environment Variables
 
-The following environment variables are automatically configured:
-
+### Client-side (Vite)
+```env
+VITE_SUPABASE_URL=https://[project].supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=[anon-key]
 ```
-VITE_SUPABASE_URL          # Supabase project URL
-VITE_SUPABASE_PUBLISHABLE_KEY  # Supabase anon key
+
+### Server-side (Edge Functions)
+```env
+SUPABASE_URL=https://[project].supabase.co
+SUPABASE_ANON_KEY=[anon-key]
+SUPABASE_SERVICE_ROLE_KEY=[service-role-key]
+AIRTABLE_API_TOKEN=[pat_xxx]
+AIRTABLE_BASE_ID=[appXXX]
 ```
 
-### Required Secrets (Edge Functions)
+## Key Concepts
 
-- `AIRTABLE_API_TOKEN` - Airtable API authentication
-- `AIRTABLE_BASE_ID` - Airtable base identifier
-- `SUPABASE_SERVICE_ROLE_KEY` - Admin operations
+### Authentication Flow
+1. Admin invites client → Creates Supabase user + profile
+2. Client logs in → Redirected to onboarding (first time)
+3. Client completes onboarding → Creates Airtable client record, links to profile
+4. Client accesses portal → JWT auth, filtered by `client_name`
+
+### Lead Assignment
+Leads are assigned by updating the `Client` field in Airtable:
+- Uses Airtable record ID if `airtable_client_id` exists in profile
+- Falls back to `client_name` string match
+
+### User Roles
+| Role | Access |
+|------|--------|
+| `admin` | All leads, all clients, invite users, system stats |
+| `client` | Own leads only (filtered by client_name) |
 
 ## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
+# Development server
 npm run dev
 
-# Build for production
+# Type checking
+npm run typecheck
+
+# Build
 npm run build
+
+# Preview build
+npm run preview
 ```
 
 ## Deployment
 
-This project is deployed via Lovable. Click the **Publish** button in the editor to deploy updates.
+- **Frontend**: Vercel (or Lovable publish)
+- **Edge Functions**: Auto-deploy with Supabase
+- **Database**: Supabase hosted PostgreSQL
 
-- Frontend changes require clicking "Update" in the publish dialog
-- Backend changes (edge functions) deploy automatically
+## Additional Resources
 
-## Design System
-
-The application uses a consistent design system across all portals:
-
-- **UI Components**: shadcn/ui with custom theming
-- **Colors**: HSL-based semantic tokens
-- **Layout**: Sidebar navigation with collapsible menu
-- **Icons**: Lucide React icons
-
-## License
-
-Private - All rights reserved.
+- See `/docs` for detailed documentation
+- Airtable base contains "Qualified Lead Table" and "Clients" tables
+- All edge functions require JWT authentication
