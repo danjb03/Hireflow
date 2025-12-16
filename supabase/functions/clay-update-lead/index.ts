@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,112 +11,128 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+
+    if (!airtableToken || !airtableBaseId) {
+      throw new Error('Airtable configuration missing');
+    }
 
     const data = await req.json();
     console.log("Received data from Clay:", data);
 
-    const leadId = data.id || data.lead_id || data.Id || data.record_id;
-    
+    // Get the Airtable record ID
+    const leadId = data.id || data.lead_id || data.Id || data.record_id || data.airtable_id;
+
     if (!leadId) {
       return new Response(
-        JSON.stringify({ error: "Missing lead ID" }),
+        JSON.stringify({ error: "Missing lead ID (Airtable record ID)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const updateData = {};
+    // Build Airtable fields object
+    const fields: Record<string, any> = {};
 
-    // Company fields
-    if (data.company_name || data["Company Name"] || data.Name) 
-      updateData.company_name = data.company_name || data["Company Name"] || data.Name;
-    if (data.company_website || data["Company Website"] || data.Website) 
-      updateData.company_website = data.company_website || data["Company Website"] || data.Website;
-    if (data.company_linkedin || data["Company Linkedin"]) 
-      updateData.company_linkedin = data.company_linkedin || data["Company Linkedin"];
-    if (data.company_description || data.Description) 
-      updateData.company_description = data.company_description || data.Description;
-    if (data.industry || data.Industry || data["Industry (2)"]) 
-      updateData.industry = data.industry || data.Industry || data["Industry (2)"];
+    // Company fields - map to Airtable field names
+    if (data.company_name || data["Company Name"] || data.Name)
+      fields['Company Name'] = data.company_name || data["Company Name"] || data.Name;
+    if (data.company_website || data["Company Website"] || data.Website)
+      fields['Company Website'] = data.company_website || data["Company Website"] || data.Website;
+    if (data.company_linkedin || data["Company Linkedin"] || data["Company LinkedIn"])
+      fields['Company LinkedIn'] = data.company_linkedin || data["Company Linkedin"] || data["Company LinkedIn"];
+    if (data.company_description || data.Description || data["Company Description"])
+      fields['Company Description'] = data.company_description || data.Description || data["Company Description"];
+    if (data.industry || data.Industry || data["Industry (2)"])
+      fields['Industry'] = data.industry || data.Industry || data["Industry (2)"];
     if (data.employee_count || data["Employee Count"] || data["Employee Count (2)"]) {
       const count = data.employee_count || data["Employee Count"] || data["Employee Count (2)"];
-      updateData.employee_count = typeof count === 'number' ? count : parseInt(count) || null;
+      fields['Employee Count'] = typeof count === 'number' ? count : parseInt(count) || null;
     }
-    if (data.company_size || data.Size) 
-      updateData.company_size = data.company_size || data.Size;
-    if (data.country || data.Country || data["Country (2)"]) 
-      updateData.country = data.country || data.Country || data["Country (2)"];
-    if (data.address || data.Address || data["Address - Locations"]) 
-      updateData.address = data.address || data.Address || data["Address - Locations"];
-    if (data.founded || data.Founded) 
-      updateData.founded = data.founded || data.Founded;
-    if (data.locality || data.Locality) 
-      updateData.locality = data.locality || data.Locality;
-    if (data.logo_url || data["Logo Url"]) 
-      updateData.logo_url = data.logo_url || data["Logo Url"];
-    if (data.follower_count || data["Follower Count"]) {
-      const count = data.follower_count || data["Follower Count"];
-      updateData.follower_count = typeof count === 'number' ? count : parseInt(count) || null;
-    }
+    if (data.company_size || data.Size || data["Company Size"])
+      fields['Company Size'] = data.company_size || data.Size || data["Company Size"];
+    if (data.country || data.Country || data["Country (2)"])
+      fields['Country'] = data.country || data.Country || data["Country (2)"];
+    if (data.address || data.Address || data["Address - Locations"])
+      fields['Address'] = data.address || data.Address || data["Address - Locations"];
 
     // Contact fields
-    if (data.contact_name || data["Contact Name"]) 
-      updateData.contact_name = data.contact_name || data["Contact Name"];
-    if (data.contact_title || data["Contact Title"]) 
-      updateData.contact_title = data.contact_title || data["Contact Title"];
-    if (data.email || data.Email) 
-      updateData.email = data.email || data.Email;
-    if (data.phone || data.Phone) 
-      updateData.phone = data.phone || data.Phone;
-    if (data.contact_linkedin || data["Contact Linkedin"]) 
-      updateData.contact_linkedin = data.contact_linkedin || data["Contact Linkedin"];
-    if (data.availability || data.Availability) 
-      updateData.availability = data.availability || data.Availability;
-    if (data.next_action || data["Next Action"]) 
-      updateData.next_action = data.next_action || data["Next Action"];
+    if (data.contact_name || data["Contact Name"])
+      fields['Contact Name'] = data.contact_name || data["Contact Name"];
+    if (data.contact_title || data["Contact Title"])
+      fields['Contact Title'] = data.contact_title || data["Contact Title"];
+    if (data.email || data.Email)
+      fields['Email'] = data.email || data.Email;
+    if (data.phone || data.Phone)
+      fields['Phone'] = data.phone || data.Phone;
+    if (data.contact_linkedin || data["Contact Linkedin"] || data["Contact LinkedIn"])
+      fields['Contact LinkedIn'] = data.contact_linkedin || data["Contact Linkedin"] || data["Contact LinkedIn"];
+    if (data.availability || data.Availability)
+      fields['Availability'] = data.availability || data.Availability;
+    if (data.next_action || data["Next Action"])
+      fields['Next Action'] = data.next_action || data["Next Action"];
 
     // Job fields
-    if (data.job_title || data["Job Title"] || data["Job Title (2)"]) 
-      updateData.job_title = data.job_title || data["Job Title"] || data["Job Title (2)"];
-    if (data.job_level || data["Job Level"]) 
-      updateData.job_level = data.job_level || data["Job Level"];
-    if (data.job_type || data["Job Type"]) 
-      updateData.job_type = data.job_type || data["Job Type"];
-    if (data.job_description || data["Job Description"]) 
-      updateData.job_description = data.job_description || data["Job Description"];
-    if (data.job_url || data["Job Url"] || data["Job Post URL"]) 
-      updateData.job_url = data.job_url || data["Job Url"] || data["Job Post URL"];
-    if (data.date_job_posted || data["Date Job Was Posted"]) 
-      updateData.date_job_posted = data.date_job_posted || data["Date Job Was Posted"];
-    if (data.remote !== undefined || data.Remote !== undefined) 
-      updateData.remote = data.remote ?? data.Remote;
-    if (data.num_jobs_last_30_days || data["Num Jobs Last_30Days"]) {
-      const count = data.num_jobs_last_30_days || data["Num Jobs Last_30Days"];
-      updateData.num_jobs_last_30_days = typeof count === 'number' ? count : parseInt(count) || null;
+    if (data.job_title || data["Job Title"] || data["Job Title (2)"])
+      fields['Job Title'] = data.job_title || data["Job Title"] || data["Job Title (2)"];
+    if (data.job_level || data["Job Level"])
+      fields['Job Level'] = data.job_level || data["Job Level"];
+    if (data.job_type || data["Job Type"])
+      fields['Job Type'] = data.job_type || data["Job Type"];
+    if (data.job_description || data["Job Description"])
+      fields['Job Description'] = data.job_description || data["Job Description"];
+    if (data.job_url || data["Job Url"] || data["Job Post URL"] || data["Job URL"])
+      fields['Job URL'] = data.job_url || data["Job Url"] || data["Job Post URL"] || data["Job URL"];
+
+    // AI Summary
+    if (data.ai_summary || data["AI Summary"])
+      fields['AI Summary'] = data.ai_summary || data["AI Summary"];
+
+    console.log("Updating Airtable lead", leadId, "with fields:", fields);
+
+    // Update the record in Airtable
+    const tableName = 'Qualified Lead Table';
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}/${leadId}`;
+
+    const response = await fetch(airtableUrl, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ fields })
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Airtable API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorBody
+      });
+      return new Response(
+        JSON.stringify({ error: `Airtable API error: ${response.status} - ${errorBody}` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-    if (data.job_openings || data["Job Openings"]) {
-      const openings = data.job_openings || data["Job Openings"];
-      updateData.job_openings = typeof openings === 'string' ? openings : JSON.stringify(openings);
-    }
 
-    console.log("Updating lead", leadId, "with:", updateData);
+    const updatedRecord = await response.json();
+    console.log("Successfully updated Airtable record:", updatedRecord.id);
 
-    const { error } = await supabase.from("leads").update(updateData).eq("id", leadId);
-
-    if (error) {
-      console.error("Supabase error:", error);
-      return new Response(JSON.stringify({ error: error.message }), 
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    return new Response(JSON.stringify({ success: true, updated_fields: Object.keys(updateData) }), 
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        updated_fields: Object.keys(fields),
+        record_id: updatedRecord.id
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
 
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), 
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
