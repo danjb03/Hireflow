@@ -15,7 +15,8 @@ const ClientOnboarding = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checking, setChecking] = useState(true);
   const [step, setStep] = useState(1);
-  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     clientName: "",
     contactPerson: "",
@@ -37,10 +38,34 @@ const ClientOnboarding = () => {
     outreachMethods: ""
   });
 
+  // Required fields per step
+  const requiredFields: Record<number, string[]> = {
+    1: ['clientName', 'contactPerson', 'email', 'companyName', 'location'],
+    2: ['marketsServed', 'industriesServed'],
+    3: ['roleTypes', 'staffingModel', 'lastRolesPlaced', 'lastCompaniesWorkedWith'],
+    4: ['currentCandidates', 'uniqueSellingPoints']
+  };
+
+  const fieldLabels: Record<string, string> = {
+    clientName: 'Client Name',
+    contactPerson: 'Contact Person',
+    email: 'Email',
+    companyName: 'Company Name',
+    location: 'Location',
+    marketsServed: 'Markets You Serve',
+    industriesServed: 'Industries You Serve',
+    roleTypes: 'Types of Roles',
+    staffingModel: 'Staffing Model',
+    lastRolesPlaced: 'Last 5 Roles Placed',
+    lastCompaniesWorkedWith: 'Last 5 Companies Worked With',
+    currentCandidates: 'Current Candidates',
+    uniqueSellingPoints: 'Unique Selling Points'
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         navigate("/login");
         return;
@@ -66,9 +91,69 @@ const ClientOnboarding = () => {
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateStep = (stepNum: number): boolean => {
+    const fields = requiredFields[stepNum] || [];
+    const newErrors: Record<string, string> = {};
+
+    fields.forEach(field => {
+      const value = formData[field as keyof typeof formData];
+      if (!value || value.trim() === '') {
+        newErrors[field] = `${fieldLabels[field] || field} is required`;
+      }
+    });
+
+    // Email validation for step 1
+    if (stepNum === 1 && formData.email && !formData.email.includes('@')) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error('Please fill in all required fields');
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateAllSteps = (): boolean => {
+    const allErrors: Record<string, string> = {};
+
+    for (let s = 1; s <= 4; s++) {
+      const fields = requiredFields[s] || [];
+      fields.forEach(field => {
+        const value = formData[field as keyof typeof formData];
+        if (!value || value.trim() === '') {
+          allErrors[field] = `${fieldLabels[field] || field} is required`;
+        }
+      });
+    }
+
+    if (formData.email && !formData.email.includes('@')) {
+      allErrors.email = 'Please enter a valid email address';
+    }
+
+    setErrors(allErrors);
+    return Object.keys(allErrors).length === 0;
   };
 
   const handleSubmit = async () => {
+    if (!validateAllSteps()) {
+      toast.error('Please fill in all required fields before submitting');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -81,7 +166,7 @@ const ClientOnboarding = () => {
       if (error) throw error;
 
       toast.success("Welcome to Hireflow! Your onboarding is complete. Let's find you some leads!");
-      
+
       navigate('/client/dashboard');
     } catch (error) {
       console.error('Error submitting onboarding:', error);
@@ -91,8 +176,17 @@ const ClientOnboarding = () => {
     }
   };
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 4));
+  const nextStep = () => {
+    if (validateStep(step)) {
+      setStep(s => Math.min(s + 1, 4));
+    }
+  };
+
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+  const getInputClassName = (field: string) => {
+    return errors[field] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : '';
+  };
 
   if (checking) {
     return (
@@ -112,9 +206,9 @@ const ClientOnboarding = () => {
           </p>
           <div className="flex justify-center gap-2 mt-4">
             {[1, 2, 3, 4].map(s => (
-              <div 
-                key={s} 
-                className={`h-2 w-16 rounded-full transition-colors ${s <= step ? 'bg-primary' : 'bg-muted'}`} 
+              <div
+                key={s}
+                className={`h-2 w-16 rounded-full transition-colors ${s <= step ? 'bg-primary' : 'bg-muted'}`}
               />
             ))}
           </div>
@@ -132,37 +226,40 @@ const ClientOnboarding = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name *</Label>
+                  <Label htmlFor="clientName">Client Name <span className="text-red-500">*</span></Label>
                   <Input
                     id="clientName"
                     placeholder="How we'll refer to you"
                     value={formData.clientName}
                     onChange={e => updateField('clientName', e.target.value)}
-                    required
+                    className={getInputClassName('clientName')}
                   />
+                  {errors.clientName && <p className="text-sm text-red-500">{errors.clientName}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contactPerson">Contact Person *</Label>
+                  <Label htmlFor="contactPerson">Contact Person <span className="text-red-500">*</span></Label>
                   <Input
                     id="contactPerson"
                     placeholder="Your name"
                     value={formData.contactPerson}
                     onChange={e => updateField('contactPerson', e.target.value)}
-                    required
+                    className={getInputClassName('contactPerson')}
                   />
+                  {errors.contactPerson && <p className="text-sm text-red-500">{errors.contactPerson}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="you@company.com"
                     value={formData.email}
                     onChange={e => updateField('email', e.target.value)}
-                    required
+                    className={getInputClassName('email')}
                   />
+                  {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
@@ -176,14 +273,15 @@ const ClientOnboarding = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name *</Label>
+                  <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
                   <Input
                     id="companyName"
                     placeholder="Your recruitment agency"
                     value={formData.companyName}
                     onChange={e => updateField('companyName', e.target.value)}
-                    required
+                    className={getInputClassName('companyName')}
                   />
+                  {errors.companyName && <p className="text-sm text-red-500">{errors.companyName}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="companyWebsite">Company Website</Label>
@@ -196,14 +294,15 @@ const ClientOnboarding = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
+                <Label htmlFor="location">Location <span className="text-red-500">*</span></Label>
                 <Input
                   id="location"
                   placeholder="City, Country"
                   value={formData.location}
                   onChange={e => updateField('location', e.target.value)}
-                  required
+                  className={getInputClassName('location')}
                 />
+                {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
               </div>
               <Button onClick={nextStep} className="w-full bg-primary hover:bg-primary/90">Continue</Button>
             </CardContent>
@@ -221,24 +320,28 @@ const ClientOnboarding = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="marketsServed">Markets You Serve (Locations) *</Label>
+                <Label htmlFor="marketsServed">Markets You Serve (Locations) <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="marketsServed"
                   placeholder="e.g. UK, London, South East England, Remote UK roles..."
                   value={formData.marketsServed}
                   onChange={e => updateField('marketsServed', e.target.value)}
                   rows={3}
+                  className={getInputClassName('marketsServed')}
                 />
+                {errors.marketsServed && <p className="text-sm text-red-500">{errors.marketsServed}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="industriesServed">Industries You Serve *</Label>
+                <Label htmlFor="industriesServed">Industries You Serve <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="industriesServed"
                   placeholder="e.g. Technology, Financial Services, Healthcare..."
                   value={formData.industriesServed}
                   onChange={e => updateField('industriesServed', e.target.value)}
                   rows={3}
+                  className={getInputClassName('industriesServed')}
                 />
+                {errors.industriesServed && <p className="text-sm text-red-500">{errors.industriesServed}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subIndustries">Sub-industries / Specializations</Label>
@@ -269,19 +372,21 @@ const ClientOnboarding = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="roleTypes">Types of Roles You Hire For *</Label>
+                <Label htmlFor="roleTypes">Types of Roles You Hire For <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="roleTypes"
                   placeholder="e.g. Software Engineers, Sales Executives, Finance Directors..."
                   value={formData.roleTypes}
                   onChange={e => updateField('roleTypes', e.target.value)}
                   rows={3}
+                  className={getInputClassName('roleTypes')}
                 />
+                {errors.roleTypes && <p className="text-sm text-red-500">{errors.roleTypes}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="staffingModel">Staffing Model *</Label>
+                <Label htmlFor="staffingModel">Staffing Model <span className="text-red-500">*</span></Label>
                 <Select value={formData.staffingModel} onValueChange={v => updateField('staffingModel', v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={getInputClassName('staffingModel')}>
                     <SelectValue placeholder="Select your primary model" />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,27 +395,32 @@ const ClientOnboarding = () => {
                     <SelectItem value="Both">Both</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.staffingModel && <p className="text-sm text-red-500">{errors.staffingModel}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastRolesPlaced">Last 5 Roles Placed *</Label>
+                <Label htmlFor="lastRolesPlaced">Last 5 Roles Placed <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="lastRolesPlaced"
                   placeholder="Describe your recent placements with context (role, level, industry)..."
                   value={formData.lastRolesPlaced}
                   onChange={e => updateField('lastRolesPlaced', e.target.value)}
                   rows={4}
+                  className={getInputClassName('lastRolesPlaced')}
                 />
+                {errors.lastRolesPlaced && <p className="text-sm text-red-500">{errors.lastRolesPlaced}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastCompaniesWorkedWith">Last 5 Companies Worked With *</Label>
+                <Label htmlFor="lastCompaniesWorkedWith">Last 5 Companies Worked With <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="lastCompaniesWorkedWith"
                   placeholder="List companies with brief context - we use this to find similar businesses to target..."
                   value={formData.lastCompaniesWorkedWith}
                   onChange={e => updateField('lastCompaniesWorkedWith', e.target.value)}
                   rows={4}
+                  className={getInputClassName('lastCompaniesWorkedWith')}
                 />
-                <p className="text-base text-muted-foreground">This helps us build lookalike searches</p>
+                {errors.lastCompaniesWorkedWith && <p className="text-sm text-red-500">{errors.lastCompaniesWorkedWith}</p>}
+                <p className="text-sm text-muted-foreground">This helps us build lookalike searches</p>
               </div>
               <div className="flex gap-4">
                 <Button variant="outline" onClick={prevStep} className="flex-1">Back</Button>
@@ -331,25 +441,29 @@ const ClientOnboarding = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentCandidates">5 Current Candidates *</Label>
+                <Label htmlFor="currentCandidates">5 Current Candidates <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="currentCandidates"
                   placeholder="List at least 5 candidates you have available now. Include: title, experience level, key skills, industries. We use this for candidate-led outreach..."
                   value={formData.currentCandidates}
                   onChange={e => updateField('currentCandidates', e.target.value)}
                   rows={5}
+                  className={getInputClassName('currentCandidates')}
                 />
-                <p className="text-base text-muted-foreground">We'll use these to run candidate-led campaigns</p>
+                {errors.currentCandidates && <p className="text-sm text-red-500">{errors.currentCandidates}</p>}
+                <p className="text-sm text-muted-foreground">We'll use these to run candidate-led campaigns</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="uniqueSellingPoints">Your Unique Selling Points *</Label>
+                <Label htmlFor="uniqueSellingPoints">Your Unique Selling Points <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="uniqueSellingPoints"
                   placeholder="In your own words, what makes you different from other recruiters?"
                   value={formData.uniqueSellingPoints}
                   onChange={e => updateField('uniqueSellingPoints', e.target.value)}
                   rows={3}
+                  className={getInputClassName('uniqueSellingPoints')}
                 />
+                {errors.uniqueSellingPoints && <p className="text-sm text-red-500">{errors.uniqueSellingPoints}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="nicheSuccesses">Niches You've Done Well In</Label>
@@ -393,4 +507,3 @@ const ClientOnboarding = () => {
 };
 
 export default ClientOnboarding;
-
