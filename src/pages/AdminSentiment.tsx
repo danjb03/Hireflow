@@ -1,14 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Loader2,
-  TrendingUp,
-  TrendingDown,
   Users,
   Target,
   ThumbsUp,
@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  BarChart3
+  BarChart3,
+  RefreshCw
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -39,29 +40,44 @@ interface ClientWithSentiment {
   sentiment: 'excellent' | 'good' | 'warning' | 'critical';
 }
 
+// Fetch function for React Query
+const fetchSentimentData = async (): Promise<Record<string, LeadStats>> => {
+  const { data, error } = await supabase.functions.invoke("get-client-sentiment");
+  if (error) throw error;
+  return data?.sentiment || {};
+};
+
 const AdminSentiment = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [sentimentData, setSentimentData] = useState<Record<string, LeadStats>>({});
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  // Use React Query with 5 minute cache
+  const { data: sentimentData = {}, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['client-sentiment'],
+    queryFn: fetchSentimentData,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
+    enabled: !isAuthChecking, // Only fetch after auth check
+  });
 
   useEffect(() => {
-    checkAdminAndLoadData();
+    checkAdmin();
   }, []);
 
-  const checkAdminAndLoadData = async () => {
+  const checkAdmin = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session) {
         navigate("/login");
         return;
       }
 
-      setUserEmail(user.email || "");
+      setUserEmail(session.user.email || "");
 
       const { data: isAdmin } = await supabase.rpc("is_admin", {
-        _user_id: user.id,
+        _user_id: session.user.id,
       });
 
       if (!isAdmin) {
@@ -69,25 +85,10 @@ const AdminSentiment = () => {
         return;
       }
 
-      await loadSentimentData();
+      setIsAuthChecking(false);
     } catch (error: any) {
       toast.error("Failed to load data");
       navigate("/admin");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadSentimentData = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("get-client-sentiment");
-
-      if (error) throw error;
-
-      setSentimentData(data?.sentiment || {});
-    } catch (error: any) {
-      console.error("Failed to load sentiment data:", error);
-      toast.error("Failed to load sentiment data");
     }
   };
 
@@ -154,7 +155,7 @@ const AdminSentiment = () => {
     }
   };
 
-  if (isLoading) {
+  if (isAuthChecking || isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -168,11 +169,22 @@ const AdminSentiment = () => {
     <AdminLayout userEmail={userEmail}>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sentiment Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Track client engagement and lead performance across your portfolio
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Sentiment Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Track client engagement and lead performance across your portfolio
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            {isFetching ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
 
         {/* Key Metrics */}
