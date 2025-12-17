@@ -69,26 +69,33 @@ const ClientCalendar = () => {
   };
 
   const parseBookingDate = (booking: string): Date | null => {
-    // Try to parse various date formats from the booking string
-    // Common formats: "2025-01-15", "January 15, 2025", "15/01/2025", "Jan 15 2025 at 2pm", etc.
-    const datePatterns = [
-      // ISO format: 2025-01-15
-      /(\d{4}-\d{2}-\d{2})/,
-      // US format: 01/15/2025 or 1/15/2025
-      /(\d{1,2}\/\d{1,2}\/\d{4})/,
-      // UK format: 15/01/2025
-      /(\d{1,2}\/\d{1,2}\/\d{4})/,
-      // Written format: January 15, 2025 or Jan 15, 2025
-      /((?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})/i,
-    ];
+    // Try UK format first: DD/MM/YYYY (with optional time)
+    const ukMatch = booking.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (ukMatch) {
+      const day = parseInt(ukMatch[1], 10);
+      const month = parseInt(ukMatch[2], 10) - 1; // JS months are 0-indexed
+      const year = parseInt(ukMatch[3], 10);
+      const parsed = new Date(year, month, day);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
 
-    for (const pattern of datePatterns) {
-      const match = booking.match(pattern);
-      if (match) {
-        const parsed = new Date(match[1]);
-        if (!isNaN(parsed.getTime())) {
-          return parsed;
-        }
+    // Try ISO format: YYYY-MM-DD
+    const isoMatch = booking.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      const parsed = new Date(isoMatch[0]);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    // Try written format: January 15, 2025 or Jan 15, 2025
+    const writtenMatch = booking.match(/((?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})/i);
+    if (writtenMatch) {
+      const parsed = new Date(writtenMatch[1]);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
       }
     }
 
