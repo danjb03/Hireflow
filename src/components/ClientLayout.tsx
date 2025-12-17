@@ -99,7 +99,7 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg" asChild>
+                <SidebarMenuButton size="lg" asChild className="hover:bg-transparent">
                   <a href="/client/dashboard" className="flex items-center gap-2">
                     <img src={hireflowLogo} alt="Hireflow" className="h-5" />
                   </a>

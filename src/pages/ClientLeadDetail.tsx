@@ -59,6 +59,7 @@ interface LeadDetail {
   lastContactDate: string | null;
   nextAction: string | null;
   dateCreated: string;
+  feedback: string | null;
 }
 
 const ClientLeadDetail = () => {
@@ -129,15 +130,22 @@ const ClientLeadDetail = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case "new":
+        return "bg-blue-100 text-blue-700 border-blue-200";
       case "approved":
-        return "bg-green-500/10 text-green-500 border-green-500/20";
+      case "booked":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
       case "needs work":
-        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      case "in progress":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "rejected":
-        return "bg-red-500/10 text-red-500 border-red-500/20";
+        return "bg-red-100 text-red-700 border-red-200";
+      case "contacted":
+        return "bg-blue-100 text-blue-700 border-blue-200";
       default:
-        return "bg-muted text-muted-foreground";
+        return "bg-blue-100 text-blue-700 border-blue-200";
     }
   };
 

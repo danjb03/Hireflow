@@ -102,15 +102,22 @@ const ClientDashboard = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case "new":
+        return "bg-blue-100 text-blue-700";
+      case "approved":
       case "booked":
-        return "bg-success text-success-foreground";
+        return "bg-emerald-100 text-emerald-700";
+      case "needs work":
       case "in progress":
-        return "bg-warning text-warning-foreground";
+        return "bg-yellow-100 text-yellow-700";
+      case "rejected":
+        return "bg-red-100 text-red-700";
       case "contacted":
-        return "bg-info text-info-foreground";
+        return "bg-blue-100 text-blue-700";
       default:
-        return "bg-muted text-muted-foreground";
+        return "bg-blue-100 text-blue-700";
     }
   };
 

@@ -99,17 +99,23 @@ const ClientLeads = () => {
   }, [searchQuery, statusFilter, leads]);
 
   const getStatusColor = useCallback((status: string) => {
-    switch (status.toLowerCase()) {
-      case "booked":
-        return "bg-success text-success-foreground";
-      case "in progress":
-        return "bg-warning text-warning-foreground";
-      case "contacted":
-        return "bg-info text-info-foreground";
+    const statusLower = status.toLowerCase();
+    // Match Airtable colors: New=blue, Approved=green, Needs Work=yellow, Rejected=light red
+    switch (statusLower) {
       case "new":
-        return "bg-muted text-muted-foreground";
+        return "bg-blue-100 text-blue-700";
+      case "approved":
+      case "booked":
+        return "bg-emerald-100 text-emerald-700";
+      case "needs work":
+      case "in progress":
+        return "bg-yellow-100 text-yellow-700";
+      case "rejected":
+        return "bg-red-100 text-red-700";
+      case "contacted":
+        return "bg-blue-100 text-blue-700";
       default:
-        return "bg-muted text-muted-foreground";
+        return "bg-blue-100 text-blue-700";
     }
   }, []);
 

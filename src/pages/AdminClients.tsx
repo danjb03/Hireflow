@@ -15,6 +15,18 @@ import AdminLayout from "@/components/AdminLayout";
 
 type ClientStatus = 'happy' | 'unhappy' | 'urgent' | 'at_risk' | 'on_track';
 
+interface LeadStats {
+  total: number;
+  new: number;
+  approved: number;
+  needsWork: number;
+  rejected: number;
+  booked: number;
+  approvalRate: number;
+  feedbackCount: number;
+  recentFeedback: string | null;
+}
+
 interface Client {
   id: string;
   email: string;
@@ -64,6 +76,8 @@ const AdminClients = () => {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [airtableData, setAirtableData] = useState<Record<string, AirtableClientData>>({});
   const [loadingAirtableData, setLoadingAirtableData] = useState<Set<string>>(new Set());
+  const [sentimentData, setSentimentData] = useState<Record<string, LeadStats>>({});
+  const [loadingSentiment, setLoadingSentiment] = useState(false);
 
   useEffect(() => {
     checkAdminAndLoadClients();
@@ -143,9 +157,29 @@ const AdminClients = () => {
       if (error) throw error;
 
       setClients(data || []);
+      // Load sentiment data after clients are loaded
+      loadSentimentData();
     } catch (error: any) {
       console.error("Error loading clients:", error);
       toast.error("Failed to load clients");
+    }
+  };
+
+  const loadSentimentData = async () => {
+    setLoadingSentiment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-client-sentiment");
+
+      if (error) {
+        console.warn("Failed to load sentiment data:", error);
+        return;
+      }
+
+      setSentimentData(data?.sentiment || {});
+    } catch (error: any) {
+      console.warn("Failed to load sentiment data:", error);
+    } finally {
+      setLoadingSentiment(false);
     }
   };
 
@@ -377,6 +411,65 @@ const AdminClients = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Overall Sentiment Summary */}
+        {Object.keys(sentimentData).length > 0 && (
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Overall Lead Performance
+              </CardTitle>
+              <CardDescription>Aggregate statistics across all clients</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const totals = Object.values(sentimentData).reduce(
+                  (acc, stats) => ({
+                    total: acc.total + stats.total,
+                    new: acc.new + stats.new,
+                    approved: acc.approved + stats.approved + stats.booked,
+                    needsWork: acc.needsWork + stats.needsWork,
+                    rejected: acc.rejected + stats.rejected,
+                    feedbackCount: acc.feedbackCount + stats.feedbackCount,
+                  }),
+                  { total: 0, new: 0, approved: 0, needsWork: 0, rejected: 0, feedbackCount: 0 }
+                );
+                const processed = totals.approved + totals.rejected;
+                const overallApprovalRate = processed > 0 ? Math.round((totals.approved / processed) * 100) : 0;
+
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div className="text-center p-4 bg-muted/30 rounded-lg">
+                      <p className="text-3xl font-bold">{totals.total}</p>
+                      <p className="text-sm text-muted-foreground">Total Leads</p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="text-3xl font-bold text-blue-600">{totals.new}</p>
+                      <p className="text-sm text-muted-foreground">New</p>
+                    </div>
+                    <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                      <p className="text-3xl font-bold text-emerald-600">{totals.approved}</p>
+                      <p className="text-sm text-muted-foreground">Approved</p>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                      <p className="text-3xl font-bold text-yellow-600">{totals.needsWork}</p>
+                      <p className="text-sm text-muted-foreground">Needs Work</p>
+                    </div>
+                    <div className="text-center p-4 bg-red-50 rounded-lg">
+                      <p className="text-3xl font-bold text-red-500">{totals.rejected}</p>
+                      <p className="text-sm text-muted-foreground">Rejected</p>
+                    </div>
+                    <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-lg">
+                      <p className={`text-3xl font-bold ${overallApprovalRate >= 70 ? 'text-emerald-600' : overallApprovalRate >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>{overallApprovalRate}%</p>
+                      <p className="text-sm text-muted-foreground">Approval Rate</p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pending Users Section */}
         {pendingUsers.length > 0 && (
@@ -718,7 +811,7 @@ const AdminClients = () => {
                         )}
                         {daysRemaining !== null && (
                           <div className="text-base text-muted-foreground">
-                            {daysRemaining < 0 
+                            {daysRemaining < 0
                               ? `${Math.abs(daysRemaining)} days overdue`
                               : `${daysRemaining} days remaining`
                             }
@@ -728,6 +821,39 @@ const AdminClients = () => {
                           Created {new Date(client.created_at).toLocaleDateString()}
                         </div>
                       </div>
+
+                      {/* Lead Sentiment */}
+                      {client.client_name && sentimentData[client.client_name] && (
+                        <div className="mb-4 p-3 bg-muted/30 rounded-lg">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Lead Performance</p>
+                          <div className="grid grid-cols-4 gap-2 text-center mb-2">
+                            <div>
+                              <p className="text-lg font-semibold text-blue-600">{sentimentData[client.client_name].new}</p>
+                              <p className="text-xs text-muted-foreground">New</p>
+                            </div>
+                            <div>
+                              <p className="text-lg font-semibold text-emerald-600">{sentimentData[client.client_name].approved + sentimentData[client.client_name].booked}</p>
+                              <p className="text-xs text-muted-foreground">Approved</p>
+                            </div>
+                            <div>
+                              <p className="text-lg font-semibold text-yellow-600">{sentimentData[client.client_name].needsWork}</p>
+                              <p className="text-xs text-muted-foreground">Needs Work</p>
+                            </div>
+                            <div>
+                              <p className="text-lg font-semibold text-red-500">{sentimentData[client.client_name].rejected}</p>
+                              <p className="text-xs text-muted-foreground">Rejected</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">
+                              Approval Rate: <span className={`font-medium ${sentimentData[client.client_name].approvalRate >= 70 ? 'text-emerald-600' : sentimentData[client.client_name].approvalRate >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>{sentimentData[client.client_name].approvalRate}%</span>
+                            </span>
+                            <span className="text-muted-foreground">
+                              Feedback: <span className="font-medium">{sentimentData[client.client_name].feedbackCount}</span>
+                            </span>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Status Select */}
                       <div className="mb-4">

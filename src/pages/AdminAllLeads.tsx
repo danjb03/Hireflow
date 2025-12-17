@@ -222,14 +222,15 @@ const AdminAllLeads = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
+      New: "bg-blue-100 text-blue-700 border-blue-200",
+      NEW: "bg-blue-100 text-blue-700 border-blue-200",
+      Lead: "bg-blue-100 text-blue-700 border-blue-200",
       Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      'Needs Work': "bg-yellow-100 text-yellow-700 border-yellow-200",
       Rejected: "bg-red-100 text-red-700 border-red-200",
-      'Needs Work': "bg-amber-100 text-amber-700 border-amber-200",
-      NEW: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      Lead: "bg-emerald-100 text-emerald-700 border-emerald-200",
       'Not Qualified': "bg-gray-100 text-gray-700 border-gray-200",
     };
-    return colors[status] || "bg-emerald-100 text-emerald-700 border-emerald-200";
+    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
   };
 
   const getStatusIcon = (status: string) => {

@@ -138,13 +138,22 @@ const ClientCalendar = () => {
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case "new":
+        return "bg-blue-500";
+      case "approved":
       case "booked":
-        return "bg-success";
+        return "bg-emerald-500";
+      case "needs work":
       case "in progress":
-        return "bg-warning";
+        return "bg-yellow-500";
+      case "rejected":
+        return "bg-red-400";
+      case "contacted":
+        return "bg-blue-500";
       default:
-        return "bg-muted";
+        return "bg-blue-500";
     }
   };
 

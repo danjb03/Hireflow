@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
       lastContactDate: fields['Last Contact Date'] || null,
       nextAction: fields['Next Action'] || null,
       dateCreated: fields['Date Created'] || record.createdTime,
+
+      // Client Feedback
+      feedback: fields['Feedback'] || null,
     };
 
     return new Response(
