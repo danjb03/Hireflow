@@ -57,30 +57,26 @@ const ClientLeads = () => {
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       navigate("/login");
       return;
     }
 
     setUser(session.user);
-    await fetchLeads();
-  };
 
-  const fetchLeads = useCallback(async () => {
+    // Fetch leads (already initiated in parallel with session check would be ideal,
+    // but we need the session for auth. At least we don't have sequential waits now)
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.functions.invoke("get-client-leads");
-
       if (error) throw error;
-
       setLeads(data.leads || []);
     } catch (error: any) {
       toast.error("Failed to load leads: " + error.message);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   // Memoize filtered leads to avoid recalculating on every render
   const filteredLeads = useMemo(() => {

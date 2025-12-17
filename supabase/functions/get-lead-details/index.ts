@@ -77,6 +77,7 @@ serve(async (req) => {
       
       // AI & Dates
       aiSummary: fields['AI Summary'] || null,
+      booking: fields['Booking'] || null,
       availability: fields['Availability'] || null,
       lastContactDate: fields['Last Contact Date'] || null,
       nextAction: fields['Next Action'] || null,

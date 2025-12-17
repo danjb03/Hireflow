@@ -54,6 +54,7 @@ interface LeadDetail {
   jobLevel: string | null;
   
   aiSummary: string | null;
+  booking: string | null;
   availability: string | null;
   lastContactDate: string | null;
   nextAction: string | null;
@@ -166,32 +167,42 @@ const ClientLeadDetail = () => {
           Back to Leads
         </Button>
 
-        {/* Prominent Availability Card */}
-        {lead.availability ? (
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
-            <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Phone className="h-6 w-6 text-emerald-600" />
+        {/* Callback Information Card */}
+        <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
+          <CardContent className="py-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Original Booking */}
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-100 rounded-full">
+                  <Phone className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-emerald-600 font-medium">Original Booking</p>
+                  {lead.booking ? (
+                    <p className="text-lg font-semibold text-emerald-700">{lead.booking}</p>
+                  ) : (
+                    <p className="text-base text-muted-foreground">Not specified</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
-                <p className="text-xl font-semibold text-emerald-700">{lead.availability}</p>
+
+              {/* Alternative Availability */}
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <Clock className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-600 font-medium">Alternative Availability</p>
+                  {lead.availability ? (
+                    <p className="text-lg font-semibold text-blue-700">{lead.availability}</p>
+                  ) : (
+                    <p className="text-base text-muted-foreground">No alternatives provided</p>
+                  )}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 border-2 mb-6">
-            <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Phone className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
-                <p className="text-base text-muted-foreground">No callback scheduled</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Lead Hero Section */}
         <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50">

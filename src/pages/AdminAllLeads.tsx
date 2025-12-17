@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -54,9 +54,9 @@ interface Client {
 
 const AdminAllLeads = () => {
   const navigate = useNavigate();
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [allLeads, setAllLeads] = useState<Lead[]>([]); // Store all leads for client-side filtering
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
@@ -68,115 +68,120 @@ const AdminAllLeads = () => {
   // Single initialization effect
   useEffect(() => {
     if (initialized) return;
-    
+
     const init = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
+        // Use getSession for faster cached auth
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.user) {
           navigate("/login");
           return;
         }
 
-        setUserEmail(user.email || "");
+        setUserEmail(session.user.email || "");
 
-        const { data: isAdmin } = await supabase.rpc("is_admin", {
-          _user_id: user.id,
-        });
+        // Load admin check, clients, and leads in parallel
+        const [adminResult, clientsResult, leadsResponse] = await Promise.all([
+          supabase.rpc("is_admin", { _user_id: session.user.id }),
+          supabase
+            .from("profiles")
+            .select("id, email, client_name")
+            .not("client_name", "is", null)
+            .neq("client_name", ""),
+          fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-leads-admin`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+            }
+          ),
+        ]);
 
-        if (!isAdmin) {
+        if (!adminResult.data) {
           navigate("/dashboard");
           return;
         }
 
-        // Load clients
-        const { data: clientData } = await supabase
-          .from("profiles")
-          .select("id, email, client_name")
-          .not("client_name", "is", null)
-          .neq("client_name", "");
-        
-        setClients(clientData || []);
+        setClients(clientsResult.data || []);
 
-        // Load leads
-        await fetchLeads("", "", "");
-        
+        if (leadsResponse.ok) {
+          const leadsData = await leadsResponse.json();
+          setAllLeads(leadsData.leads || []);
+        }
+
         setInitialized(true);
       } catch (error) {
         console.error("Error initializing:", error);
-        setLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to load leads",
+          variant: "destructive",
+        });
+      } finally {
+        setInitialLoading(false);
       }
     };
 
     init();
   }, [initialized, navigate]);
 
-  const fetchLeads = async (status: string, client: string, search: string) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (status) params.append("status", status);
-      if (client) params.append("client", client);
-      if (search) params.append("search", search);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login");
-        return;
+  // Client-side filtering - instant!
+  const filteredLeads = useMemo(() => {
+    return allLeads.filter(lead => {
+      // Status filter
+      if (statusFilter && lead.status !== statusFilter) {
+        return false;
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-leads-admin?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
+      // Client filter
+      if (clientFilter) {
+        if (clientFilter === "unassigned") {
+          if (lead.assignedClient && lead.assignedClient !== "Unassigned") {
+            return false;
+          }
+        } else {
+          // Find client by ID and match by name
+          const client = clients.find(c => c.id === clientFilter);
+          if (client && lead.assignedClient !== client.client_name) {
+            return false;
+          }
         }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to load leads" }));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      setLeads(data.leads || []);
-    } catch (error) {
-      console.error("Error loading leads:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load leads",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Search filter
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        const matchesCompany = lead.companyName?.toLowerCase().includes(search);
+        const matchesContact = lead.contactName?.toLowerCase().includes(search);
+        const matchesEmail = lead.email?.toLowerCase().includes(search);
+        if (!matchesCompany && !matchesContact && !matchesEmail) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allLeads, statusFilter, clientFilter, searchTerm, clients]);
 
   const handleStatusChange = (value: string) => {
     const newStatus = value === "all" ? "" : value;
     setStatusFilter(newStatus);
     setCurrentPage(1);
-    fetchLeads(newStatus, clientFilter, searchTerm);
   };
 
   const handleClientChange = (value: string) => {
     const newClient = value === "all" ? "" : value;
     setClientFilter(newClient);
     setCurrentPage(1);
-    fetchLeads(statusFilter, newClient, searchTerm);
   };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    // Debounce search
-    const timer = setTimeout(() => {
-      setCurrentPage(1);
-      fetchLeads(statusFilter, clientFilter, value);
-    }, 500);
-    return () => clearTimeout(timer);
+    setCurrentPage(1);
   };
 
   const handleAssignClient = async (leadId: string, clientId: string) => {
@@ -190,12 +195,20 @@ const AdminAllLeads = () => {
         throw error;
       }
 
+      // Update local state immediately instead of re-fetching
+      const client = clients.find(c => c.id === clientId);
+      if (client) {
+        setAllLeads(prev => prev.map(lead =>
+          lead.id === leadId
+            ? { ...lead, assignedClient: client.client_name, assignedClientId: clientId }
+            : lead
+        ));
+      }
+
       toast({
         title: "Success",
         description: "Lead assigned to client successfully",
       });
-
-      fetchLeads(statusFilter, clientFilter, searchTerm);
     } catch (error: any) {
       console.error("Error assigning lead:", error);
       const errorMessage = error?.message || error?.error || "Failed to assign lead. Please try again.";
@@ -259,22 +272,22 @@ const AdminAllLeads = () => {
 
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-  const currentLeads = leads.slice(indexOfFirstLead, indexOfLastLead);
-  const totalPages = Math.ceil(leads.length / leadsPerPage);
+  const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
+  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
   return (
     <AdminLayout userEmail={userEmail}>
-      {loading ? (
+      {initialLoading ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
           {/* Header Section */}
           <div>
             <h1 className="text-3xl font-bold tracking-tight">All Leads</h1>
             <p className="text-muted-foreground mt-1">
-              {leads.length} leads {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
+              {filteredLeads.length} leads {allLeads.length !== filteredLeads.length && `(${allLeads.length} total)`} {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
             </p>
           </div>
 
@@ -349,7 +362,7 @@ const AdminAllLeads = () => {
             </div>
           </div>
 
-          {leads.length === 0 ? (
+          {filteredLeads.length === 0 ? (
             <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
               <div className="text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />

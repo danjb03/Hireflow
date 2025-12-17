@@ -41,7 +41,7 @@ const ClientDashboard = () => {
 
   const checkOnboarding = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       navigate("/login");
       return;
@@ -49,65 +49,56 @@ const ClientDashboard = () => {
 
     setUser(session.user);
 
+    // Fetch profile and leads data in parallel
+    const [profileResult, leadsResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .single(),
+      supabase.functions.invoke("get-client-leads"),
+    ]);
+
     // Check onboarding status
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed')
-      .eq('id', session.user.id)
-      .single();
-    
-    if (!profile?.onboarding_completed) {
+    if (!profileResult.data?.onboarding_completed) {
       navigate('/onboarding');
       return;
     }
 
     setCheckingOnboarding(false);
-    await fetchDashboardData();
-  };
 
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch all leads to calculate stats
-      const { data, error } = await supabase.functions.invoke("get-client-leads");
-
-      if (error) {
-        if (error.message?.includes('No Notion database configured')) {
-          toast.error('Your account is not yet configured. Please contact your administrator to set up your Notion database.');
-        } else {
-          toast.error("Failed to load dashboard data: " + error.message);
-        }
-        throw error;
+    // Process leads data
+    if (leadsResult.error) {
+      if (leadsResult.error.message?.includes('No Notion database configured')) {
+        toast.error('Your account is not yet configured. Please contact your administrator to set up your Notion database.');
+      } else {
+        toast.error("Failed to load dashboard data: " + leadsResult.error.message);
       }
-
-      const leads = data.leads || [];
-      
-      // Calculate stats
-      const totalLeads = leads.length;
-      const activeLeads = leads.filter((l: any) => 
-        l.status === "In Progress" || l.status === "Booked"
-      ).length;
-      const bookedLeads = leads.filter((l: any) => l.status === "Booked").length;
-      const conversionRate = totalLeads > 0 ? Math.round((bookedLeads / totalLeads) * 100) : 0;
-      
-      // For callbacks, we'd need a callback date field - using placeholder for now
-      const upcomingCallbacks = Math.floor(activeLeads * 0.6);
-
-      setStats({
-        totalLeads,
-        activeLeads,
-        upcomingCallbacks,
-        conversionRate,
-      });
-
-      // Get recent leads (last 5)
-      setRecentLeads(leads.slice(0, 5));
-    } catch (error: any) {
-      // Error already handled above
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    const leads = leadsResult.data?.leads || [];
+
+    // Calculate stats
+    const totalLeads = leads.length;
+    const activeLeads = leads.filter((l: any) =>
+      l.status === "In Progress" || l.status === "Booked"
+    ).length;
+    const bookedLeads = leads.filter((l: any) => l.status === "Booked").length;
+    const conversionRate = totalLeads > 0 ? Math.round((bookedLeads / totalLeads) * 100) : 0;
+    const upcomingCallbacks = Math.floor(activeLeads * 0.6);
+
+    setStats({
+      totalLeads,
+      activeLeads,
+      upcomingCallbacks,
+      conversionRate,
+    });
+
+    // Get recent leads (last 5)
+    setRecentLeads(leads.slice(0, 5));
+    setIsLoading(false);
   };
 
   const getStatusColor = (status: string) => {

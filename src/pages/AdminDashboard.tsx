@@ -58,29 +58,31 @@ const AdminDashboard = () => {
 
   const checkAdminAndLoadStats = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      // Use getSession for faster cached auth check
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.user) {
         navigate("/login");
         return;
       }
 
-      // Check if user is admin
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+      const user = session.user;
+      setUserEmail(user.email || "");
 
-      const isAdmin = roles?.some(r => r.role === "admin");
-      
+      // Load admin check, stats, and clients in parallel
+      const [rolesResult] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        loadStats(),
+        loadClients(),
+      ]);
+
+      const isAdmin = rolesResult.data?.some(r => r.role === "admin");
+
       if (!isAdmin) {
         toast.error("Access denied - Admin only");
         navigate("/dashboard");
         return;
       }
-
-      // Load stats and clients
-      await Promise.all([loadStats(), loadClients()]);
     } catch (error: any) {
       toast.error("Failed to load admin dashboard");
       navigate("/dashboard");
@@ -227,14 +229,6 @@ const AdminDashboard = () => {
   };
 
   const [userEmail, setUserEmail] = useState<string>("");
-
-  useEffect(() => {
-    const getUserEmail = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) setUserEmail(user.email);
-    };
-    getUserEmail();
-  }, []);
 
   if (isLoading) {
     return (
