@@ -12,6 +12,7 @@ interface Lead {
   companyName: string;
   contactName: string;
   status: string;
+  booking: string | null;
   availability: string | null;
 }
 
@@ -46,11 +47,11 @@ const ClientCalendar = () => {
 
       if (error) throw error;
 
-      // Filter leads that have availability
-      const leadsWithAvailability = (data.leads || []).filter((lead: any) => lead.availability);
-      setLeadsWithCallbacks(leadsWithAvailability);
+      // Filter leads that have a booking
+      const leadsWithBooking = (data.leads || []).filter((lead: any) => lead.booking);
+      setLeadsWithCallbacks(leadsWithBooking);
     } catch (error: any) {
-      toast.error("Failed to load callbacks: " + error.message);
+      toast.error("Failed to load bookings: " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -67,11 +68,50 @@ const ClientCalendar = () => {
     return { daysInMonth, startingDayOfWeek };
   };
 
+  const parseBookingDate = (booking: string): Date | null => {
+    // Try to parse various date formats from the booking string
+    // Common formats: "2025-01-15", "January 15, 2025", "15/01/2025", "Jan 15 2025 at 2pm", etc.
+    const datePatterns = [
+      // ISO format: 2025-01-15
+      /(\d{4}-\d{2}-\d{2})/,
+      // US format: 01/15/2025 or 1/15/2025
+      /(\d{1,2}\/\d{1,2}\/\d{4})/,
+      // UK format: 15/01/2025
+      /(\d{1,2}\/\d{1,2}\/\d{4})/,
+      // Written format: January 15, 2025 or Jan 15, 2025
+      /((?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})/i,
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = booking.match(pattern);
+      if (match) {
+        const parsed = new Date(match[1]);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+    }
+
+    // Try direct parse as fallback
+    const directParse = new Date(booking);
+    if (!isNaN(directParse.getTime())) {
+      return directParse;
+    }
+
+    return null;
+  };
+
   const getLeadsForDate = (date: Date) => {
-    // Since availability is now text, we can't filter by date
-    // Return all leads with availability for now
-    // This might need to be redesigned if date-based filtering is needed
-    return leadsWithCallbacks;
+    return leadsWithCallbacks.filter(lead => {
+      if (!lead.booking) return false;
+      const bookingDate = parseBookingDate(lead.booking);
+      if (!bookingDate) return false;
+      return bookingDate.toDateString() === date.toDateString();
+    });
+  };
+
+  const hasLeadsOnDate = (date: Date) => {
+    return getLeadsForDate(date).length > 0;
   };
 
   const previousMonth = () => {
@@ -120,7 +160,7 @@ const ClientCalendar = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-            <p className="text-muted-foreground mt-1">View your scheduled callbacks</p>
+            <p className="text-muted-foreground mt-1">View your scheduled bookings</p>
           </div>
           <Button onClick={goToToday} className="bg-primary hover:bg-primary/90">Today</Button>
         </div>
@@ -209,11 +249,17 @@ const ClientCalendar = () => {
                         {lead.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-1">{lead.contactName}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{lead.contactName}</p>
+                    {lead.booking && (
+                      <p className="text-sm font-medium text-emerald-600 flex items-center gap-2 mb-1">
+                        <Clock className="h-4 w-4" />
+                        {lead.booking}
+                      </p>
+                    )}
                     {lead.availability && (
-                      <p className="text-sm font-medium text-foreground flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        {lead.availability}
+                      <p className="text-xs text-blue-600 flex items-center gap-2">
+                        <Clock className="h-3 w-3" />
+                        Alt: {lead.availability}
                       </p>
                     )}
                   </div>
@@ -222,12 +268,12 @@ const ClientCalendar = () => {
             ) : selectedDate ? (
               <div className="text-center py-8">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground">No callbacks scheduled for this day</p>
+                <p className="text-muted-foreground">No bookings scheduled for this day</p>
               </div>
             ) : (
               <div className="text-center py-8">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground">Select a date to view callbacks</p>
+                <p className="text-muted-foreground">Select a date to view bookings</p>
               </div>
             )}
           </div>
