@@ -51,6 +51,7 @@ const AdminDashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
     checkAdminAndLoadStats();
@@ -228,8 +229,6 @@ const AdminDashboard = () => {
     };
     return colors[status] || "bg-blue-100 text-blue-700";
   };
-
-  const [userEmail, setUserEmail] = useState<string>("");
 
   if (isLoading) {
     return (

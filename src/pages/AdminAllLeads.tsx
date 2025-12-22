@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ExternalLink, Clock } from "lucide-react";
+import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ExternalLink, Clock, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -57,6 +57,7 @@ const AdminAllLeads = () => {
   const [allLeads, setAllLeads] = useState<Lead[]>([]); // Store all leads for client-side filtering
   const [clients, setClients] = useState<Client[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [clientFilter, setClientFilter] = useState("");
@@ -111,6 +112,14 @@ const AdminAllLeads = () => {
         if (leadsResponse.ok) {
           const leadsData = await leadsResponse.json();
           setAllLeads(leadsData.leads || []);
+        } else {
+          const errorText = await leadsResponse.text();
+          console.error("Failed to fetch leads:", errorText);
+          toast({
+            title: "Error",
+            description: "Failed to load leads from server",
+            variant: "destructive",
+          });
         }
 
         setInitialized(true);
@@ -128,6 +137,35 @@ const AdminAllLeads = () => {
 
     init();
   }, [initialized, navigate]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-leads-admin`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAllLeads(data.leads || []);
+        toast({ title: "Refreshed", description: "Leads updated successfully" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to refresh leads", variant: "destructive" });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Client-side filtering - instant!
   const filteredLeads = useMemo(() => {
@@ -285,11 +323,22 @@ const AdminAllLeads = () => {
       ) : (
         <div className="space-y-6 relative">
           {/* Header Section */}
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">All Leads</h1>
-            <p className="text-muted-foreground mt-1">
-              {filteredLeads.length} leads {allLeads.length !== filteredLeads.length && `(${allLeads.length} total)`} {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">All Leads</h1>
+              <p className="text-muted-foreground mt-1">
+                {filteredLeads.length} leads {allLeads.length !== filteredLeads.length && `(${allLeads.length} total)`} {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
           </div>
 
           {/* Status Tabs and Filters */}

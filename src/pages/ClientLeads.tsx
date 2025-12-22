@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Loader2, Search, Mail, Phone, Linkedin, MapPin, Building2, Calendar, ExternalLink, FileText } from "lucide-react";
+import { Loader2, Search, Mail, Phone, Linkedin, MapPin, Building2, Calendar, ExternalLink, FileText, RefreshCw, AlertCircle } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 
 interface Lead {
@@ -47,6 +47,8 @@ const ClientLeads = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [user, setUser] = useState<any>(null);
@@ -64,19 +66,27 @@ const ClientLeads = () => {
     }
 
     setUser(session.user);
+    await fetchLeads();
+  };
 
-    // Fetch leads (already initiated in parallel with session check would be ideal,
-    // but we need the session for auth. At least we don't have sequential waits now)
+  const fetchLeads = async (showRefreshing = false) => {
+    if (showRefreshing) setIsRefreshing(true);
+    setError(null);
+
     try {
       const { data, error } = await supabase.functions.invoke("get-client-leads");
       if (error) throw error;
       setLeads(data.leads || []);
     } catch (error: any) {
+      setError(error.message || "Failed to load leads");
       toast.error("Failed to load leads: " + error.message);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
+
+  const handleRefresh = () => fetchLeads(true);
 
   // Memoize filtered leads to avoid recalculating on every render
   const filteredLeads = useMemo(() => {
@@ -133,12 +143,37 @@ const ClientLeads = () => {
     <ClientLayout userEmail={user?.email}>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Your Leads</h1>
-          <p className="text-muted-foreground mt-1">
-            {filteredLeads.length} of {leads.length} leads
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Your Leads</h1>
+            <p className="text-muted-foreground mt-1">
+              {filteredLeads.length} of {leads.length} leads
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center gap-4">
+            <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium text-red-800">Failed to load leads</p>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              Try Again
+            </Button>
+          </div>
+        )}
 
         {/* Search and Filters */}
         <div className="flex items-center gap-4">
