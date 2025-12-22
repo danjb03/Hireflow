@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, FileText, CheckCircle2, AlertTriangle, X, ExternalLink, Clock, RefreshCw } from "lucide-react";
+import { Search, Loader2, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
+import { StatusBadge } from "@/components/StatusBadge";
+import { NoLeadsEmpty } from "@/components/EmptyState";
 
 interface Lead {
   id: string;
@@ -288,36 +290,6 @@ const AdminAllLeads = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      New: "bg-blue-100 text-blue-700 border-blue-200",
-      NEW: "bg-blue-100 text-blue-700 border-blue-200",
-      Lead: "bg-blue-100 text-blue-700 border-blue-200",
-      Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      'Needs Work': "bg-yellow-100 text-yellow-700 border-yellow-200",
-      Rejected: "bg-red-100 text-red-700 border-red-200",
-      'Not Qualified': "bg-gray-100 text-gray-700 border-gray-200",
-    };
-    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Approved':
-        return <CheckCircle2 className="h-3 w-3" />;
-      case 'Needs Work':
-        return <AlertTriangle className="h-3 w-3" />;
-      case 'Rejected':
-        return <X className="h-3 w-3" />;
-      case 'NEW':
-      case 'Lead':
-        return <Clock className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
-    }
-  };
-
-
   // Helper function to get client name from assignedClient value
   const getClientDisplayName = (assignedClient: string | null | undefined): string => {
     // Handle null, undefined, or empty values
@@ -443,12 +415,13 @@ const AdminAllLeads = () => {
           </div>
 
           {filteredLeads.length === 0 ? (
-            <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground">
-              <div className="text-center">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-base">No leads found</p>
-              </div>
-            </div>
+            <NoLeadsEmpty
+              onAction={() => {
+                setSearchTerm("");
+                setStatusFilter("");
+                setClientFilter("");
+              }}
+            />
           ) : (
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <Table>
@@ -493,10 +466,7 @@ const AdminAllLeads = () => {
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1 px-2 py-0.5 text-xs font-medium`}>
-                          {getStatusIcon(lead.status)}
-                          <span>{lead.status}</span>
-                        </Badge>
+                        <StatusBadge status={lead.status} size="sm" />
                       </TableCell>
                       <TableCell className="px-4 py-3">
                         {getClientDisplayName(lead.assignedClient) === "Unassigned" ? (

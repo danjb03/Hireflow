@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Loader2, Search, Mail, Phone, Linkedin, MapPin, Building2, Calendar, ExternalLink, FileText, RefreshCw, AlertCircle } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
+import { StatusBadge } from "@/components/StatusBadge";
+import { NoLeadsEmpty } from "@/components/EmptyState";
 
 interface Lead {
   id: string;
@@ -202,10 +204,12 @@ const ClientLeads = () => {
 
         {/* Leads Table or Empty State */}
         {filteredLeads.length === 0 ? (
-          <div className="bg-muted/30 border-dashed border-2 rounded-xl p-12 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-muted-foreground">No leads found matching your criteria.</p>
-          </div>
+          <NoLeadsEmpty
+            onAction={() => {
+              setSearchQuery("");
+              setStatusFilter("all");
+            }}
+          />
         ) : (
           <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
             <Table>
@@ -243,9 +247,7 @@ const ClientLeads = () => {
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                      <Badge className={getStatusColor(lead.status)}>
-                        {lead.status}
-                      </Badge>
+                      <StatusBadge status={lead.status} size="sm" />
                     </TableCell>
                     <TableCell className="px-4 py-3 text-base text-foreground">{lead.location || 'N/A'}</TableCell>
                     <TableCell className="px-4 py-3 text-base text-foreground">
