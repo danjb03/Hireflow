@@ -102,16 +102,40 @@ const AdminAllLeads = () => {
           ),
         ]);
 
+        // Ensure adminResult is a proper Supabase response, not a React Query object
+        if (!adminResult || typeof adminResult !== 'object' || !('data' in adminResult)) {
+          console.error('Invalid adminResult:', adminResult);
+          navigate("/dashboard");
+          return;
+        }
+
         if (!adminResult.data) {
           navigate("/dashboard");
           return;
         }
 
-        setClients(clientsResult.data || []);
+        // Ensure clients data is properly formatted (not a React Query object)
+        if (!clientsResult || typeof clientsResult !== 'object' || !('data' in clientsResult)) {
+          console.error('Invalid clientsResult:', clientsResult);
+          setClients([]);
+        } else {
+          const clientsData = clientsResult.data;
+          if (clientsData && Array.isArray(clientsData)) {
+            setClients(clientsData);
+          } else {
+            setClients([]);
+          }
+        }
 
         if (leadsResponse.ok) {
           const leadsData = await leadsResponse.json();
-          setAllLeads(leadsData.leads || []);
+          // Ensure leads data is properly formatted (not a React Query object)
+          const leadsArray = leadsData?.leads;
+          if (leadsArray && Array.isArray(leadsArray)) {
+            setAllLeads(leadsArray);
+          } else {
+            setAllLeads([]);
+          }
         } else {
           const errorText = await leadsResponse.text();
           console.error("Failed to fetch leads:", errorText);
@@ -157,8 +181,14 @@ const AdminAllLeads = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAllLeads(data.leads || []);
-        toast({ title: "Refreshed", description: "Leads updated successfully" });
+        // Ensure leads data is properly formatted (not a React Query object)
+        const leadsArray = data?.leads;
+        if (leadsArray && Array.isArray(leadsArray)) {
+          setAllLeads(leadsArray);
+          toast({ title: "Refreshed", description: "Leads updated successfully" });
+        } else {
+          setAllLeads([]);
+        }
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to refresh leads", variant: "destructive" });
@@ -224,7 +254,7 @@ const AdminAllLeads = () => {
 
   const handleAssignClient = async (leadId: string, clientId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
+      const { error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId, clientId },
       });
 
@@ -403,8 +433,8 @@ const AdminAllLeads = () => {
                   <SelectItem value="all">All Clients</SelectItem>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.client_name || client.email}
+                    <SelectItem key={client.id} value={String(client.id)}>
+                      {String(client.client_name || client.email || 'Unknown')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -472,14 +502,14 @@ const AdminAllLeads = () => {
                         {getClientDisplayName(lead.assignedClient) === "Unassigned" ? (
                           clients.length > 0 ? (
                             <div onClick={(e) => e.stopPropagation()}>
-                              <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
+                              <Select value="" onValueChange={(value) => handleAssignClient(lead.id, value)}>
                                 <SelectTrigger className="w-36 h-7 text-xs">
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
                                 <SelectContent className="z-50">
                                   {clients.map((client) => (
-                                    <SelectItem key={client.id} value={client.id}>
-                                      {client.client_name || client.email}
+                                    <SelectItem key={client.id} value={String(client.id)}>
+                                      {String(client.client_name || client.email || 'Unknown')}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -490,7 +520,7 @@ const AdminAllLeads = () => {
                           )
                         ) : (
                           <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 text-xs font-medium">
-                            {getClientDisplayName(lead.assignedClient)}
+                            {String(getClientDisplayName(lead.assignedClient))}
                           </Badge>
                         )}
                       </TableCell>
