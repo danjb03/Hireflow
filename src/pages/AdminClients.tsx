@@ -12,6 +12,8 @@ import { Loader2, Mail, Trash2, Key, Save, X, UserX, Users, CheckCircle2, AlertT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getCompletionPercentage, getDaysRemaining } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
+import { NoClientsEmpty } from "@/components/EmptyState";
+import { SkeletonStats, SkeletonCard } from "@/components/Skeleton";
 
 type ClientStatus = 'happy' | 'unhappy' | 'urgent' | 'at_risk' | 'on_track';
 
@@ -353,8 +355,20 @@ const AdminClients = () => {
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="h-8 w-32 bg-muted/60 rounded animate-pulse" />
+              <div className="h-4 w-48 bg-muted/60 rounded animate-pulse" />
+            </div>
+            <div className="h-10 w-32 bg-muted/60 rounded animate-pulse" />
+          </div>
+          <SkeletonStats />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
         </div>
       </AdminLayout>
     );
@@ -689,17 +703,7 @@ const AdminClients = () => {
 
         {/* Active Clients Grid */}
         {activeClients.length === 0 ? (
-          <div className="bg-muted/30 border-dashed border-2 rounded-xl p-12 text-center">
-            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-muted-foreground mb-4">No active clients yet. Approve pending users or invite new clients.</p>
-            <Button 
-              onClick={() => navigate("/admin/invite")}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Invite Client
-            </Button>
-          </div>
+          <NoClientsEmpty onAction={() => navigate("/admin/invite")} />
         ) : (
           <div>
             <div className="mb-4">
@@ -898,8 +902,8 @@ const AdminClients = () => {
                       </div>
 
                       {/* Expanded Onboarding Information */}
-                      {isExpanded && (
-                        <div className="border-t pt-4 space-y-4">
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="border-t pt-4 space-y-4 mt-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Info className="h-4 w-4 text-primary" />
                             <h4 className="font-semibold">Onboarding & Campaign Information</h4>
@@ -1044,7 +1048,7 @@ const AdminClients = () => {
                             <p className="text-base text-muted-foreground">No additional client data available</p>
                           ) : null}
                         </div>
-                      )}
+                      </div>
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 pt-4 border-t mt-4">
