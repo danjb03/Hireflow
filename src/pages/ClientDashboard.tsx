@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, TrendingUp, Users, Calendar, Target, ArrowRight, FileText } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
+import { StatusBadge } from "@/components/StatusBadge";
+import { SkeletonStats, SkeletonTable } from "@/components/Skeleton";
 
 interface DashboardStats {
   totalLeads: number;
@@ -101,26 +102,6 @@ const ClientDashboard = () => {
     setIsLoading(false);
   };
 
-  const getStatusColor = (status: string) => {
-    const statusLower = status.toLowerCase();
-    switch (statusLower) {
-      case "new":
-        return "bg-blue-100 text-blue-700";
-      case "approved":
-      case "booked":
-        return "bg-emerald-100 text-emerald-700";
-      case "needs work":
-      case "in progress":
-        return "bg-yellow-100 text-yellow-700";
-      case "rejected":
-        return "bg-red-100 text-red-700";
-      case "contacted":
-        return "bg-blue-100 text-blue-700";
-      default:
-        return "bg-blue-100 text-blue-700";
-    }
-  };
-
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     try {
@@ -136,11 +117,26 @@ const ClientDashboard = () => {
     }
   };
 
-  if (checkingOnboarding || isLoading) {
+  if (checkingOnboarding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <ClientLayout userEmail={user?.email}>
+        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+          <div className="space-y-1">
+            <div className="h-8 w-64 bg-muted/60 rounded animate-pulse" />
+            <div className="h-4 w-48 bg-muted/60 rounded animate-pulse" />
+          </div>
+          <SkeletonStats />
+          <SkeletonTable rows={3} />
+        </div>
+      </ClientLayout>
     );
   }
 
@@ -216,20 +212,34 @@ const ClientDashboard = () => {
         {/* Recent Activity */}
         <Card className="shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+              {recentLeads.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/client/leads")}
+                  className="text-xs"
+                >
+                  View All
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {recentLeads.length === 0 ? (
-              <div className="text-center py-8">
+              <div className="text-center py-8 bg-muted/20 rounded-lg border border-dashed">
                 <FileText className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">No recent leads</p>
+                <p className="text-sm font-medium text-foreground mb-1">No recent leads</p>
+                <p className="text-xs text-muted-foreground">Your latest leads will appear here</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {recentLeads.map((lead) => (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors group"
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 hover:border-accent cursor-pointer transition-all duration-200 group"
                     onClick={() => navigate(`/client/leads/${lead.id}`)}
                   >
                     <div className="flex-1 min-w-0">
@@ -237,9 +247,7 @@ const ClientDashboard = () => {
                       <p className="text-xs text-muted-foreground mt-0.5">{formatDate(lead.dateAdded)}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-3">
-                      <Badge variant="outline" className="text-xs px-2 py-0.5">
-                        {lead.status}
-                      </Badge>
+                      <StatusBadge status={lead.status} size="sm" showIcon={false} />
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                   </div>

@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Users, FileText, PlusCircle, TrendingUp, TrendingDown, AlertTriangle, Smile, Frown, Clock, CheckCircle2, ArrowUpRight, X } from "lucide-react";
+import { Users, FileText, PlusCircle, TrendingUp, AlertTriangle, Smile, Frown, Clock, CheckCircle2, X } from "lucide-react";
 import { getCompletionPercentage, getDaysRemaining, getPriorityScore } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
+import { NoClientsEmpty } from "@/components/EmptyState";
+import { SkeletonStats, SkeletonTable } from "@/components/Skeleton";
 
 type ClientStatus = 'happy' | 'unhappy' | 'urgent' | 'at_risk' | 'on_track';
 
@@ -233,8 +235,16 @@ const AdminDashboard = () => {
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="space-y-3 md:space-y-4 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="h-7 w-32 bg-muted/60 rounded animate-pulse" />
+              <div className="h-4 w-48 bg-muted/60 rounded animate-pulse" />
+            </div>
+            <div className="h-10 w-32 bg-muted/60 rounded animate-pulse" />
+          </div>
+          <SkeletonStats />
+          <SkeletonTable rows={4} />
         </div>
       </AdminLayout>
     );
@@ -469,10 +479,7 @@ const AdminDashboard = () => {
               })}
               
               {clients.filter(c => c.client_name).length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p>No active clients yet. Invite clients to get started.</p>
-                </div>
+                <NoClientsEmpty onAction={() => navigate("/admin/invite")} />
               )}
             </div>
           </CardContent>
