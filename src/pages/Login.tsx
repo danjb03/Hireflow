@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import hireflowLogo from "@/assets/hireflow-light.svg";
+import { Loader2, ArrowLeft } from "lucide-react";
+import hireflowLogo from "@/assets/hireflow-logo.svg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const Login = () => {
         });
 
         if (error) throw error;
-        
+
         toast.success("Account created successfully! Please log in.");
         setIsSignUp(false);
         setPassword("");
@@ -42,15 +42,15 @@ const Login = () => {
         });
 
         if (error) throw error;
-        
+
         // Check if user is admin
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", data.user.id);
-        
+
         const isAdmin = roles?.some(r => r.role === "admin") || false;
-        
+
         toast.success("Logged in successfully!");
         navigate(isAdmin ? "/admin" : "/client/dashboard");
       }
@@ -62,69 +62,108 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-[#1a1a1a] p-4">
-      <Card className="w-full max-w-md border-white/10">
-        <CardHeader className="space-y-4">
-          <div className="flex justify-center">
-            <img src={hireflowLogo} alt="Hireflow" className="h-10" />
-          </div>
-          <div className="text-center">
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>
-              {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+    <div className="flex min-h-screen items-center justify-center relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+
+      {/* Animated mesh gradient overlay */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[128px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/30 rounded-full blur-[128px] animate-pulse delay-1000" />
+      </div>
+
+      {/* Back to home */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors z-20"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="text-sm">Back to home</span>
+      </Link>
+
+      <div className="relative z-10 w-full max-w-md p-4">
+        <Card variant="elevated" className="border-white/10 bg-white/5 backdrop-blur-2xl">
+          <CardHeader className="space-y-6 pb-2">
+            <div className="flex justify-center">
+              <img src={hireflowLogo} alt="Hireflow" className="h-12" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-                minLength={6}
-              />
+            <div className="text-center space-y-2">
+              <CardTitle className="text-2xl font-bold text-white">
+                {isSignUp ? "Create Account" : "Welcome Back"}
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
+              </CardDescription>
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-[#64df88] to-[#35b192] hover:opacity-90 text-white" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
-                </>
-              ) : (
-                isSignUp ? "Create Account" : "Sign In"
+          </CardHeader>
+          <CardContent className="pt-4">
+            <form onSubmit={handleAuth} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white/80">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-white/80">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  minLength={6}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  isSignUp ? "Create Account" : "Sign In"
+                )}
+              </Button>
+            </form>
+            <div className="mt-6 text-center space-y-3">
+              <Button
+                variant="link"
+                onClick={() => setIsSignUp(!isSignUp)}
+                disabled={isLoading}
+                className="text-white/60 hover:text-white"
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+              </Button>
+              {!isSignUp && (
+                <div>
+                  <Link
+                    to="/reset-password"
+                    className="text-sm text-white/40 hover:text-white/60 transition-colors"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
               )}
-            </Button>
-          </form>
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={isLoading}
-              className="text-base"
-            >
-              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

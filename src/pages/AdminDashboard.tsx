@@ -270,56 +270,52 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Clients</p>
-                <Badge variant="outline" className="h-4 px-1.5">
-                  <TrendingUp className="h-2.5 w-2.5" />
-                </Badge>
+        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 stagger-children">
+          <Card hover="lift">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
               </div>
-              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.totalClients}</div>
-              <p className="text-xs text-muted-foreground">Active accounts</p>
+              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalClients}</div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Clients</p>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
-                <Badge variant="outline" className="h-4 px-1.5">
-                  <TrendingUp className="h-2.5 w-2.5" />
-                </Badge>
+          <Card hover="lift">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-secondary" />
+                </div>
               </div>
-              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
-              <p className="text-xs text-muted-foreground">Across all clients</p>
+              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved Leads</p>
-                <Badge variant="outline" className="h-4 px-1.5">
-                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
-                </Badge>
+          <Card hover="lift">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                </div>
               </div>
-              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Approved}</div>
-              <p className="text-xs text-muted-foreground">Successfully approved</p>
+              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Approved}</div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved Leads</p>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Needs Work</p>
-                <Badge variant="outline" className="h-4 px-1.5">
-                  <AlertTriangle className="h-2.5 w-2.5 text-amber-600" />
-                </Badge>
+          <Card hover="lift">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning/20 to-warning/5 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
+                </div>
               </div>
-              <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground mb-1">{stats.statusBreakdown['Needs Work']}</div>
-              <p className="text-xs text-muted-foreground">Requiring attention</p>
+              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown['Needs Work']}</div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Needs Work</p>
             </CardContent>
           </Card>
         </div>
@@ -487,33 +483,33 @@ const AdminDashboard = () => {
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/leads")}>
+          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/leads")}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                All Leads
-              </CardTitle>
-              <CardDescription className="text-xs">View and manage all leads in the system</CardDescription>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <FileText className="h-5 w-5 text-secondary" />
+              </div>
+              <CardTitle className="text-base font-semibold">All Leads</CardTitle>
+              <CardDescription className="text-sm">View and manage all leads in the system</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/clients")}>
+          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/clients")}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Manage Clients
-              </CardTitle>
-              <CardDescription className="text-xs">View and configure client accounts</CardDescription>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <CardTitle className="text-base font-semibold">Manage Clients</CardTitle>
+              <CardDescription className="text-sm">View and configure client accounts</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:bg-accent/50 transition-colors shadow-sm border" onClick={() => navigate("/admin/invite")}>
+          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/invite")}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                Invite Client
-              </CardTitle>
-              <CardDescription className="text-xs">Send invitation to new client</CardDescription>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <PlusCircle className="h-5 w-5 text-accent" />
+              </div>
+              <CardTitle className="text-base font-semibold">Invite Client</CardTitle>
+              <CardDescription className="text-sm">Send invitation to new client</CardDescription>
             </CardHeader>
           </Card>
         </div>

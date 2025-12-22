@@ -159,51 +159,51 @@ const ClientDashboard = () => {
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 relative">
-              <div className="absolute top-3 right-3 opacity-40">
-                <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 stagger-children">
+          <Card hover="lift">
+            <CardContent className="p-5 relative">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
-                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.totalLeads}</div>
+                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.totalLeads}</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 relative">
-              <div className="absolute top-3 right-3 opacity-40">
-                <Target className="h-4 w-4 text-muted-foreground" />
+          <Card hover="lift">
+            <CardContent className="p-5 relative">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
+                <Target className="h-5 w-5 text-secondary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Leads</p>
-                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.activeLeads}</div>
+                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.activeLeads}</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 relative">
-              <div className="absolute top-3 right-3 opacity-40">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Card hover="lift">
+            <CardContent className="p-5 relative">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-accent" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Upcoming Callbacks</p>
-                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.upcomingCallbacks}</div>
+                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.upcomingCallbacks}</div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 relative">
-              <div className="absolute top-3 right-3 opacity-40">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <Card hover="lift">
+            <CardContent className="p-5 relative">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Conversion Rate</p>
-                <div className="text-2xl md:text-3xl font-semibold tabular-nums text-foreground">{stats.conversionRate}%</div>
+                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.conversionRate}%</div>
               </div>
             </CardContent>
           </Card>

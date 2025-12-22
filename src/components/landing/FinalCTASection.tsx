@@ -21,9 +21,10 @@ export const FinalCTASection = () => {
           {/* CTA Button */}
           <div className="pt-4">
             <a href="https://calendly.com/billy-tnwmarketing/rec-opportunities" target="_blank" rel="noopener noreferrer">
-              <Button 
-                size="lg" 
-                className="bg-white text-[#35b192] hover:bg-white/90 font-semibold px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+              <Button
+                size="lg"
+                variant="secondary"
+                className="font-semibold px-8 py-6 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
               >
                 Book Your Strategy Call Now
               </Button>
