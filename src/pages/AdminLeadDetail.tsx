@@ -332,6 +332,9 @@ const AdminLeadDetail = () => {
     );
   }
 
+  // Debug: Log lead data structure
+  console.log("Rendering lead:", JSON.stringify(lead, null, 2));
+
   return (
     <AdminLayout userEmail={userEmail}>
       <div className="space-y-6">
