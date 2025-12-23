@@ -106,9 +106,14 @@ const AdminLeadDetail = () => {
 
       if (error) throw error;
 
+      // Ensure we have valid lead data
+      if (!data?.lead) {
+        throw new Error('No lead data returned');
+      }
+
       setLead(data.lead);
-      setSelectedStatus(data.lead.status);
-      setAvailability(data.lead.availability || "");
+      setSelectedStatus(String(data.lead.status || 'New'));
+      setAvailability(String(data.lead.availability || ""));
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -373,8 +378,8 @@ const AdminLeadDetail = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {clients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.email} ({client.client_name})
+                        <SelectItem key={client.id} value={String(client.id)}>
+                          {String(client.email || '')} ({String(client.client_name || 'Unknown')})
                         </SelectItem>
                       ))}
                     </SelectContent>
