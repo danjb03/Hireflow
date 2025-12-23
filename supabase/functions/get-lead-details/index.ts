@@ -44,11 +44,22 @@ Deno.serve(async (req) => {
     const record = await response.json();
     const fields = record.fields;
     
+    // Handle Clients field which can be an array of record IDs
+    let clientsValue = 'Unassigned';
+    const clientsField = fields['Clients'];
+    if (clientsField) {
+      if (Array.isArray(clientsField)) {
+        clientsValue = clientsField.length > 0 ? String(clientsField[0]) : 'Unassigned';
+      } else {
+        clientsValue = String(clientsField);
+      }
+    }
+
     const lead = {
       id: record.id,
       companyName: fields['Company Name'] || '',
       status: fields['Status'] || 'New',
-      clients: fields['Clients'] || 'Unassigned',
+      clients: clientsValue,
       
       // Contact Info
       contactName: fields['Contact Name'] || null,
