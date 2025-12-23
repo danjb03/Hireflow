@@ -495,12 +495,12 @@ const AdminAllLeads = () => {
                       <TableCell className="px-4 py-3">
                         {getClientDisplayName(lead.assignedClient) === "Unassigned" ? (
                           clients.length > 0 ? (
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <Select value="" onValueChange={(value) => handleAssignClient(lead.id, value)}>
-                                <SelectTrigger className="w-36 h-7 text-xs">
+                            <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                              <Select onValueChange={(value) => handleAssignClient(lead.id, value)}>
+                                <SelectTrigger className="w-36 h-7 text-xs" onClick={(e) => e.stopPropagation()}>
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
-                                <SelectContent className="z-50">
+                                <SelectContent className="z-50" onPointerDownOutside={(e) => e.stopPropagation()}>
                                   {clients.map((client) => (
                                     <SelectItem key={client.id} value={String(client.id)}>
                                       {String(client.client_name || client.email || 'Unknown')}
