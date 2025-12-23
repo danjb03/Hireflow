@@ -21,7 +21,15 @@ Deno.serve(async (req) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !user) throw new Error('Unauthorized');
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw new Error(`Unauthorized: ${authError.message}`);
+    }
+    if (!user) {
+      console.error('No user found for token');
+      throw new Error('Unauthorized: No user found');
+    }
+    console.log('User authenticated:', user.id, user.email);
 
     const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
     if (!isAdmin) throw new Error('Admin access required');
@@ -66,7 +74,7 @@ Deno.serve(async (req) => {
     // Get the Airtable client record ID
     let airtableClientId = client.airtable_client_id;
 
-    // If no airtable_client_id in profile, look it up from Airtable Clients table by name
+    // If no airtable_client_id in profile, look it up or create in Airtable Clients table
     if (!airtableClientId) {
       console.log('No airtable_client_id in profile, looking up by client name:', clientName);
 
@@ -85,22 +93,50 @@ Deno.serve(async (req) => {
         if (clientsData.records && clientsData.records.length > 0) {
           airtableClientId = clientsData.records[0].id;
           console.log('Found Airtable client record ID:', airtableClientId);
+        } else {
+          // Client not found in Airtable - create it
+          console.log('Client not found in Airtable, creating new client:', clientName);
 
-          // Update the profile with the airtable_client_id for future use
+          const createClientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients`;
+          const createResponse = await fetch(createClientUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${airtableToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fields: { 'Client Name': clientName }
+            })
+          });
+
+          if (createResponse.ok) {
+            const newClient = await createResponse.json();
+            airtableClientId = newClient.id;
+            console.log('Created new client in Airtable:', airtableClientId);
+          } else {
+            const createError = await createResponse.text();
+            console.error('Failed to create client in Airtable:', createError);
+            throw new Error(`Failed to create client in Airtable: ${createResponse.status}`);
+          }
+        }
+
+        // Update the profile with the airtable_client_id for future use
+        if (airtableClientId) {
           await supabaseAdmin
             .from('profiles')
             .update({ airtable_client_id: airtableClientId })
             .eq('id', clientId);
           console.log('Updated profile with airtable_client_id');
-        } else {
-          console.warn('No matching client found in Airtable Clients table for name:', clientName);
-          throw new Error(`Client "${clientName}" not found in Airtable. Please ensure the client exists in the Airtable Clients table.`);
         }
       } else {
         const errorBody = await clientsResponse.text();
         console.error('Failed to look up client in Airtable:', errorBody);
-        throw new Error('Failed to look up client in Airtable');
+        throw new Error(`Failed to look up client in Airtable: ${clientsResponse.status}`);
       }
+    }
+
+    if (!airtableClientId) {
+      throw new Error('Could not get or create Airtable client ID');
     }
 
     // Now we have the Airtable client record ID - use it as a linked record array
