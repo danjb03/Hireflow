@@ -261,9 +261,26 @@ const AdminAllLeads = () => {
       });
 
       if (error) {
-        console.error("Function error:", error);
-        // Try to get the error message from the response data
-        const errorMessage = data?.error || error?.message || "Failed to assign lead";
+        console.error("Function error:", error, "Data:", data);
+        // For FunctionsHttpError, try to extract the actual error message
+        let errorMessage = "Failed to assign lead";
+
+        // Check if data contains the error (edge function returns JSON even on error)
+        if (data?.error) {
+          errorMessage = data.error;
+        } else if (error.context?.body) {
+          // Try to parse the error body from the context
+          try {
+            const errorBody = JSON.parse(error.context.body);
+            errorMessage = errorBody.error || errorMessage;
+          } catch {
+            // If parsing fails, use the error message
+            errorMessage = error.message || errorMessage;
+          }
+        } else {
+          errorMessage = error.message || errorMessage;
+        }
+
         throw new Error(errorMessage);
       }
 
