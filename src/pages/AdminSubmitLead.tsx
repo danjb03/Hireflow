@@ -140,7 +140,6 @@ const AdminSubmitLead = () => {
                   <Input
                     id="companyWebsite"
                     name="companyWebsite"
-                    type="url"
                     placeholder="https://example.com"
                     value={formData.companyWebsite}
                     onChange={handleChange}
@@ -153,7 +152,6 @@ const AdminSubmitLead = () => {
                   <Input
                     id="companyLinkedIn"
                     name="companyLinkedIn"
-                    type="url"
                     placeholder="https://linkedin.com/company/example"
                     value={formData.companyLinkedIn}
                     onChange={handleChange}

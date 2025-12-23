@@ -1,6 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,54 +62,67 @@ interface ClientHealthResult {
   analyzedAt: string;
 }
 
-// Fetch function for React Query
-const fetchSentimentData = async (): Promise<Record<string, LeadStats>> => {
-  const { data, error } = await supabase.functions.invoke("get-client-sentiment");
-  if (error) throw error;
-  return data?.sentiment || {};
-};
-
-// Fetch AI health analysis
-const fetchHealthAnalysis = async (): Promise<ClientHealthResult[]> => {
-  const { data, error } = await supabase.functions.invoke("analyze-client-health");
-  if (error) throw error;
-  return data?.results || [];
-};
-
 const AdminSentiment = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Use React Query with 5 minute cache for sentiment data
-  const { data: sentimentData = {}, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['client-sentiment'],
-    queryFn: fetchSentimentData,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    enabled: !isAuthChecking,
-  });
+  // Sentiment data state
+  const [sentimentData, setSentimentData] = useState<Record<string, LeadStats>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
 
-  // AI Health Analysis query - longer cache since it's expensive
-  // Disabled by default - user must click to run
-  const {
-    data: healthData = [],
-    isLoading: isHealthLoading,
-    refetch: refetchHealth,
-    isFetching: isHealthFetching,
-    error: healthError
-  } = useQuery({
-    queryKey: ['client-health-analysis'],
-    queryFn: fetchHealthAnalysis,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes cache
-    enabled: false, // Only run when user clicks "Run AI Analysis"
-    retry: 1,
-  });
+  // Health analysis state
+  const [healthData, setHealthData] = useState<ClientHealthResult[]>([]);
+  const [isHealthLoading, setIsHealthLoading] = useState(false);
+  const [isHealthFetching, setIsHealthFetching] = useState(false);
+  const [healthError, setHealthError] = useState<Error | null>(null);
+
+  // Fetch sentiment data
+  const fetchSentimentData = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-client-sentiment");
+      if (error) throw error;
+      setSentimentData(data?.sentiment || {});
+    } catch (error) {
+      toast.error("Failed to load sentiment data");
+    } finally {
+      setIsFetching(false);
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch health analysis (only on button click)
+  const fetchHealthAnalysis = useCallback(async () => {
+    setIsHealthFetching(true);
+    setIsHealthLoading(true);
+    setHealthError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-client-health");
+      if (error) throw error;
+      setHealthData(data?.results || []);
+    } catch (error) {
+      setHealthError(error instanceof Error ? error : new Error("Failed to analyze health"));
+    } finally {
+      setIsHealthFetching(false);
+      setIsHealthLoading(false);
+    }
+  }, []);
+
+  const refetch = fetchSentimentData;
+  const refetchHealth = fetchHealthAnalysis;
 
   useEffect(() => {
     checkAdmin();
   }, []);
+
+  // Fetch sentiment data after auth check
+  useEffect(() => {
+    if (!isAuthChecking) {
+      fetchSentimentData();
+    }
+  }, [isAuthChecking, fetchSentimentData]);
 
   const checkAdmin = async () => {
     try {
