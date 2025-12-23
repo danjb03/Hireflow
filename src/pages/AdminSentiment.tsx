@@ -92,6 +92,7 @@ const AdminSentiment = () => {
   });
 
   // AI Health Analysis query - longer cache since it's expensive
+  // Disabled by default - user must click to run
   const {
     data: healthData = [],
     isLoading: isHealthLoading,
@@ -103,7 +104,7 @@ const AdminSentiment = () => {
     queryFn: fetchHealthAnalysis,
     staleTime: 15 * 60 * 1000, // 15 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes cache
-    enabled: !isAuthChecking,
+    enabled: false, // Only run when user clicks "Run AI Analysis"
     retry: 1,
   });
 
