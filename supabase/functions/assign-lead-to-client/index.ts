@@ -166,7 +166,30 @@ Deno.serve(async (req) => {
         url: airtableUrl,
         clientValue
       });
-      throw new Error(`Failed to assign lead in Airtable: ${response.status} - ${errorBody}`);
+
+      // Parse error for user-friendly message
+      try {
+        const errorJson = JSON.parse(errorBody);
+        if (errorJson.error?.type === 'ROW_DOES_NOT_EXIST') {
+          // The client record ID doesn't exist - clear it and retry
+          console.log('Client record ID does not exist, clearing stale ID and retrying');
+          await supabaseAdmin
+            .from('profiles')
+            .update({ airtable_client_id: null })
+            .eq('id', clientId);
+          throw new Error('Client record was deleted from Airtable. Please try again.');
+        }
+        if (errorJson.error?.type === 'INVALID_REQUEST_UNKNOWN') {
+          throw new Error('Invalid Airtable field. Check that the Clients field exists.');
+        }
+      } catch (parseError) {
+        if (parseError instanceof Error && parseError.message.includes('Please try again')) {
+          throw parseError;
+        }
+        // If parsing fails, use generic message
+      }
+
+      throw new Error(`Failed to assign lead in Airtable: ${response.status}`);
     }
 
     const result = await response.json();
