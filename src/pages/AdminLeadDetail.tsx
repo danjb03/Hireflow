@@ -48,17 +48,18 @@ interface LeadData {
   feedback: string | null;
 }
 
-interface Client {
+interface AirtableClient {
   id: string;
-  email: string;
-  client_name?: string;
+  name: string;
+  email?: string | null;
+  status?: string | null;
 }
 
 const AdminLeadDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [lead, setLead] = useState<LeadData | null>(null);
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<AirtableClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -142,24 +143,22 @@ const AdminLeadDetail = () => {
 
   const loadClients = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, client_name")
-        .not("client_name", "is", null)
-        .neq("client_name", "");
+      const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching Airtable clients:", error);
+        setClients([]);
+        return;
+      }
 
-      // Ensure all client data is primitive strings
-      const sanitizedClients = (data || []).map(client => ({
-        id: String(client.id || ''),
-        email: String(client.email || ''),
-        client_name: String(client.client_name || ''),
-      }));
-
-      setClients(sanitizedClients);
+      if (data?.clients && Array.isArray(data.clients)) {
+        setClients(data.clients);
+      } else {
+        setClients([]);
+      }
     } catch (error) {
       console.error("Error loading clients:", error);
+      setClients([]);
     }
   };
 
@@ -167,16 +166,22 @@ const AdminLeadDetail = () => {
     if (!selectedClient) return;
 
     try {
+      // Now we pass the Airtable client ID directly
       const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: {
           leadId: id,
-          clientId: selectedClient,
+          airtableClientId: selectedClient,
         },
       });
 
       if (error) {
         console.error("Function error:", error);
-        throw error;
+        const errorMessage = data?.error || error?.message || "Failed to assign lead";
+        throw new Error(errorMessage);
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -191,7 +196,7 @@ const AdminLeadDetail = () => {
       await loadLead();
     } catch (error: any) {
       console.error("Error assigning lead:", error);
-      const errorMessage = error?.message || error?.error || "Failed to assign lead. Please try again.";
+      const errorMessage = error?.message || "Failed to assign lead. Please try again.";
       toast({
         title: "Error",
         description: errorMessage,
@@ -403,7 +408,7 @@ const AdminLeadDetail = () => {
                     <SelectContent>
                       {clients.map((client) => (
                         <SelectItem key={client.id} value={String(client.id)}>
-                          {String(client.email || '')} ({String(client.client_name || 'Unknown')})
+                          {String(client.name || 'Unknown')}
                         </SelectItem>
                       ))}
                     </SelectContent>

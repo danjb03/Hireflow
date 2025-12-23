@@ -48,16 +48,17 @@ interface Lead {
   dateCreated: string;
 }
 
-interface Client {
+interface AirtableClient {
   id: string;
-  email: string;
-  client_name?: string;
+  name: string;
+  email?: string | null;
+  status?: string | null;
 }
 
 const AdminAllLeads = () => {
   const navigate = useNavigate();
   const [allLeads, setAllLeads] = useState<Lead[]>([]); // Store all leads for client-side filtering
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<AirtableClient[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,14 +85,10 @@ const AdminAllLeads = () => {
 
         setUserEmail(session.user.email || "");
 
-        // Load admin check, clients, and leads in parallel
-        const [adminResult, clientsResult, leadsResponse] = await Promise.all([
+        // Load admin check, clients from Airtable, and leads in parallel
+        const [adminResult, clientsResponse, leadsResponse] = await Promise.all([
           supabase.rpc("is_admin", { _user_id: session.user.id }),
-          supabase
-            .from("profiles")
-            .select("id, email, client_name")
-            .not("client_name", "is", null)
-            .neq("client_name", ""),
+          supabase.functions.invoke("get-airtable-clients"),
           fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-all-leads-admin`,
             {
@@ -116,17 +113,14 @@ const AdminAllLeads = () => {
           return;
         }
 
-        // Ensure clients data is properly formatted (not a React Query object)
-        if (!clientsResult || typeof clientsResult !== 'object' || !('data' in clientsResult)) {
-          console.error('Invalid clientsResult:', clientsResult);
+        // Handle Airtable clients response
+        if (clientsResponse.error) {
+          console.error('Error fetching Airtable clients:', clientsResponse.error);
           setClients([]);
+        } else if (clientsResponse.data?.clients && Array.isArray(clientsResponse.data.clients)) {
+          setClients(clientsResponse.data.clients);
         } else {
-          const clientsData = clientsResult.data;
-          if (clientsData && Array.isArray(clientsData)) {
-            setClients(clientsData);
-          } else {
-            setClients([]);
-          }
+          setClients([]);
         }
 
         if (leadsResponse.ok) {
@@ -216,7 +210,7 @@ const AdminAllLeads = () => {
         } else {
           // Find client by ID and match by name
           const client = clients.find(c => c.id === clientFilter);
-          if (client && lead.assignedClient !== client.client_name) {
+          if (client && lead.assignedClient !== client.name) {
             return false;
           }
         }
@@ -254,27 +248,24 @@ const AdminAllLeads = () => {
     setCurrentPage(1);
   };
 
-  const handleAssignClient = async (leadId: string, clientId: string) => {
+  const handleAssignClient = async (leadId: string, airtableClientId: string) => {
     try {
+      // Now we pass the Airtable client ID directly - no lookup needed
       const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
-        body: { leadId, clientId },
+        body: { leadId, airtableClientId },
       });
 
       if (error) {
         console.error("Function error:", error, "Data:", data);
-        // For FunctionsHttpError, try to extract the actual error message
         let errorMessage = "Failed to assign lead";
 
-        // Check if data contains the error (edge function returns JSON even on error)
         if (data?.error) {
           errorMessage = data.error;
         } else if (error.context?.body) {
-          // Try to parse the error body from the context
           try {
             const errorBody = JSON.parse(error.context.body);
             errorMessage = errorBody.error || errorMessage;
           } catch {
-            // If parsing fails, use the error message
             errorMessage = error.message || errorMessage;
           }
         } else {
@@ -284,17 +275,16 @@ const AdminAllLeads = () => {
         throw new Error(errorMessage);
       }
 
-      // Check if the response indicates an error (non-2xx returned error in data)
       if (data?.error) {
         throw new Error(data.error);
       }
 
-      // Update local state immediately instead of re-fetching
-      const client = clients.find(c => c.id === clientId);
+      // Update local state immediately with the Airtable client name
+      const client = clients.find(c => c.id === airtableClientId);
       if (client) {
         setAllLeads(prev => prev.map(lead =>
           lead.id === leadId
-            ? { ...lead, assignedClient: client.client_name, assignedClientId: clientId }
+            ? { ...lead, assignedClient: client.name, assignedClientId: airtableClientId }
             : lead
         ));
       }
@@ -430,7 +420,7 @@ const AdminAllLeads = () => {
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={String(client.id)}>
-                      {String(client.client_name || client.email || 'Unknown')}
+                      {String(client.name || 'Unknown')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -503,7 +493,7 @@ const AdminAllLeads = () => {
                                 <SelectContent className="z-50" onPointerDownOutside={(e) => e.stopPropagation()}>
                                   {clients.map((client) => (
                                     <SelectItem key={client.id} value={String(client.id)}>
-                                      {String(client.client_name || client.email || 'Unknown')}
+                                      {String(client.name || 'Unknown')}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
