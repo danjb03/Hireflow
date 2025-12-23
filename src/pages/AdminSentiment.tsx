@@ -18,7 +18,13 @@ import {
   CheckCircle2,
   Clock,
   BarChart3,
-  RefreshCw
+  RefreshCw,
+  Brain,
+  TrendingUp,
+  TrendingDown,
+  Lightbulb,
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -40,6 +46,23 @@ interface ClientWithSentiment {
   sentiment: 'excellent' | 'good' | 'warning' | 'critical';
 }
 
+interface HealthAnalysis {
+  score: number;
+  sentiment: 'very_negative' | 'negative' | 'neutral' | 'positive' | 'very_positive';
+  summary: string;
+  concerns: string[];
+  positives: string[];
+  recommendation: string;
+}
+
+interface ClientHealthResult {
+  clientName: string;
+  health: HealthAnalysis;
+  feedbackCount: number;
+  leadsAnalyzed: number;
+  analyzedAt: string;
+}
+
 // Fetch function for React Query
 const fetchSentimentData = async (): Promise<Record<string, LeadStats>> => {
   const { data, error } = await supabase.functions.invoke("get-client-sentiment");
@@ -47,18 +70,41 @@ const fetchSentimentData = async (): Promise<Record<string, LeadStats>> => {
   return data?.sentiment || {};
 };
 
+// Fetch AI health analysis
+const fetchHealthAnalysis = async (): Promise<ClientHealthResult[]> => {
+  const { data, error } = await supabase.functions.invoke("analyze-client-health");
+  if (error) throw error;
+  return data?.results || [];
+};
+
 const AdminSentiment = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Use React Query with 5 minute cache
+  // Use React Query with 5 minute cache for sentiment data
   const { data: sentimentData = {}, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['client-sentiment'],
     queryFn: fetchSentimentData,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes cache
-    enabled: !isAuthChecking, // Only fetch after auth check
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !isAuthChecking,
+  });
+
+  // AI Health Analysis query - longer cache since it's expensive
+  const {
+    data: healthData = [],
+    isLoading: isHealthLoading,
+    refetch: refetchHealth,
+    isFetching: isHealthFetching,
+    error: healthError
+  } = useQuery({
+    queryKey: ['client-health-analysis'],
+    queryFn: fetchHealthAnalysis,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes cache
+    enabled: !isAuthChecking,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -155,6 +201,24 @@ const AdminSentiment = () => {
     }
   };
 
+  const getHealthScoreColor = (score: number) => {
+    if (score >= 8) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+    if (score >= 6) return 'text-blue-600 bg-blue-50 border-blue-200';
+    if (score >= 4) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    return 'text-red-600 bg-red-50 border-red-200';
+  };
+
+  const getHealthSentimentLabel = (sentiment: string) => {
+    switch (sentiment) {
+      case 'very_positive': return { label: 'Very Happy', color: 'bg-emerald-100 text-emerald-700' };
+      case 'positive': return { label: 'Happy', color: 'bg-green-100 text-green-700' };
+      case 'neutral': return { label: 'Neutral', color: 'bg-gray-100 text-gray-700' };
+      case 'negative': return { label: 'Unhappy', color: 'bg-orange-100 text-orange-700' };
+      case 'very_negative': return { label: 'Very Unhappy', color: 'bg-red-100 text-red-700' };
+      default: return { label: 'Unknown', color: 'bg-gray-100 text-gray-700' };
+    }
+  };
+
   if (isAuthChecking || isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
@@ -171,21 +235,152 @@ const AdminSentiment = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Sentiment Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Client Health Dashboard</h1>
             <p className="text-muted-foreground mt-1">
-              Track client engagement and lead performance across your portfolio
+              AI-powered client sentiment analysis and lead performance tracking
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-            {isFetching ? 'Refreshing...' : 'Refresh'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchHealth()}
+              disabled={isHealthFetching}
+            >
+              <Brain className={`h-4 w-4 mr-2 ${isHealthFetching ? 'animate-pulse' : ''}`} />
+              {isHealthFetching ? 'Analyzing...' : 'Run AI Analysis'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+              {isFetching ? 'Refreshing...' : 'Refresh Stats'}
+            </Button>
+          </div>
         </div>
+
+        {/* AI Health Scores Section */}
+        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-emerald-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Client Health Analysis
+            </CardTitle>
+            <CardDescription>
+              Real-time sentiment analysis of client feedback using AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {healthError ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-amber-500" />
+                <p className="text-muted-foreground mb-2">Unable to load AI analysis</p>
+                <p className="text-sm text-muted-foreground">
+                  {healthError instanceof Error && healthError.message.includes('OPENAI_API_KEY')
+                    ? 'OpenAI API key not configured. Add OPENAI_API_KEY to Supabase secrets.'
+                    : 'Click "Run AI Analysis" to try again.'}
+                </p>
+              </div>
+            ) : isHealthLoading ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">Analyzing client feedback with AI...</p>
+              </div>
+            ) : healthData.length === 0 ? (
+              <div className="text-center py-8">
+                <Brain className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-muted-foreground">No client feedback to analyze yet</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Health scores will appear once clients provide feedback on leads
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {healthData.map((client) => {
+                  const sentimentInfo = getHealthSentimentLabel(client.health.sentiment);
+                  return (
+                    <div
+                      key={client.clientName}
+                      className="p-4 rounded-xl border bg-card hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          {/* Health Score Badge */}
+                          <div className={`w-14 h-14 rounded-xl flex items-center justify-center border-2 ${getHealthScoreColor(client.health.score)}`}>
+                            <span className="text-2xl font-bold">{client.health.score}</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">{client.clientName}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className={sentimentInfo.color}>
+                                {sentimentInfo.label}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {client.feedbackCount} feedback analyzed
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right text-xs text-muted-foreground">
+                          Analyzed {new Date(client.analyzedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      {/* AI Summary */}
+                      <p className="text-sm text-foreground mb-3 bg-muted/30 p-3 rounded-lg">
+                        "{client.health.summary}"
+                      </p>
+
+                      <div className="grid md:grid-cols-3 gap-3">
+                        {/* Positives */}
+                        {client.health.positives.length > 0 && (
+                          <div className="p-3 bg-emerald-50 rounded-lg">
+                            <p className="text-xs font-medium text-emerald-700 mb-2 flex items-center gap-1">
+                              <TrendingUp className="h-3 w-3" />
+                              Positives
+                            </p>
+                            <ul className="space-y-1">
+                              {client.health.positives.map((positive, i) => (
+                                <li key={i} className="text-xs text-emerald-600">• {positive}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Concerns */}
+                        {client.health.concerns.length > 0 && (
+                          <div className="p-3 bg-red-50 rounded-lg">
+                            <p className="text-xs font-medium text-red-700 mb-2 flex items-center gap-1">
+                              <TrendingDown className="h-3 w-3" />
+                              Concerns
+                            </p>
+                            <ul className="space-y-1">
+                              {client.health.concerns.map((concern, i) => (
+                                <li key={i} className="text-xs text-red-600">• {concern}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Recommendation */}
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <p className="text-xs font-medium text-blue-700 mb-2 flex items-center gap-1">
+                            <Lightbulb className="h-3 w-3" />
+                            Recommendation
+                          </p>
+                          <p className="text-xs text-blue-600">{client.health.recommendation}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
