@@ -104,16 +104,30 @@ const AdminLeadDetail = () => {
         body: { leadId: id },
       });
 
-      if (error) throw error;
+      console.log("Lead details response:", { data, error });
+
+      if (error) {
+        console.error("Function error:", error);
+        throw new Error(typeof error === 'object' ? JSON.stringify(error) : String(error));
+      }
 
       // Ensure we have valid lead data
       if (!data?.lead) {
+        console.error("No lead in response:", data);
         throw new Error('No lead data returned');
       }
 
-      setLead(data.lead);
-      setSelectedStatus(String(data.lead.status || 'New'));
-      setAvailability(String(data.lead.availability || ""));
+      // Ensure all values are primitives, not objects
+      const leadData = data.lead;
+      const sanitizedLead = {
+        ...leadData,
+        status: typeof leadData.status === 'object' ? 'New' : String(leadData.status || 'New'),
+        clients: typeof leadData.clients === 'object' ? 'Unassigned' : String(leadData.clients || 'Unassigned'),
+      };
+
+      setLead(sanitizedLead);
+      setSelectedStatus(sanitizedLead.status);
+      setAvailability(String(leadData.availability || ""));
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -136,7 +150,14 @@ const AdminLeadDetail = () => {
 
       if (error) throw error;
 
-      setClients(data || []);
+      // Ensure all client data is primitive strings
+      const sanitizedClients = (data || []).map(client => ({
+        id: String(client.id || ''),
+        email: String(client.email || ''),
+        client_name: String(client.client_name || ''),
+      }));
+
+      setClients(sanitizedClients);
     } catch (error) {
       console.error("Error loading clients:", error);
     }
