@@ -279,8 +279,8 @@ const AdminSentiment = () => {
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 text-amber-500" />
                 <p className="text-muted-foreground mb-2">Unable to load AI analysis</p>
                 <p className="text-sm text-muted-foreground">
-                  {healthError instanceof Error && healthError.message.includes('OPENAI_API_KEY')
-                    ? 'OpenAI API key not configured. Add OPENAI_API_KEY to Supabase secrets.'
+                  {healthError instanceof Error && healthError.message.includes('ANTHROPIC_API_KEY')
+                    ? 'Anthropic API key not configured. Add ANTHROPIC_API_KEY to Supabase secrets.'
                     : 'Click "Run AI Analysis" to try again.'}
                 </p>
               </div>

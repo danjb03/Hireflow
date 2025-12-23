@@ -82,9 +82,9 @@ Deno.serve(async (req) => {
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    // Get OpenAI API key
-    const openaiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiKey) throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to Supabase secrets.');
+    // Get Anthropic API key
+    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!anthropicKey) throw new Error('Anthropic API key not configured. Please add ANTHROPIC_API_KEY to Supabase secrets.');
 
     // Collect feedback per client
     const feedbackByClient: Record<string, { feedback: string; status: string; company: string }[]> = {};
@@ -161,19 +161,18 @@ Deno.serve(async (req) => {
         `Lead ${i + 1} (${item.company}, Status: ${item.status}):\n"${item.feedback}"`
       ).join('\n\n');
 
-      // Call OpenAI to analyze
-      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Call Claude to analyze
+      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openaiKey}`,
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              content: `You are analyzing client feedback on recruitment leads to determine their overall satisfaction and health score.
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 500,
+          system: `You are analyzing client feedback on recruitment leads to determine their overall satisfaction and health score.
 
 Analyze the feedback and return a JSON object with:
 - score: A number from 1-10 (1 = extremely unhappy, 5 = neutral, 10 = extremely happy)
@@ -185,25 +184,23 @@ Analyze the feedback and return a JSON object with:
 
 Be objective and look for patterns across all feedback. Consider tone, specific complaints, praise, and overall satisfaction signals.
 
-Return ONLY valid JSON, no other text.`
-            },
+Return ONLY valid JSON, no other text.`,
+          messages: [
             {
               role: 'user',
               content: `Analyze this client's feedback on ${feedbackItems.length} leads:\n\n${feedbackText}`
             }
-          ],
-          temperature: 0.3,
-          max_tokens: 500
+          ]
         })
       });
 
       if (!aiResponse.ok) {
-        console.error('OpenAI error:', await aiResponse.text());
+        console.error('Claude error:', await aiResponse.text());
         throw new Error('Failed to analyze feedback with AI');
       }
 
       const aiData = await aiResponse.json();
-      const aiContent = aiData.choices[0]?.message?.content;
+      const aiContent = aiData.content?.[0]?.text;
 
       if (!aiContent) {
         throw new Error('No response from AI');
