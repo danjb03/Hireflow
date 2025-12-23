@@ -57,16 +57,12 @@ export const HeroSection = () => {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-            We Generate Your Recruitment Agency{" "}
-            <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">
-              Unlimited Qualified Leads
-            </span>{" "}
-            Through Direct Marketing
+            We Book You Qualified Calls With <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Companies</span> That Need <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Recruiters</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-            We'll handle targeting, messaging, and outreach, so you don't have to juggle dozens of shaky lead sources to get scalable, consistent AND qualified client flow
+            Focus on what makes you money, placing candidates. Let us generate the new clients you need so you can scale.
           </p>
 
           {/* Trust Badges */}
