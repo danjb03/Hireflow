@@ -455,7 +455,11 @@ const ClientLeadDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
+                  <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                    {typeof lead.aiSummary === 'string'
+                      ? lead.aiSummary
+                      : (lead.aiSummary as any)?.value ?? 'No summary available'}
+                  </p>
                 </CardContent>
               </Card>
             )}

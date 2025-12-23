@@ -728,7 +728,11 @@ const AdminLeadDetail = () => {
                 <Sparkles className="h-5 w-5 text-purple-600" />
                 AI Summary
               </div>
-              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.aiSummary}</p>
+              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                {typeof lead.aiSummary === 'string'
+                  ? lead.aiSummary
+                  : (lead.aiSummary as any)?.value ?? 'No summary available'}
+              </p>
             </div>
           )}
 
