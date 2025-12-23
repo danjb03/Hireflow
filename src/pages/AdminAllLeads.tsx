@@ -256,13 +256,20 @@ const AdminAllLeads = () => {
 
   const handleAssignClient = async (leadId: string, clientId: string) => {
     try {
-      const { error } = await supabase.functions.invoke("assign-lead-to-client", {
+      const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
         body: { leadId, clientId },
       });
 
       if (error) {
         console.error("Function error:", error);
-        throw error;
+        // Try to get the error message from the response data
+        const errorMessage = data?.error || error?.message || "Failed to assign lead";
+        throw new Error(errorMessage);
+      }
+
+      // Check if the response indicates an error (non-2xx returned error in data)
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       // Update local state immediately instead of re-fetching
@@ -281,7 +288,7 @@ const AdminAllLeads = () => {
       });
     } catch (error: any) {
       console.error("Error assigning lead:", error);
-      const errorMessage = error?.message || error?.error || "Failed to assign lead. Please try again.";
+      const errorMessage = error?.message || "Failed to assign lead. Please try again.";
       toast({
         title: "Error",
         description: errorMessage,
