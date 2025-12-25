@@ -17,17 +17,19 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { 
-      email, 
-      clientName, 
-      leadsPurchased, 
-      onboardingDate, 
-      targetDeliveryDate, 
+    const {
+      email,
+      clientName,
+      airtableClientId,
+      leadsPurchased,
+      onboardingDate,
+      targetDeliveryDate,
       leadsPerDay,
-      clientStatus 
+      clientStatus
     } = await req.json();
-    
+
     if (!email || !clientName) throw new Error('Email and client name are required');
+    if (!airtableClientId) throw new Error('Airtable client selection is required');
 
     const tempPassword = Math.random().toString(36).slice(-12) + "A1!";
 
@@ -44,6 +46,8 @@ Deno.serve(async (req) => {
       const profileUpdate: any = {
         id: authData.user.id,
         client_name: clientName,
+        airtable_client_id: airtableClientId,
+        onboarding_completed: true, // Mark as completed since we're linking to Airtable
         initial_password: tempPassword
       };
 

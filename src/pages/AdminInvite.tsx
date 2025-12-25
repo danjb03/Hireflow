@@ -6,13 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Mail, Copy, Check, Calculator } from "lucide-react";
+import { Mail, Copy, Check, Calculator, Loader2 } from "lucide-react";
 import { calculateLeadsPerDay } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
 
+interface AirtableClient {
+  id: string;
+  name: string;
+  email?: string | null;
+  status?: string | null;
+}
+
 const AdminInvite = () => {
   const navigate = useNavigate();
+  const [airtableClients, setAirtableClients] = useState<AirtableClient[]>([]);
+  const [selectedAirtableClient, setSelectedAirtableClient] = useState<string>("");
+  const [loadingClients, setLoadingClients] = useState(true);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
   const [leadsPurchased, setLeadsPurchased] = useState<number>(0);
@@ -32,6 +43,39 @@ const AdminInvite = () => {
     getUserEmail();
   }, []);
 
+  // Fetch Airtable clients on mount
+  useEffect(() => {
+    const fetchAirtableClients = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-airtable-clients");
+        if (error) {
+          console.error("Error fetching Airtable clients:", error);
+          return;
+        }
+        if (data?.clients) {
+          setAirtableClients(data.clients);
+        }
+      } catch (error) {
+        console.error("Error fetching Airtable clients:", error);
+      } finally {
+        setLoadingClients(false);
+      }
+    };
+    fetchAirtableClients();
+  }, []);
+
+  // When an Airtable client is selected, auto-fill client name and email
+  const handleAirtableClientSelect = (clientId: string) => {
+    setSelectedAirtableClient(clientId);
+    const client = airtableClients.find(c => c.id === clientId);
+    if (client) {
+      setClientName(client.name);
+      if (client.email) {
+        setEmail(client.email);
+      }
+    }
+  };
+
   // Calculate leads per day when relevant fields change
   useEffect(() => {
     if (leadsPurchased > 0 && onboardingDate && targetDeliveryDate) {
@@ -46,13 +90,19 @@ const AdminInvite = () => {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validation: Require Airtable client selection
+    if (!selectedAirtableClient) {
+      toast.error("Please select an Airtable client");
+      return;
+    }
+
     // Validation: Don't allow submission if clientName is empty
     if (!clientName.trim()) {
       toast.error("Client Name is required");
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
@@ -60,6 +110,7 @@ const AdminInvite = () => {
       const onboardingData: any = {
         email,
         clientName: clientName.trim(),
+        airtableClientId: selectedAirtableClient || null,
         leadsPurchased: leadsPurchased || 0,
         onboardingDate: onboardingDate || null,
         targetDeliveryDate: targetDeliveryDate || null,
@@ -83,6 +134,7 @@ const AdminInvite = () => {
   };
 
   const handleReset = () => {
+    setSelectedAirtableClient("");
     setClientName("");
     setEmail("");
     setLeadsPurchased(0);
@@ -121,18 +173,55 @@ const AdminInvite = () => {
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <form onSubmit={handleInvite} className="space-y-4">
+              {/* Airtable Client Selection */}
               <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name *</Label>
+                <Label htmlFor="airtableClient">Link to Airtable Client *</Label>
+                {loadingClients ? (
+                  <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-muted-foreground">Loading clients...</span>
+                  </div>
+                ) : airtableClients.length > 0 ? (
+                  <Select
+                    value={selectedAirtableClient}
+                    onValueChange={handleAirtableClientSelect}
+                    disabled={!!generatedPassword}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an Airtable client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {airtableClients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name} {client.email ? `(${client.email})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Alert>
+                    <AlertDescription>
+                      No clients found in Airtable. Please create a client in Airtable first.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <p className="text-base text-muted-foreground">
+                  Select the Airtable client record to link this user to
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Client Name</Label>
                 <Input
                   id="clientName"
-                  placeholder="e.g. Acme Corp"
+                  placeholder="Auto-filled from Airtable selection"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   required
-                  disabled={!!generatedPassword}
+                  disabled={!!generatedPassword || !!selectedAirtableClient}
                 />
                 <p className="text-base text-muted-foreground">
-                  This exact name will be used to assign leads to this client
+                  {selectedAirtableClient ? "Name from Airtable client" : "Select an Airtable client above"}
                 </p>
               </div>
 
