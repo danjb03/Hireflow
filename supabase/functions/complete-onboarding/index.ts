@@ -26,6 +26,38 @@ Deno.serve(async (req) => {
     const { email } = await req.json();
     if (!email) throw new Error('Email is required');
 
+    // First, check if user is already linked to an Airtable client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('airtable_client_id, client_name')
+      .eq('id', user.id)
+      .single();
+
+    // If already linked, just mark onboarding as complete and return
+    if (existingProfile?.airtable_client_id) {
+      console.log('User already linked to Airtable client:', existingProfile.airtable_client_id);
+
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        throw new Error('Failed to update profile');
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, clientName: existingProfile.client_name, alreadyLinked: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
@@ -68,12 +100,7 @@ Deno.serve(async (req) => {
 
     console.log('Found client record:', airtableClientId, clientName);
 
-    // Update Supabase profile
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
+    // Update Supabase profile (reusing supabaseAdmin from above)
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({

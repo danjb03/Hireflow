@@ -11,6 +11,8 @@ const ClientOnboarding = () => {
   const [checking, setChecking] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [isAlreadyLinked, setIsAlreadyLinked] = useState(false);
+  const [clientName, setClientName] = useState<string>("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,16 +26,22 @@ const ClientOnboarding = () => {
       // Store user email for later
       setUserEmail(session.user.email || "");
 
-      // Check if onboarding is already completed
+      // Check if onboarding is already completed AND if already linked to Airtable
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed')
+        .select('onboarding_completed, airtable_client_id, client_name')
         .eq('id', session.user.id)
         .single();
 
       if (profile?.onboarding_completed) {
         navigate('/client/dashboard');
         return;
+      }
+
+      // Check if already linked to Airtable client (but onboarding not marked complete)
+      if (profile?.airtable_client_id) {
+        setIsAlreadyLinked(true);
+        setClientName(profile.client_name || "");
       }
 
       setChecking(false);
@@ -73,6 +81,73 @@ const ClientOnboarding = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If already linked, show a simplified view with skip option
+  if (isAlreadyLinked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Welcome to Hireflow!</h1>
+            <p className="text-muted-foreground mt-2">
+              Your account is already set up and ready to go.
+            </p>
+          </div>
+
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 mb-6">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center gap-4">
+                <CheckCircle2 className="h-12 w-12 text-emerald-600" />
+                <div className="text-center">
+                  <h3 className="font-semibold text-lg">You're All Set{clientName ? `, ${clientName}` : ''}!</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Your account has already been linked by your administrator. You can proceed directly to your dashboard.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleComplete}
+                  disabled={completing}
+                  size="lg"
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {completing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Go to Dashboard
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="text-base">Need to update your details?</CardTitle>
+              <CardDescription>
+                If you haven't filled out the onboarding form yet, you can do so below. Otherwise, just click "Go to Dashboard" above.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <iframe
+                className="airtable-embed"
+                src="https://airtable.com/embed/appgiKk9WEjnLVPMm/pagjyw63ew9Gu0kBk/form"
+                frameBorder="0"
+                width="100%"
+                height="400"
+                style={{ background: 'transparent', border: '1px solid #ccc', borderRadius: '8px' }}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
