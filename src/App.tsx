@@ -20,6 +20,7 @@ const ClientSettings = lazyRetry(() => import("./pages/ClientSettings"), "Client
 const ClientOnboarding = lazyRetry(() => import("./pages/ClientOnboarding"), "ClientOnboarding");
 const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"), "AdminDashboard");
 const AdminClients = lazyRetry(() => import("./pages/AdminClients"), "AdminClients");
+const AdminClientDetail = lazyRetry(() => import("./pages/AdminClientDetail"), "AdminClientDetail");
 const AdminInvite = lazyRetry(() => import("./pages/AdminInvite"), "AdminInvite");
 const AdminSubmitLead = lazyRetry(() => import("./pages/AdminSubmitLead"), "AdminSubmitLead");
 const SubmitLead = lazyRetry(() => import("./pages/SubmitLead"), "SubmitLead");
@@ -56,6 +57,7 @@ const App = () => (
           {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/clients" element={<AdminClients />} />
+          <Route path="/admin/clients/:clientId" element={<AdminClientDetail />} />
           <Route path="/admin/invite" element={<AdminInvite />} />
           <Route path="/admin/submit-lead" element={<AdminSubmitLead />} />
           <Route path="/admin/leads" element={<AdminAllLeads />} />

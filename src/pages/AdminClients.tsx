@@ -63,6 +63,27 @@ interface AirtableClientData {
   'Typical outreach/acquisition methods'?: string;
 }
 
+interface AirtableClientWithStats {
+  id: string;
+  name: string;
+  email?: string | null;
+  status?: string | null;
+  phone?: string | null;
+  companyName?: string | null;
+  contactPerson?: string | null;
+  leadsPurchased: number;
+  leadsDelivered: number;
+  leadsRemaining: number;
+  leadStats: {
+    total: number;
+    new: number;
+    approved: number;
+    rejected: number;
+    needsWork: number;
+    booked: number;
+  } | null;
+}
+
 const AdminClients = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
@@ -72,6 +93,9 @@ const AdminClients = () => {
   const [deleteClient, setDeleteClient] = useState<Client | null>(null);
   const [resettingPassword, setResettingPassword] = useState<string | null>(null);
   const [airtableClients, setAirtableClients] = useState<Array<{id: string, name: string, email?: string | null}>>([]);
+  const [airtableClientsWithStats, setAirtableClientsWithStats] = useState<AirtableClientWithStats[]>([]);
+  const [loadingAirtableClientsWithStats, setLoadingAirtableClientsWithStats] = useState(true);
+  const [clientStatusFilter, setClientStatusFilter] = useState<string>("all");
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -84,12 +108,35 @@ const AdminClients = () => {
   useEffect(() => {
     checkAdminAndLoadClients();
     loadAirtableClients();
+    loadAirtableClientsWithStats();
     const getUserEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) setUserEmail(user.email);
     };
     getUserEmail();
   }, []);
+
+  const loadAirtableClientsWithStats = async () => {
+    setLoadingAirtableClientsWithStats(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-airtable-clients", {
+        body: { includeStats: true }
+      });
+
+      if (error) {
+        console.error("Error loading Airtable clients with stats:", error);
+        return;
+      }
+
+      if (data?.clients) {
+        setAirtableClientsWithStats(data.clients);
+      }
+    } catch (error) {
+      console.error("Error loading Airtable clients with stats:", error);
+    } finally {
+      setLoadingAirtableClientsWithStats(false);
+    }
+  };
 
   const loadAirtableClients = async () => {
     setLoadingOptions(true);
@@ -398,30 +445,34 @@ const AdminClients = () => {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
+              <CardDescription className="text-base mb-2">Airtable Clients</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClientsWithStats.length}</CardTitle>
+              <p className="text-base text-muted-foreground mt-auto">Total clients</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-t from-emerald-500/10 to-card shadow-sm aspect-square flex flex-col">
+            <CardContent className="flex-1 flex flex-col justify-center p-6">
               <CardDescription className="text-base mb-2">Active Clients</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{activeClients.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">With assigned names</p>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-emerald-600">
+                {airtableClientsWithStats.filter(c => c.status !== 'Inactive' && c.status !== 'Not Active').length}
+              </CardTitle>
+              <p className="text-base text-muted-foreground mt-auto">Currently active</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+          <Card className="bg-gradient-to-t from-blue-500/10 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Pending Users</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{pendingUsers.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Awaiting approval</p>
+              <CardDescription className="text-base mb-2">Total Leads Delivered</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-blue-600">
+                {airtableClientsWithStats.reduce((sum, c) => sum + c.leadsDelivered, 0)}
+              </CardTitle>
+              <p className="text-base text-muted-foreground mt-auto">Across all clients</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
+          <Card className="bg-gradient-to-t from-amber-500/10 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Total Users</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{clients.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">All accounts</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Available Names</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClients.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Client options</p>
+              <CardDescription className="text-base mb-2">Platform Users</CardDescription>
+              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-amber-600">{clients.length}</CardTitle>
+              <p className="text-base text-muted-foreground mt-auto">{pendingUsers.length} pending</p>
             </CardContent>
           </Card>
         </div>
@@ -701,394 +752,161 @@ const AdminClients = () => {
           </Card>
         )}
 
-        {/* Active Clients Grid */}
-        {activeClients.length === 0 ? (
-          <NoClientsEmpty onAction={() => navigate("/admin/invite")} />
-        ) : (
-          <div>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">Active Clients</h2>
-              <p className="text-base text-muted-foreground">All active client accounts</p>
+        {/* Airtable Clients Section */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  Clients
+                </CardTitle>
+                <CardDescription>All clients from Airtable with lead stats</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={clientStatusFilter} onValueChange={setClientStatusFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeClients.map((client) => {
-                const completion = getCompletionPercentage(
-                  client.leads_fulfilled || 0,
-                  client.leads_purchased || 0
-                );
-                const daysRemaining = client.target_delivery_date 
-                  ? getDaysRemaining(new Date(client.target_delivery_date))
-                  : null;
-                const isActive = client.client_name && !needsHelp(client);
-                
-                const isExpanded = expandedCards.has(client.id);
-                const clientAirtableData = airtableData[client.id];
-                const isLoadingAirtable = loadingAirtableData.has(client.id);
-                
-                return (
-                  <div 
-                    key={client.id}
-                    className="bg-card border rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="p-6">
-                      {/* Client Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1 min-w-0">
-                        {editingClient === client.id ? (
-                          <div className="flex items-center gap-2 mb-2">
-                            <Select
-                              value={editingAirtableClientId}
-                              onValueChange={setEditingAirtableClientId}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select client from Airtable" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {loadingOptions ? (
-                                  <div className="p-2 text-base text-muted-foreground">Loading...</div>
-                                ) : airtableClients.length === 0 ? (
-                                  <div className="p-2 text-base text-muted-foreground">No clients in Airtable</div>
-                                ) : (
-                                  airtableClients.map((airtableClient) => (
-                                    <SelectItem key={airtableClient.id} value={airtableClient.id}>
-                                      {airtableClient.name} {airtableClient.email && `(${airtableClient.email})`}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateClient(client.id, editingAirtableClientId)}
-                              disabled={!editingAirtableClientId}
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              <Save className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditingClient(null);
-                                setEditingAirtableClientId("");
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <h3 className="text-xl font-semibold mb-1">{client.client_name}</h3>
-                        )}
-                          <p className="text-base text-muted-foreground flex items-center gap-2">
-                            <Mail className="h-3 w-3" />
-                            {client.email}
-                          </p>
-                        </div>
-                      </div>
+          </CardHeader>
+          <CardContent>
+            {loadingAirtableClientsWithStats ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Loading clients...</span>
+              </div>
+            ) : airtableClientsWithStats.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No clients found in Airtable
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client Name</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Ordered</TableHead>
+                      <TableHead className="text-center">Delivered</TableHead>
+                      <TableHead className="text-center">Remaining</TableHead>
+                      <TableHead className="text-center">Lead Stats</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {airtableClientsWithStats
+                      .filter(client => {
+                        if (clientStatusFilter === "all") return true;
+                        if (clientStatusFilter === "active") return client.status !== 'Inactive' && client.status !== 'Not Active';
+                        if (clientStatusFilter === "inactive") return client.status === 'Inactive' || client.status === 'Not Active';
+                        return true;
+                      })
+                      .map((client) => {
+                        const completionPercent = client.leadsPurchased > 0
+                          ? Math.round((client.leadsDelivered / client.leadsPurchased) * 100)
+                          : 0;
+                        const stats = client.leadStats;
 
-                      {/* Status Badge */}
-                      <div className="mb-4">
-                        {isActive ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Active
-                          </Badge>
-                        ) : needsHelp(client) ? (
-                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                            <Clock className="h-3 w-3" />
-                            Needs Attention
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-slate-100 text-slate-700 border-slate-200 border rounded-full flex items-center gap-1.5 px-2.5 py-1 w-fit">
-                            <Clock className="h-3 w-3" />
-                            Pending
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Stats */}
-                      <div className="space-y-2 mb-4">
-                        {client.leads_purchased && (
-                          <div className="text-base text-muted-foreground">
-                            <span className="font-medium text-foreground">{completion}%</span> complete • {client.leads_fulfilled || 0} / {client.leads_purchased} leads
-                          </div>
-                        )}
-                        {daysRemaining !== null && (
-                          <div className="text-base text-muted-foreground">
-                            {daysRemaining < 0
-                              ? `${Math.abs(daysRemaining)} days overdue`
-                              : `${daysRemaining} days remaining`
-                            }
-                          </div>
-                        )}
-                        <div className="text-base text-muted-foreground">
-                          Created {new Date(client.created_at).toLocaleDateString()}
-                        </div>
-                      </div>
-
-                      {/* Lead Sentiment */}
-                      {client.client_name && sentimentData[client.client_name] && (
-                        <div className="mb-4 p-3 bg-muted/30 rounded-lg">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Lead Performance</p>
-                          <div className="grid grid-cols-4 gap-2 text-center mb-2">
-                            <div>
-                              <p className="text-lg font-semibold text-blue-600">{sentimentData[client.client_name].new}</p>
-                              <p className="text-xs text-muted-foreground">New</p>
-                            </div>
-                            <div>
-                              <p className="text-lg font-semibold text-emerald-600">{sentimentData[client.client_name].approved + sentimentData[client.client_name].booked}</p>
-                              <p className="text-xs text-muted-foreground">Approved</p>
-                            </div>
-                            <div>
-                              <p className="text-lg font-semibold text-yellow-600">{sentimentData[client.client_name].needsWork}</p>
-                              <p className="text-xs text-muted-foreground">Needs Work</p>
-                            </div>
-                            <div>
-                              <p className="text-lg font-semibold text-red-500">{sentimentData[client.client_name].rejected}</p>
-                              <p className="text-xs text-muted-foreground">Rejected</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">
-                              Approval Rate: <span className={`font-medium ${sentimentData[client.client_name].approvalRate >= 70 ? 'text-emerald-600' : sentimentData[client.client_name].approvalRate >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>{sentimentData[client.client_name].approvalRate}%</span>
-                            </span>
-                            <span className="text-muted-foreground">
-                              Feedback: <span className="font-medium">{sentimentData[client.client_name].feedbackCount}</span>
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Status Select */}
-                      <div className="mb-4">
-                        <Select
-                          value={client.client_status || 'on_track'}
-                          onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
-                          disabled={updatingStatus === client.id}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="happy">Happy</SelectItem>
-                            <SelectItem value="on_track">On Track</SelectItem>
-                            <SelectItem value="at_risk">At Risk</SelectItem>
-                            <SelectItem value="unhappy">Unhappy</SelectItem>
-                            <SelectItem value="urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Expand/Collapse Button */}
-                      <div className="mb-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => toggleCardExpansion(client.id, client.airtable_client_id || undefined)}
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronUp className="h-4 w-4 mr-2" />
-                              Hide Onboarding Info
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4 mr-2" />
-                              View Onboarding Info
-                            </>
-                          )}
-                        </Button>
-                      </div>
-
-                      {/* Expanded Onboarding Information */}
-                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="border-t pt-4 space-y-4 mt-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Info className="h-4 w-4 text-primary" />
-                            <h4 className="font-semibold">Onboarding & Campaign Information</h4>
-                          </div>
-
-                          {/* Onboarding Dates & Leads Info */}
-                          <div className="grid grid-cols-2 gap-4 text-base">
-                            {client.onboarding_date && (
-                              <div>
-                                <p className="text-muted-foreground text-base mb-1">Onboarding Date</p>
-                                <p className="font-medium">{new Date(client.onboarding_date).toLocaleDateString()}</p>
-                              </div>
-                            )}
-                            {client.target_delivery_date && (
-                              <div>
-                                <p className="text-muted-foreground text-base mb-1">Target Delivery Date</p>
-                                <p className="font-medium">{new Date(client.target_delivery_date).toLocaleDateString()}</p>
-                              </div>
-                            )}
-                            {client.leads_purchased !== null && (
-                              <div>
-                                <p className="text-muted-foreground text-base mb-1">Leads Purchased</p>
-                                <p className="font-medium">{client.leads_purchased}</p>
-                              </div>
-                            )}
-                            {client.leads_per_day !== null && (
-                              <div>
-                                <p className="text-muted-foreground text-base mb-1">Leads Per Day</p>
-                                <p className="font-medium">{client.leads_per_day}</p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Airtable Client Data */}
-                          {isLoadingAirtable ? (
-                            <div className="flex items-center justify-center py-4">
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              <span className="ml-2 text-base text-muted-foreground">Loading client data...</span>
-                            </div>
-                          ) : clientAirtableData ? (
-                            <div className="space-y-3 text-base">
-                              {clientAirtableData['Contact Person'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Contact Person</p>
-                                  <p className="font-medium">{clientAirtableData['Contact Person']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Phone'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Phone</p>
-                                  <p className="font-medium">{clientAirtableData['Phone']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Company Website'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Company Website</p>
-                                  <a href={clientAirtableData['Company Website']} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
-                                    {clientAirtableData['Company Website']}
-                                  </a>
-                                </div>
-                              )}
-                              {clientAirtableData['Company Name'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Company Name</p>
-                                  <p className="font-medium">{clientAirtableData['Company Name']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Location'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Location</p>
-                                  <p className="font-medium">{clientAirtableData['Location']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Markets they serve (locations)'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Markets Served</p>
-                                  <p className="font-medium">{clientAirtableData['Markets they serve (locations)']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Industries they serve'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Industries Served</p>
-                                  <p className="font-medium">{clientAirtableData['Industries they serve']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Sub-industries/specializations'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Sub-industries/Specializations</p>
-                                  <p className="font-medium">{clientAirtableData['Sub-industries/specializations']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Types of roles they hire for'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Types of Roles</p>
-                                  <p className="font-medium">{clientAirtableData['Types of roles they hire for']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Contingent or temporary staffing?'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Staffing Model</p>
-                                  <p className="font-medium">{clientAirtableData['Contingent or temporary staffing?']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Last 5 roles placed'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Last 5 Roles Placed</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 roles placed']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Last 5 companies worked with (for lookalike targeting)'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Last 5 Companies Worked With</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Last 5 companies worked with (for lookalike targeting)']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['5 current candidates (for candidate-led campaigns)'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Current Candidates</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['5 current candidates (for candidate-led campaigns)']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Their USPs in their own words'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Unique Selling Points</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Their USPs in their own words']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Niches they\'ve done well in'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Niches They've Done Well In</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Niches they\'ve done well in']}</p>
-                                </div>
-                              )}
-                              {clientAirtableData['Typical outreach/acquisition methods'] && (
-                                <div>
-                                  <p className="text-muted-foreground text-base mb-1">Outreach Methods</p>
-                                  <p className="font-medium whitespace-pre-line">{clientAirtableData['Typical outreach/acquisition methods']}</p>
-                                </div>
-                              )}
-                            </div>
-                          ) : client.airtable_client_id ? (
-                            <p className="text-base text-muted-foreground">No additional client data available</p>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 pt-4 border-t mt-4">
-                        {editingClient !== client.id && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                          onClick={() => {
-                            setEditingClient(client.id);
-                            // Set the current airtable_client_id if it exists, otherwise empty
-                            setEditingAirtableClientId(client.airtable_client_id || "");
-                          }}
-                            className="flex-1"
+                        return (
+                          <TableRow
+                            key={client.id}
+                            className="cursor-pointer hover:bg-muted/50"
+                            onClick={() => navigate(`/admin/clients/${client.id}`)}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setResettingPassword(client.id)}
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteClient(client)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                            <TableCell>
+                              <div className="font-medium">{client.name}</div>
+                              {client.companyName && client.companyName !== client.name && (
+                                <div className="text-sm text-muted-foreground">{client.companyName}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {client.email && (
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <Mail className="h-3 w-3" />
+                                    {client.email}
+                                  </div>
+                                )}
+                                {client.contactPerson && (
+                                  <div className="text-muted-foreground">{client.contactPerson}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {client.status === 'Inactive' || client.status === 'Not Active' ? (
+                                <Badge variant="secondary" className="bg-slate-100 text-slate-600">
+                                  Inactive
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                  Active
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              {client.leadsPurchased || 0}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="font-medium text-blue-600">{client.leadsDelivered}</div>
+                              {client.leadsPurchased > 0 && (
+                                <div className="text-xs text-muted-foreground">{completionPercent}%</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className={client.leadsRemaining > 0 ? "font-medium text-amber-600" : "text-muted-foreground"}>
+                                {client.leadsRemaining}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {stats && stats.total > 0 ? (
+                                <div className="flex items-center justify-center gap-1 text-xs">
+                                  <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded" title="New">
+                                    {stats.new}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded" title="Approved">
+                                    {stats.approved + stats.booked}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded" title="Needs Work">
+                                    {stats.needsWork}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded" title="Rejected">
+                                    {stats.rejected}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="text-center text-muted-foreground text-sm">—</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/clients/${client.id}`);
+                                }}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Delete Confirmation Dialog */}
