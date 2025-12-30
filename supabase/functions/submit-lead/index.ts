@@ -21,10 +21,28 @@ Deno.serve(async (req) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !user) throw new Error('Unauthorized');
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+    if (!user) {
+      throw new Error('No user found for token');
+    }
 
-    const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
-    if (!isAdmin) throw new Error('Admin access required');
+    console.log('User authenticated:', user.id, user.email);
+
+    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
+
+    if (roleError) {
+      console.error('Role check error:', roleError);
+      throw new Error(`Role check failed: ${roleError.message}`);
+    }
+
+    console.log('Is admin check result:', isAdmin);
+
+    if (!isAdmin) {
+      throw new Error(`Admin access required. User ${user.email} does not have admin role.`);
+    }
 
     const leadData = await req.json();
     if (!leadData.companyName) throw new Error('Company name is required');
