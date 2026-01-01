@@ -6,6 +6,7 @@ import {
   UserPlus,
   BarChart3,
   PoundSterling,
+  ClipboardList,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -35,6 +36,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
     { title: "All Leads", url: "/admin/leads", icon: FileText },
     { title: "Clients", url: "/admin/clients", icon: Users },
     { title: "P&L", url: "/admin/pnl", icon: PoundSterling },
+    { title: "Reporting", url: "/admin/reporting", icon: ClipboardList },
     { title: "Sentiment", url: "/admin/sentiment", icon: BarChart3 },
     { title: "Invite Client", url: "/admin/invite", icon: UserPlus },
   ];

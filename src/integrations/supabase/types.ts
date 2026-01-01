@@ -218,6 +218,116 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_reps: {
+        Row: {
+          id: string
+          name: string
+          email: string | null
+          is_active: boolean
+          daily_calls_target: number
+          daily_hours_target: number
+          daily_bookings_target: number
+          daily_pipeline_target: number
+          weekly_bookings_target: number | null
+          weekly_pipeline_target: number | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email?: string | null
+          is_active?: boolean
+          daily_calls_target?: number
+          daily_hours_target?: number
+          daily_bookings_target?: number
+          daily_pipeline_target?: number
+          weekly_bookings_target?: number | null
+          weekly_pipeline_target?: number | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string | null
+          is_active?: boolean
+          daily_calls_target?: number
+          daily_hours_target?: number
+          daily_bookings_target?: number
+          daily_pipeline_target?: number
+          weekly_bookings_target?: number | null
+          weekly_pipeline_target?: number | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_reports: {
+        Row: {
+          id: string
+          rep_id: string
+          report_date: string
+          time_on_dialer_minutes: number
+          calls_made: number
+          bookings_made: number
+          pipeline_value: number
+          ai_extracted_time_minutes: number | null
+          ai_extracted_calls: number | null
+          ai_confidence_score: number | null
+          screenshot_path: string | null
+          screenshot_url: string | null
+          notes: string | null
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          rep_id: string
+          report_date: string
+          time_on_dialer_minutes: number
+          calls_made: number
+          bookings_made?: number
+          pipeline_value?: number
+          ai_extracted_time_minutes?: number | null
+          ai_extracted_calls?: number | null
+          ai_confidence_score?: number | null
+          screenshot_path?: string | null
+          screenshot_url?: string | null
+          notes?: string | null
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          rep_id?: string
+          report_date?: string
+          time_on_dialer_minutes?: number
+          calls_made?: number
+          bookings_made?: number
+          pipeline_value?: number
+          ai_extracted_time_minutes?: number | null
+          ai_extracted_calls?: number | null
+          ai_confidence_score?: number | null
+          screenshot_path?: string | null
+          screenshot_url?: string | null
+          notes?: string | null
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_reports_rep_id_fkey"
+            columns: ["rep_id"]
+            isOneToOne: false
+            referencedRelation: "sales_reps"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -87,44 +87,79 @@ export function formatPercent(value: number): string {
 }
 
 /**
- * Get date range for a period type
+ * Get date range for a period type with optional offset
+ * @param period - The period type
+ * @param offset - Number of periods to go back (0 = current, 1 = previous, etc.)
  */
-export function getPeriodDateRange(period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'): {
+export function getPeriodDateRange(
+  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly',
+  offset: number = 0
+): {
   startDate: string;
   endDate: string;
   label: string;
 } {
   const now = new Date();
   let startDate: Date;
-  const endDate = now;
+  let endDate: Date;
   let label: string;
 
   switch (period) {
-    case 'daily':
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      label = 'Today';
+    case 'daily': {
+      const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+      startDate = targetDate;
+      endDate = targetDate;
+      label = offset === 0 ? 'Today' : targetDate.toLocaleDateString('en-GB', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+      });
       break;
-    case 'weekly':
+    }
+    case 'weekly': {
       const dayOfWeek = now.getDay();
       const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-      startDate = new Date(now.getFullYear(), now.getMonth(), diff);
-      label = 'This Week';
+      const currentWeekStart = new Date(now.getFullYear(), now.getMonth(), diff);
+      startDate = new Date(currentWeekStart);
+      startDate.setDate(startDate.getDate() - (offset * 7));
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6);
+      if (offset === 0) {
+        label = 'This Week';
+      } else {
+        const weekStart = startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        const weekEnd = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        label = `${weekStart} - ${weekEnd}`;
+      }
       break;
-    case 'monthly':
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      label = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+    case 'monthly': {
+      const targetMonth = now.getMonth() - offset;
+      const targetYear = now.getFullYear() + Math.floor(targetMonth / 12);
+      const adjustedMonth = ((targetMonth % 12) + 12) % 12;
+      startDate = new Date(targetYear, adjustedMonth, 1);
+      endDate = new Date(targetYear, adjustedMonth + 1, 0); // Last day of month
+      label = startDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
       break;
-    case 'quarterly':
-      const quarter = Math.floor(now.getMonth() / 3);
-      startDate = new Date(now.getFullYear(), quarter * 3, 1);
-      label = `Q${quarter + 1} ${now.getFullYear()}`;
+    }
+    case 'quarterly': {
+      const currentQuarter = Math.floor(now.getMonth() / 3);
+      const targetQuarterTotal = currentQuarter - offset;
+      const targetYear = now.getFullYear() + Math.floor(targetQuarterTotal / 4);
+      const targetQuarter = ((targetQuarterTotal % 4) + 4) % 4;
+      startDate = new Date(targetYear, targetQuarter * 3, 1);
+      endDate = new Date(targetYear, (targetQuarter + 1) * 3, 0);
+      label = `Q${targetQuarter + 1} ${targetYear}`;
       break;
-    case 'yearly':
-      startDate = new Date(now.getFullYear(), 0, 1);
-      label = now.getFullYear().toString();
+    }
+    case 'yearly': {
+      const targetYear = now.getFullYear() - offset;
+      startDate = new Date(targetYear, 0, 1);
+      endDate = new Date(targetYear, 11, 31);
+      label = targetYear.toString();
       break;
+    }
     default:
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = now;
       label = 'This Month';
   }
 

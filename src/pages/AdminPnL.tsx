@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, RefreshCw, PoundSterling, Calendar } from "lucide-react";
+import { Loader2, Plus, RefreshCw, PoundSterling, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
 import DealEntryForm from "@/components/pnl/DealEntryForm";
@@ -55,6 +55,7 @@ const AdminPnL = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [period, setPeriod] = useState<PeriodType>("monthly");
+  const [periodOffset, setPeriodOffset] = useState(0); // 0 = current, 1 = previous, etc.
   const [report, setReport] = useState<PLReport | null>(null);
   const [businessCosts, setBusinessCosts] = useState<any[]>([]);
 
@@ -64,12 +65,7 @@ const AdminPnL = () => {
 
   const loadReport = useCallback(async () => {
     try {
-      const { startDate, endDate } = getPeriodDateRange(period);
-
-      const { data, error } = await supabase.functions.invoke("get-pnl-report", {
-        body: {},
-        headers: {},
-      });
+      const { startDate, endDate } = getPeriodDateRange(period, periodOffset);
 
       // Use URL params for the function
       const response = await fetch(
@@ -97,7 +93,7 @@ const AdminPnL = () => {
       console.error("Error loading report:", error);
       toast.error(error.message || "Failed to load P&L report");
     }
-  }, [period]);
+  }, [period, periodOffset]);
 
   const loadCosts = useCallback(async () => {
     try {
@@ -161,7 +157,12 @@ const AdminPnL = () => {
       loadReport();
       loadCosts();
     }
-  }, [isLoading, period, loadReport, loadCosts]);
+  }, [isLoading, period, periodOffset, loadReport, loadCosts]);
+
+  // Reset offset when period type changes
+  useEffect(() => {
+    setPeriodOffset(0);
+  }, [period]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -181,7 +182,15 @@ const AdminPnL = () => {
     loadCosts();
   };
 
-  const periodLabel = getPeriodDateRange(period).label;
+  const periodLabel = getPeriodDateRange(period, periodOffset).label;
+
+  const handlePreviousPeriod = () => {
+    setPeriodOffset((prev) => prev + 1);
+  };
+
+  const handleNextPeriod = () => {
+    setPeriodOffset((prev) => Math.max(0, prev - 1));
+  };
 
   if (isLoading) {
     return (
@@ -223,6 +232,37 @@ const AdminPnL = () => {
                   <SelectItem value="quarterly">Quarterly</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Period Navigation */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePreviousPeriod}
+                title="Previous period"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextPeriod}
+                disabled={periodOffset === 0}
+                title="Next period"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              {periodOffset > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPeriodOffset(0)}
+                  className="text-xs"
+                >
+                  Today
+                </Button>
+              )}
             </div>
 
             <Button
