@@ -6,7 +6,17 @@ const corsHeaders = {
 };
 
 // Helper to get date range based on period
+// If startDate and endDate are provided, use them directly (allows navigating to past periods)
 function getDateRange(period: string, customStart?: string, customEnd?: string): { startDate: string; endDate: string } {
+  // If both dates are provided, use them directly regardless of period type
+  if (customStart && customEnd) {
+    return {
+      startDate: customStart,
+      endDate: customEnd
+    };
+  }
+
+  // Fallback: calculate based on current date if no dates provided
   const now = new Date();
   let startDate: Date;
   let endDate: Date = now;
@@ -29,13 +39,6 @@ function getDateRange(period: string, customStart?: string, customEnd?: string):
       break;
     case 'yearly':
       startDate = new Date(now.getFullYear(), 0, 1);
-      break;
-    case 'custom':
-      if (!customStart || !customEnd) {
-        throw new Error('Custom period requires startDate and endDate');
-      }
-      startDate = new Date(customStart);
-      endDate = new Date(customEnd);
       break;
     default:
       startDate = new Date(now.getFullYear(), now.getMonth(), 1); // Default to monthly
