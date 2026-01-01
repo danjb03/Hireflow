@@ -27,6 +27,7 @@ const SubmitLead = lazyRetry(() => import("./pages/SubmitLead"), "SubmitLead");
 const AdminAllLeads = lazyRetry(() => import("./pages/AdminAllLeads"), "AdminAllLeads");
 const AdminLeadDetail = lazyRetry(() => import("./pages/AdminLeadDetail"), "AdminLeadDetail");
 const AdminSentiment = lazyRetry(() => import("./pages/AdminSentiment"), "AdminSentiment");
+const AdminPnL = lazyRetry(() => import("./pages/AdminPnL"), "AdminPnL");
 const NotFound = lazyRetry(() => import("./pages/NotFound"), "NotFound");
 
 const App = () => (
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/admin/leads" element={<AdminAllLeads />} />
           <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
           <Route path="/admin/sentiment" element={<AdminSentiment />} />
+          <Route path="/admin/pnl" element={<AdminPnL />} />
           {/* Authenticated routes */}
           <Route path="/submit-lead" element={<SubmitLead />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -80,6 +80,144 @@ export type Database = {
         }
         Relationships: []
       }
+      deals: {
+        Row: {
+          id: string
+          company_name: string
+          revenue_inc_vat: number
+          revenue_net: number
+          operating_expense: number
+          leads_sold: number
+          lead_sale_price: number
+          setter_commission_percent: number
+          sales_rep_commission_percent: number
+          setter_cost: number
+          sales_rep_cost: number
+          lead_fulfillment_cost: number
+          close_date: string
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_name: string
+          revenue_inc_vat: number
+          revenue_net: number
+          operating_expense: number
+          leads_sold?: number
+          lead_sale_price: number
+          setter_commission_percent?: number
+          sales_rep_commission_percent?: number
+          setter_cost: number
+          sales_rep_cost: number
+          lead_fulfillment_cost: number
+          close_date: string
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_name?: string
+          revenue_inc_vat?: number
+          revenue_net?: number
+          operating_expense?: number
+          leads_sold?: number
+          lead_sale_price?: number
+          setter_commission_percent?: number
+          sales_rep_commission_percent?: number
+          setter_cost?: number
+          sales_rep_cost?: number
+          lead_fulfillment_cost?: number
+          close_date?: string
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      business_costs: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          amount: number
+          cost_type: "recurring" | "one_time"
+          frequency: "monthly" | "quarterly" | "yearly" | null
+          category: string
+          effective_date: string
+          end_date: string | null
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          amount: number
+          cost_type: "recurring" | "one_time"
+          frequency?: "monthly" | "quarterly" | "yearly" | null
+          category: string
+          effective_date: string
+          end_date?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          amount?: number
+          cost_type?: "recurring" | "one_time"
+          frequency?: "monthly" | "quarterly" | "yearly" | null
+          category?: string
+          effective_date?: string
+          end_date?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cost_categories: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          icon: string | null
+          color: string | null
+          sort_order: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          icon?: string | null
+          color?: string | null
+          sort_order?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          icon?: string | null
+          color?: string | null
+          sort_order?: number | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
