@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingUp, TrendingDown, PoundSterling, Receipt, Wallet, Percent } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, TrendingUp, TrendingDown, PoundSterling, Receipt, Wallet, Percent, Building2, Users } from "lucide-react";
 import { formatCurrency, formatPercent, getStatCardGradient } from "@/lib/pnlCalculations";
 
 interface PLReport {
@@ -40,6 +44,9 @@ interface PLReportViewProps {
 }
 
 const PLReportView = ({ report, loading }: PLReportViewProps) => {
+  const [includeCorpTax, setIncludeCorpTax] = useState(false);
+  const [salaryAmount, setSalaryAmount] = useState<number>(0);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -56,7 +63,19 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
     );
   }
 
+  // Calculate corporation tax (20% of gross profit, only if profitable)
+  const corpTaxAmount = includeCorpTax && report.grossProfit > 0
+    ? report.grossProfit * 0.20
+    : 0;
+
+  // Profit after corporation tax
+  const profitAfterTax = report.grossProfit - corpTaxAmount;
+
+  // Final profit after salaries
+  const finalProfit = profitAfterTax - salaryAmount;
+
   const isProfitable = report.grossProfit >= 0;
+  const isFinalProfitable = finalProfit >= 0;
 
   return (
     <div className="space-y-6">
@@ -70,13 +89,13 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold tabular-nums text-emerald-600">
-              {formatCurrency(report.totalRevenueNet)}
+              {formatCurrency(report.totalRevenueIncVat)}
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Net Revenue
+              Total Revenue
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              VAT: {formatCurrency(report.vatDeducted)}
+              (inc. VAT)
             </p>
           </CardContent>
         </Card>
@@ -89,10 +108,13 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold tabular-nums text-red-600">
-              {formatCurrency(report.totalCosts)}
+              {formatCurrency(report.totalCosts + report.vatDeducted)}
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Total Costs
+              Total Deductions
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              (VAT + Costs)
             </p>
           </CardContent>
         </Card>
@@ -109,6 +131,9 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Gross Profit
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              (before tax/salary)
             </p>
           </CardContent>
         </Card>
@@ -181,7 +206,10 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Operating Expenses (20%)</span>
+                <div>
+                  <span className="text-muted-foreground">Growth Investment Fund</span>
+                  <p className="text-xs text-muted-foreground">20% reinvested for future growth</p>
+                </div>
                 <span className="font-medium">{formatCurrency(report.dealCosts.operatingExpenses)}</span>
               </div>
               <div className="flex justify-between items-center">
@@ -252,26 +280,164 @@ const PLReportView = ({ report, loading }: PLReportViewProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Profit & Loss Summary</CardTitle>
+          <CardDescription>Complete breakdown from revenue to final profit</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
+            {/* Revenue Section */}
             <div className="flex justify-between items-center text-lg">
-              <span>Net Revenue</span>
-              <span className="font-bold text-emerald-600">{formatCurrency(report.totalRevenueNet)}</span>
+              <span className="font-medium">Total Revenue (inc. VAT)</span>
+              <span className="font-bold text-emerald-600">{formatCurrency(report.totalRevenueIncVat)}</span>
             </div>
+
+            {/* VAT Deduction */}
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">- Deal Costs</span>
-              <span className="text-red-600">{formatCurrency(report.dealCosts.total)}</span>
+              <span className="text-muted-foreground">− VAT (20%)</span>
+              <span className="text-red-600">-{formatCurrency(report.vatDeducted)}</span>
             </div>
+
+            {/* Net Revenue */}
+            <div className="flex justify-between items-center pt-2 border-t">
+              <span className="font-medium">Net Revenue (ex. VAT)</span>
+              <span className="font-semibold">{formatCurrency(report.totalRevenueNet)}</span>
+            </div>
+
+            {/* Deal Costs Breakdown */}
+            <div className="pt-3 border-t">
+              <p className="text-sm font-medium text-muted-foreground mb-2">Deal Costs:</p>
+              <div className="space-y-1 ml-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Growth Investment Fund (20%)</span>
+                  <span className="text-red-600">-{formatCurrency(report.dealCosts.operatingExpenses)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Lead Fulfillment</span>
+                  <span className="text-red-600">-{formatCurrency(report.dealCosts.leadFulfillmentCosts)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Setter Commissions</span>
+                  <span className="text-red-600">-{formatCurrency(report.dealCosts.setterCosts)}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Sales Rep Commissions</span>
+                  <span className="text-red-600">-{formatCurrency(report.dealCosts.salesRepCosts)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Costs */}
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">- Additional Costs</span>
-              <span className="text-red-600">{formatCurrency(report.additionalCosts.total)}</span>
+              <span className="text-muted-foreground">− Additional Business Costs</span>
+              <span className="text-red-600">-{formatCurrency(report.additionalCosts.total)}</span>
             </div>
+
+            {/* Gross Profit */}
             <div className="pt-3 border-t flex justify-between items-center text-lg">
               <span className="font-bold">Gross Profit</span>
               <span className={`font-bold ${isProfitable ? 'text-emerald-600' : 'text-red-600'}`}>
                 {formatCurrency(report.grossProfit)}
               </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tax & Salary Section */}
+      <Card className="border-2 border-dashed">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Tax & Salary Calculator
+          </CardTitle>
+          <CardDescription>
+            Calculate your take-home profit after tax and salaries
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Corporation Tax Toggle */}
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-1">
+                <Label htmlFor="corp-tax" className="font-medium">Corporation Tax (UK)</Label>
+                <p className="text-sm text-muted-foreground">
+                  20% of gross profit - Toggle off for UAE/tax-free zones
+                </p>
+              </div>
+              <Switch
+                id="corp-tax"
+                checked={includeCorpTax}
+                onCheckedChange={setIncludeCorpTax}
+              />
+            </div>
+
+            {/* Salary Input */}
+            <div className="space-y-2">
+              <Label htmlFor="salary" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Monthly Salary Drawings
+              </Label>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">£</span>
+                <Input
+                  id="salary"
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={salaryAmount || ""}
+                  onChange={(e) => setSalaryAmount(parseFloat(e.target.value) || 0)}
+                  placeholder="Enter salary amount"
+                  className="max-w-xs"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter total salaries to be drawn this period
+              </p>
+            </div>
+
+            {/* Final Calculation */}
+            <div className="pt-4 border-t space-y-3">
+              <div className="flex justify-between items-center">
+                <span>Gross Profit</span>
+                <span className={`font-semibold ${isProfitable ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(report.grossProfit)}
+                </span>
+              </div>
+
+              {includeCorpTax && report.grossProfit > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">− Corporation Tax (20%)</span>
+                  <span className="text-red-600">-{formatCurrency(corpTaxAmount)}</span>
+                </div>
+              )}
+
+              {includeCorpTax && (
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Profit After Tax</span>
+                  <span className={`font-semibold ${profitAfterTax >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                    {formatCurrency(profitAfterTax)}
+                  </span>
+                </div>
+              )}
+
+              {salaryAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">− Salary Drawings</span>
+                  <span className="text-red-600">-{formatCurrency(salaryAmount)}</span>
+                </div>
+              )}
+
+              <div className="pt-3 border-t flex justify-between items-center text-lg">
+                <span className="font-bold">Final Retained Profit</span>
+                <span className={`font-bold text-xl ${isFinalProfitable ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(finalProfit)}
+                </span>
+              </div>
+
+              {!isFinalProfitable && (
+                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                  Warning: Salary drawings exceed available profit after tax
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
