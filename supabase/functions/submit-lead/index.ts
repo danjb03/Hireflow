@@ -83,6 +83,11 @@ Deno.serve(async (req) => {
     if (leadData.lastContactDate) airtableFields['Last Contact Date'] = leadData.lastContactDate;
     if (leadData.nextAction) airtableFields['Next Action'] = leadData.nextAction;
 
+    // Link to Rep if provided (expects Airtable record ID)
+    if (leadData.repId) {
+      airtableFields['Rep'] = [leadData.repId];
+    }
+
     // Create record in Airtable
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
     const response = await fetch(airtableUrl, {
