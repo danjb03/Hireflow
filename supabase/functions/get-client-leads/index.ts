@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
     if (isAdmin) {
       // Admin: Fetch all leads from Airtable
       console.log('Admin fetching all leads');
-      
+
       const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
-      
+
       const response = await fetch(airtableUrl, {
         headers: {
           'Authorization': `Bearer ${airtableToken}`,
@@ -71,28 +71,45 @@ Deno.serve(async (req) => {
       allLeads = transformAirtableRecords(data.records || []);
 
     } else {
-      // Client: Fetch only their leads based on client_name
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('client_name')
-        .eq('id', user.id)
-        .single();
+      // Recruiter: Fetch only leads they uploaded (linked via Rep field)
+      // First, find the Rep record ID by matching the user's email
+      console.log('Looking up rep by email:', user.email);
 
-      if (profileError) {
-        throw profileError;
+      const repsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Reps?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+      const repsResponse = await fetch(repsUrl, {
+        headers: {
+          'Authorization': `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!repsResponse.ok) {
+        throw new Error(`Airtable API error fetching rep: ${repsResponse.status}`);
       }
 
-      if (!profile?.client_name) {
-        console.log('No client name configured for user');
-        throw new Error('No client name configured for your account. Please contact your administrator.');
+      const repsData = await repsResponse.json();
+      const repRecords = repsData.records || [];
+
+      if (repRecords.length === 0) {
+        console.log('No rep found for email:', user.email);
+        // Return empty leads if no rep found
+        return new Response(
+          JSON.stringify({ leads: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      console.log('Client fetching leads for:', profile.client_name);
+      const repRecordId = repRecords[0].id;
+      const repName = repRecords[0].fields?.Name || '';
+      console.log('Found rep:', repName, 'with ID:', repRecordId);
 
-      // Fetch leads filtered by client name using Airtable formula
-      const filterFormula = `{Clients} = '${profile.client_name.replace(/'/g, "\\'")}'`;
+      // Fetch leads where Rep field contains this rep's record ID
+      // Using FIND to search in the linked record field
+      const filterFormula = `FIND('${repRecordId}', ARRAYJOIN({Rep}))`;
       const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
-      
+
+      console.log('Fetching leads with filter:', filterFormula);
+
       const response = await fetch(airtableUrl, {
         headers: {
           'Authorization': `Bearer ${airtableToken}`,
@@ -106,6 +123,7 @@ Deno.serve(async (req) => {
 
       const data = await response.json();
       allLeads = transformAirtableRecords(data.records || []);
+      console.log('Found', allLeads.length, 'leads for rep:', repName);
     }
 
     console.log('Fetched total leads:', allLeads.length);
