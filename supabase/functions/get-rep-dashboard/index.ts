@@ -75,6 +75,8 @@ Deno.serve(async (req) => {
       // Calculate today's performance vs targets
       const todayPerformance = todayReport ? {
         hasReport: true,
+        reportId: todayReport.id,
+        reportStatus: todayReport.status || 'pending',
         calls: {
           actual: todayReport.calls_made,
           target: rep.daily_calls_target,
@@ -105,7 +107,10 @@ Deno.serve(async (req) => {
         },
         notes: todayReport.notes,
         screenshotUrl: todayReport.screenshot_url,
-        submittedAt: todayReport.submitted_at
+        submittedAt: todayReport.submitted_at,
+        aiExtractedCalls: todayReport.ai_extracted_calls,
+        aiExtractedTimeMinutes: todayReport.ai_extracted_time_minutes,
+        aiConfidenceScore: todayReport.ai_confidence_score
       } : {
         hasReport: false,
         calls: { actual: 0, target: rep.daily_calls_target, percent: 0, status: 'critical' as const },

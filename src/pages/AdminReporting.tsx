@@ -6,13 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2, RefreshCw, BarChart3, Calendar, Users, ExternalLink, Copy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, RefreshCw, BarChart3, Calendar, Users, ExternalLink, Copy, CheckCircle2, XCircle, Clock, Eye } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
 import TeamSummary from "@/components/reporting/TeamSummary";
 import RepCard from "@/components/reporting/RepCard";
 import RepManagementTable from "@/components/reporting/RepManagementTable";
-import { getTodayDate } from "@/lib/reportingCalculations";
+import ReportReviewDialog from "@/components/reporting/ReportReviewDialog";
+import { getTodayDate, formatDuration, formatCurrency } from "@/lib/reportingCalculations";
 
 interface RepDashboard {
   rep: {
@@ -89,6 +91,7 @@ const AdminReporting = () => {
   const [isLoadingReps, setIsLoadingReps] = useState(false);
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [reviewingReport, setReviewingReport] = useState<any>(null);
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -372,10 +375,24 @@ const AdminReporting = () => {
           <TabsContent value="reports" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Report History</CardTitle>
-                <CardDescription>
-                  View all submitted reports for {selectedDate}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Report Review</CardTitle>
+                    <CardDescription>
+                      Review and approve reports for {selectedDate}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="secondary" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      {dashboardData?.reps.filter((r) => r.today.hasReport && (r.today as any).reportStatus === "pending").length || 0} Pending
+                    </Badge>
+                    <Badge className="bg-emerald-500 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {dashboardData?.reps.filter((r) => r.today.hasReport && (r.today as any).reportStatus === "approved").length || 0} Approved
+                    </Badge>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {dashboardData?.reps.filter((r) => r.today.hasReport).length === 0 ? (
@@ -386,69 +403,117 @@ const AdminReporting = () => {
                   <div className="space-y-4">
                     {dashboardData?.reps
                       .filter((r) => r.today.hasReport)
-                      .map((repData) => (
-                        <div
-                          key={repData.rep.id}
-                          className="border rounded-lg p-4 space-y-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium">{repData.rep.name}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Submitted at{" "}
-                                {repData.today.submittedAt
-                                  ? new Date(repData.today.submittedAt).toLocaleTimeString()
-                                  : "N/A"}
-                              </p>
+                      .map((repData) => {
+                        const reportStatus = (repData.today as any).reportStatus || "pending";
+                        const getStatusBadge = () => {
+                          switch (reportStatus) {
+                            case "approved":
+                              return <Badge className="bg-emerald-500">Approved</Badge>;
+                            case "rejected":
+                              return <Badge variant="destructive">Rejected</Badge>;
+                            case "edited":
+                              return <Badge className="bg-blue-500">Edited</Badge>;
+                            default:
+                              return <Badge variant="secondary">Pending Review</Badge>;
+                          }
+                        };
+
+                        return (
+                          <div
+                            key={repData.rep.id}
+                            className={`border rounded-lg p-4 space-y-3 ${
+                              reportStatus === "pending" ? "border-yellow-200 bg-yellow-50/50" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div>
+                                  <h4 className="font-medium">{repData.rep.name}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Submitted at{" "}
+                                    {repData.today.submittedAt
+                                      ? new Date(repData.today.submittedAt).toLocaleTimeString()
+                                      : "N/A"}
+                                  </p>
+                                </div>
+                                {getStatusBadge()}
+                              </div>
+                              <div className="flex gap-2">
+                                {repData.today.screenshotUrl && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      window.open(repData.today.screenshotUrl!, "_blank")
+                                    }
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    Screenshot
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    setReviewingReport({
+                                      id: (repData.today as any).reportId,
+                                      repName: repData.rep.name,
+                                      reportDate: selectedDate,
+                                      callsMade: repData.today.calls.actual,
+                                      timeOnDialerMinutes: Math.round(repData.today.hours.actual * 60),
+                                      bookingsMade: repData.today.bookings.actual,
+                                      pipelineValue: repData.today.pipeline.actual,
+                                      notes: repData.today.notes,
+                                      screenshotUrl: repData.today.screenshotUrl,
+                                      status: reportStatus,
+                                      aiExtractedCalls: (repData.today as any).aiExtractedCalls,
+                                      aiExtractedTimeMinutes: (repData.today as any).aiExtractedTimeMinutes,
+                                      aiConfidenceScore: (repData.today as any).aiConfidenceScore,
+                                      submittedAt: repData.today.submittedAt,
+                                    })
+                                  }
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Review
+                                </Button>
+                              </div>
                             </div>
-                            {repData.today.screenshotUrl && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  window.open(repData.today.screenshotUrl!, "_blank")
-                                }
-                              >
-                                View Screenshot
-                              </Button>
+                            <div className="grid grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Calls:</span>{" "}
+                                <span className="font-medium">
+                                  {repData.today.calls.actual}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Hours:</span>{" "}
+                                <span className="font-medium">
+                                  {formatDuration(Math.round(repData.today.hours.actual * 60))}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Bookings:</span>{" "}
+                                <span className="font-medium">
+                                  {repData.today.bookings.actual}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Pipeline:</span>{" "}
+                                <span className="font-medium">
+                                  {formatCurrency(repData.today.pipeline.actual)}
+                                </span>
+                              </div>
+                            </div>
+                            {repData.today.notes && (
+                              <div className="bg-slate-50 rounded p-3 text-sm">
+                                <p className="font-medium text-xs text-muted-foreground uppercase mb-1">
+                                  Notes
+                                </p>
+                                <p>{repData.today.notes}</p>
+                              </div>
                             )}
                           </div>
-                          <div className="grid grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Calls:</span>{" "}
-                              <span className="font-medium">
-                                {repData.today.calls.actual}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Hours:</span>{" "}
-                              <span className="font-medium">
-                                {Math.round(repData.today.hours.actual * 10) / 10}h
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Bookings:</span>{" "}
-                              <span className="font-medium">
-                                {repData.today.bookings.actual}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Pipeline:</span>{" "}
-                              <span className="font-medium">
-                                £{repData.today.pipeline.actual.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                          {repData.today.notes && (
-                            <div className="bg-slate-50 rounded p-3 text-sm">
-                              <p className="font-medium text-xs text-muted-foreground uppercase mb-1">
-                                Notes
-                              </p>
-                              <p>{repData.today.notes}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 )}
               </CardContent>
@@ -474,6 +539,14 @@ const AdminReporting = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Report Review Dialog */}
+        <ReportReviewDialog
+          report={reviewingReport}
+          open={!!reviewingReport}
+          onOpenChange={(open) => !open && setReviewingReport(null)}
+          onReviewComplete={loadDashboard}
+        />
       </div>
     </AdminLayout>
   );
