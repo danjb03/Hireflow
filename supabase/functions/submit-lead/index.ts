@@ -11,41 +11,28 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth is optional - allows both logged-in users and public submissions
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Missing authorization header');
+    let userEmail = 'public';
 
-    const token = authHeader.replace('Bearer ', '');
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      );
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError) {
-      console.error('Auth error:', authError);
-      throw new Error(`Authentication failed: ${authError.message}`);
-    }
-    if (!user) {
-      throw new Error('No user found for token');
+      const { data: { user } } = await supabaseClient.auth.getUser(token);
+      if (user?.email) {
+        userEmail = user.email;
+      }
     }
 
-    console.log('User authenticated:', user.id, user.email);
-
-    const { data: isAdmin, error: roleError } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
-
-    if (roleError) {
-      console.error('Role check error:', roleError);
-      throw new Error(`Role check failed: ${roleError.message}`);
-    }
-
-    console.log('Is admin check result:', isAdmin);
-
-    if (!isAdmin) {
-      throw new Error(`Admin access required. User ${user.email} does not have admin role.`);
-    }
+    console.log('Lead submission from:', userEmail);
 
     const leadData = await req.json();
     if (!leadData.companyName) throw new Error('Company name is required');
+    if (!leadData.repId) throw new Error('Rep selection is required');
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
@@ -58,35 +45,37 @@ Deno.serve(async (req) => {
       'Date Created': new Date().toISOString(),
     };
 
-    // Add optional fields
+    // Company Info
     if (leadData.companyWebsite) airtableFields['Company Website'] = leadData.companyWebsite;
     if (leadData.companyLinkedIn) airtableFields['Company LinkedIn'] = leadData.companyLinkedIn;
-    if (leadData.industry) airtableFields['Industry'] = leadData.industry;
-    if (leadData.companySize) airtableFields['Company Size'] = leadData.companySize;
-    if (leadData.employeeCount) airtableFields['Employee Count'] = leadData.employeeCount;
-    if (leadData.country) airtableFields['Country'] = leadData.country;
-    if (leadData.address || leadData.location) airtableFields['Address'] = leadData.address || leadData.location;
-    if (leadData.companyDescription) airtableFields['Company Description'] = leadData.companyDescription;
+
+    // Contact Info
     if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
     if (leadData.contactTitle) airtableFields['Contact Title'] = leadData.contactTitle;
-    if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
     if (leadData.email) airtableFields['Email'] = leadData.email;
     if (leadData.phone) airtableFields['Phone'] = leadData.phone;
-    if (leadData.contactLinkedIn || leadData.linkedInProfile) airtableFields['Contact LinkedIn'] = leadData.contactLinkedIn || leadData.linkedInProfile;
-    if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;
+    if (leadData.contactLinkedIn) airtableFields['Contact LinkedIn'] = leadData.contactLinkedIn;
+
+    // Job Info
+    if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
     if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
-    if (leadData.jobUrl) airtableFields['Job URL'] = leadData.jobUrl;
     if (leadData.jobType) airtableFields['Job Type'] = leadData.jobType;
     if (leadData.jobLevel) airtableFields['Job Level'] = leadData.jobLevel;
-    if (leadData.availability) airtableFields['Availability'] = leadData.availability;
-    if (leadData.feedback) airtableFields['Feedback'] = leadData.feedback;
-    if (leadData.lastContactDate) airtableFields['Last Contact Date'] = leadData.lastContactDate;
-    if (leadData.nextAction) airtableFields['Next Action'] = leadData.nextAction;
 
-    // Link to Rep if provided (expects Airtable record ID)
+    // Call Notes
+    if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;
+
+    // Callback DateTime fields (ISO format for Airtable)
+    if (leadData.callback1) airtableFields['Callback 1'] = new Date(leadData.callback1).toISOString();
+    if (leadData.callback2) airtableFields['Callback 2'] = new Date(leadData.callback2).toISOString();
+    if (leadData.callback3) airtableFields['Callback 3'] = new Date(leadData.callback3).toISOString();
+
+    // Link to Rep (expects Airtable record ID)
     if (leadData.repId) {
       airtableFields['Rep'] = [leadData.repId];
     }
+
+    console.log('Creating lead in Airtable with fields:', Object.keys(airtableFields));
 
     // Create record in Airtable
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
@@ -104,7 +93,7 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Airtable error:', errorText);
-      throw new Error(`Failed to create lead: ${response.status}`);
+      throw new Error(`Failed to create lead: ${response.status} - ${errorText}`);
     }
 
     const createdRecord = await response.json();

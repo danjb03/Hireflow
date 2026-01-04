@@ -101,6 +101,17 @@ Deno.serve(async (req) => {
 
       // Client Feedback
       feedback: fields['Feedback'] || null,
+
+      // Callback appointment slots
+      callbackDate1: fields['Callback Date 1'] || null,
+      callbackTime1: fields['Callback Time 1'] || null,
+      callbackDate2: fields['Callback Date 2'] || null,
+      callbackTime2: fields['Callback Time 2'] || null,
+      callbackDate3: fields['Callback Date 3'] || null,
+      callbackTime3: fields['Callback Time 3'] || null,
+
+      // Rep info
+      repId: fields['Rep'] ? fields['Rep'][0] : null,
     };
 
     return new Response(

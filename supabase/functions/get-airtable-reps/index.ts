@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -15,21 +13,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    // No auth required - public access for form dropdowns
+    console.log("Fetching active reps from Airtable");
 
-    const token = authHeader.replace("Bearer ", "");
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !user) throw new Error("Unauthorized");
-
-    // Check admin role
-    const { data: isAdmin } = await supabaseClient.rpc("is_admin", { _user_id: user.id });
-    if (!isAdmin) throw new Error("Admin access required");
+    if (!AIRTABLE_API_TOKEN || !AIRTABLE_BASE_ID) {
+      throw new Error("Airtable configuration missing");
+    }
 
     // Fetch reps from Airtable
     const response = await fetch(
@@ -54,6 +43,8 @@ Deno.serve(async (req) => {
       name: record.fields.Name || "",
       email: record.fields.Email || "",
     }));
+
+    console.log(`Found ${reps.length} active reps`);
 
     return new Response(
       JSON.stringify({ success: true, reps }),

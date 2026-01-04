@@ -18,13 +18,13 @@ interface LeadData {
   companyName: string;
   status: string;
   clients: string;
-  
+
   contactName: string | null;
   contactTitle: string | null;
   email: string;
   phone: string;
   contactLinkedIn: string | null;
-  
+
   companyWebsite: string;
   companyLinkedIn: string | null;
   companyDescription: string | null;
@@ -33,19 +33,27 @@ interface LeadData {
   industry: string | null;
   employeeCount: number | null;
   companySize: string | null;
-  
+
   jobTitle: string | null;
   jobDescription: string | null;
   jobUrl: string | null;
   jobType: string | null;
   jobLevel: string | null;
-  
+
   aiSummary: string | null;
   availability: string | null;
   lastContactDate: string | null;
   nextAction: string | null;
   dateCreated: string;
   feedback: string | null;
+
+  // Callback appointment slots
+  callbackDate1: string | null;
+  callbackTime1: string | null;
+  callbackDate2: string | null;
+  callbackTime2: string | null;
+  callbackDate3: string | null;
+  callbackTime3: string | null;
 }
 
 interface AirtableClient {
@@ -364,17 +372,69 @@ const AdminLeadDetail = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Prominent Availability Card */}
-        {lead.availability ? (
+        {/* Callback Appointment Slots */}
+        {(lead.callbackDate1 || lead.callbackDate2 || lead.callbackDate3 || lead.availability) ? (
           <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
-            <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Phone className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
-                <p className="text-xl font-semibold text-emerald-700">{lead.availability}</p>
-              </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-emerald-700">
+                <Phone className="h-5 w-5" />
+                Callback Appointment Options
+              </CardTitle>
+              <CardDescription className="text-emerald-600">
+                Available times for callback provided by the lead
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {lead.callbackDate1 && lead.callbackTime1 && (
+                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-2 bg-emerald-100 rounded-full">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-emerald-600 font-medium">Option 1 (Primary)</p>
+                    <p className="text-base font-semibold text-emerald-700">
+                      {new Date(lead.callbackDate1).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime1}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {lead.callbackDate2 && lead.callbackTime2 && (
+                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-2 bg-emerald-100 rounded-full">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-emerald-600 font-medium">Option 2 (Alternative)</p>
+                    <p className="text-base font-semibold text-emerald-700">
+                      {new Date(lead.callbackDate2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime2}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {lead.callbackDate3 && lead.callbackTime3 && (
+                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-2 bg-emerald-100 rounded-full">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-emerald-600 font-medium">Option 3 (Alternative)</p>
+                    <p className="text-base font-semibold text-emerald-700">
+                      {new Date(lead.callbackDate3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime3}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {lead.availability && !lead.callbackDate1 && (
+                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-2 bg-emerald-100 rounded-full">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-emerald-600 font-medium">Availability Notes</p>
+                    <p className="text-base font-semibold text-emerald-700">{lead.availability}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (

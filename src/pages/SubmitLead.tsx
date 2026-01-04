@@ -1,18 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Building2, User, Briefcase, FileText } from "lucide-react";
+import { Loader2, Building2, User, Briefcase, FileText, Users, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+interface AirtableRep {
+  id: string;
+  name: string;
+  email: string;
+}
 
 const SubmitLead = () => {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
-  
+  const [reps, setReps] = useState<AirtableRep[]>([]);
+  const [loadingReps, setLoadingReps] = useState(true);
+
   const [formData, setFormData] = useState({
     companyName: "",
     contactName: "",
@@ -20,20 +28,48 @@ const SubmitLead = () => {
     phone: "",
     companyWebsite: "",
     companyLinkedIn: "",
-    industry: "",
-    employeeCount: "",
-    country: "",
-    address: "",
     contactTitle: "",
     contactLinkedIn: "",
     jobTitle: "",
     jobType: "",
     jobLevel: "",
-    jobUrl: "",
     jobDescription: "",
     aiSummary: "",
-    availability: ""
+    repId: "",
+    callback1: "",
+    callback2: "",
+    callback3: "",
   });
+
+  useEffect(() => {
+    loadReps();
+  }, []);
+
+  const loadReps = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-airtable-reps`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session?.access_token || ''}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+
+      const result = await response.json();
+      if (result.success) {
+        setReps(result.reps || []);
+      }
+    } catch (error) {
+      console.error("Error loading reps:", error);
+    } finally {
+      setLoadingReps(false);
+    }
+  };
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -41,13 +77,38 @@ const SubmitLead = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.repId) {
+      toast({
+        title: "Rep Required",
+        description: "Please select which rep generated this lead.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
-    
+
     try {
       const response = await supabase.functions.invoke('submit-lead', {
         body: {
-          ...formData,
-          employeeCount: formData.employeeCount ? parseInt(formData.employeeCount) : null
+          companyName: formData.companyName,
+          contactName: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          companyWebsite: formData.companyWebsite,
+          companyLinkedIn: formData.companyLinkedIn,
+          contactTitle: formData.contactTitle,
+          contactLinkedIn: formData.contactLinkedIn,
+          jobTitle: formData.jobTitle,
+          jobType: formData.jobType,
+          jobLevel: formData.jobLevel,
+          jobDescription: formData.jobDescription,
+          aiSummary: formData.aiSummary,
+          repId: formData.repId,
+          callback1: formData.callback1,
+          callback2: formData.callback2,
+          callback3: formData.callback3,
         }
       });
 
@@ -57,14 +118,14 @@ const SubmitLead = () => {
         title: "Lead Submitted!",
         description: "The lead has been added successfully.",
       });
-      
+
       // Reset form
       setFormData({
         companyName: "", contactName: "", email: "", phone: "",
-        companyWebsite: "", companyLinkedIn: "", industry: "",
-        employeeCount: "", country: "", address: "", contactTitle: "",
+        companyWebsite: "", companyLinkedIn: "", contactTitle: "",
         contactLinkedIn: "", jobTitle: "", jobType: "", jobLevel: "",
-        jobUrl: "", jobDescription: "", aiSummary: "", availability: ""
+        jobDescription: "", aiSummary: "", repId: "",
+        callback1: "", callback2: "", callback3: "",
       });
     } catch (error) {
       console.error('Error submitting lead:', error);
@@ -87,6 +148,45 @@ const SubmitLead = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Rep Selection - REQUIRED */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Rep Assignment *
+              </CardTitle>
+              <CardDescription>
+                Select which rep generated this lead
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingReps ? (
+                <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-muted-foreground text-sm">Loading reps...</span>
+                </div>
+              ) : (
+                <Select
+                  value={formData.repId}
+                  onValueChange={(value) => updateField('repId', value)}
+                  required
+                >
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select the rep who generated this lead *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reps.map((rep) => (
+                      <SelectItem key={rep.id} value={rep.id}>
+                        {rep.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Company Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -101,31 +201,16 @@ const SubmitLead = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="companyWebsite">Company Website</Label>
-                <Input id="companyWebsite" value={formData.companyWebsite} onChange={e => updateField('companyWebsite', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="companyLinkedIn">Company LinkedIn</Label>
-                <Input id="companyLinkedIn" value={formData.companyLinkedIn} onChange={e => updateField('companyLinkedIn', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
-                <Input id="industry" value={formData.industry} onChange={e => updateField('industry', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="employeeCount">Employee Count</Label>
-                <Input id="employeeCount" type="number" value={formData.employeeCount} onChange={e => updateField('employeeCount', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input id="country" value={formData.country} onChange={e => updateField('country', e.target.value)} />
+                <Input id="companyWebsite" placeholder="https://..." value={formData.companyWebsite} onChange={e => updateField('companyWebsite', e.target.value)} />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" value={formData.address} onChange={e => updateField('address', e.target.value)} />
+                <Label htmlFor="companyLinkedIn">Company LinkedIn</Label>
+                <Input id="companyLinkedIn" placeholder="https://linkedin.com/company/..." value={formData.companyLinkedIn} onChange={e => updateField('companyLinkedIn', e.target.value)} />
               </div>
             </CardContent>
           </Card>
 
+          {/* Contact Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -139,8 +224,8 @@ const SubmitLead = () => {
                 <Input id="contactName" value={formData.contactName} onChange={e => updateField('contactName', e.target.value)} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactTitle">Contact Title</Label>
-                <Input id="contactTitle" value={formData.contactTitle} onChange={e => updateField('contactTitle', e.target.value)} />
+                <Label htmlFor="contactTitle">Contact Title / Role</Label>
+                <Input id="contactTitle" placeholder="e.g. HR Manager, CEO" value={formData.contactTitle} onChange={e => updateField('contactTitle', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email *</Label>
@@ -152,26 +237,26 @@ const SubmitLead = () => {
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="contactLinkedIn">Contact LinkedIn</Label>
-                <Input id="contactLinkedIn" value={formData.contactLinkedIn} onChange={e => updateField('contactLinkedIn', e.target.value)} />
+                <Input id="contactLinkedIn" placeholder="https://linkedin.com/in/..." value={formData.contactLinkedIn} onChange={e => updateField('contactLinkedIn', e.target.value)} />
               </div>
             </CardContent>
           </Card>
 
+          {/* Job Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Briefcase className="h-5 w-5" />
                 Job Information
               </CardTitle>
+              <CardDescription>
+                What role(s) are they hiring for? What did they mention on the call?
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="jobTitle">Job Title</Label>
-                <Input id="jobTitle" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jobUrl">Job URL</Label>
-                <Input id="jobUrl" value={formData.jobUrl} onChange={e => updateField('jobUrl', e.target.value)} />
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="jobTitle">Job Title / Role They're Hiring For</Label>
+                <Input id="jobTitle" placeholder="e.g. Software Developer, Sales Manager" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="jobType">Job Type</Label>
@@ -198,32 +283,91 @@ const SubmitLead = () => {
                 </Select>
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="jobDescription">Job Description</Label>
-                <Textarea id="jobDescription" value={formData.jobDescription} onChange={e => updateField('jobDescription', e.target.value)} rows={3} />
+                <Label htmlFor="jobDescription">Role Details</Label>
+                <Textarea
+                  id="jobDescription"
+                  placeholder="Any details about the role they mentioned..."
+                  value={formData.jobDescription}
+                  onChange={e => updateField('jobDescription', e.target.value)}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>
 
+          {/* Callback Dates & Times */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Callback Appointment Slots
+              </CardTitle>
+              <CardDescription>
+                Enter the date(s) and time(s) the lead is available for a callback. Add up to 3 options.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="callback1">Callback Option 1</Label>
+                <Input
+                  id="callback1"
+                  type="datetime-local"
+                  value={formData.callback1}
+                  onChange={e => updateField('callback1', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="callback2">Callback Option 2 (Alternative)</Label>
+                <Input
+                  id="callback2"
+                  type="datetime-local"
+                  value={formData.callback2}
+                  onChange={e => updateField('callback2', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="callback3">Callback Option 3 (Alternative)</Label>
+                <Input
+                  id="callback3"
+                  type="datetime-local"
+                  value={formData.callback3}
+                  onChange={e => updateField('callback3', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Call Notes */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Notes & Callback
+                Call Notes & Summary
               </CardTitle>
+              <CardDescription className="text-sm space-y-1">
+                <p>Please include details about the call:</p>
+                <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                  <li>How did the call go overall?</li>
+                  <li>Was the customer interested in moving forward?</li>
+                  <li>Did the customer explicitly agree to work with a recruiter?</li>
+                  <li>Did the customer confirm a callback date and time?</li>
+                  <li>What did they mention about the roles they're hiring for?</li>
+                  <li>Any other relevant information from the conversation</li>
+                </ul>
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="availability">Availability (When to call)</Label>
-                <Input id="availability" placeholder="e.g. Monday 2pm, 15/12/2025 10:00am" value={formData.availability} onChange={e => updateField('availability', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="aiSummary">Notes / Summary</Label>
-                <Textarea id="aiSummary" placeholder="Any relevant notes about this lead..." value={formData.aiSummary} onChange={e => updateField('aiSummary', e.target.value)} rows={4} />
-              </div>
+            <CardContent>
+              <Textarea
+                id="aiSummary"
+                placeholder="Enter your call notes here... Include all relevant details about the conversation, customer interest level, and any important information mentioned during the call."
+                value={formData.aiSummary}
+                onChange={e => updateField('aiSummary', e.target.value)}
+                rows={6}
+              />
             </CardContent>
           </Card>
 
-          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          <Button type="submit" size="lg" className="w-full" disabled={submitting || !formData.repId}>
             {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : "Submit Lead"}
           </Button>
         </form>
@@ -233,4 +377,3 @@ const SubmitLead = () => {
 };
 
 export default SubmitLead;
-
