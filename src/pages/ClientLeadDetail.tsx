@@ -25,6 +25,7 @@ import {
   Sparkles
 } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
+import TaskPanel from "@/components/TaskPanel";
 
 interface LeadDetail {
   id: string;
@@ -68,6 +69,17 @@ interface LeadDetail {
   callbackTime2: string | null;
   callbackDate3: string | null;
   callbackTime3: string | null;
+
+  // Task completion status
+  tasks: {
+    task1: boolean;
+    task2: boolean;
+    task3: boolean;
+    task4: boolean;
+    task5: boolean;
+    task6: boolean;
+    task7: boolean;
+  };
 }
 
 const ClientLeadDetail = () => {
@@ -177,11 +189,14 @@ const ClientLeadDetail = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-6 lg:p-8 space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/client/leads")} className="mb-2">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Leads
-        </Button>
+      <div className="p-6 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-4 space-y-6">
+            <Button variant="ghost" onClick={() => navigate("/client/leads")} className="mb-2">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Leads
+            </Button>
 
         {/* Callback Appointment Slots */}
         {(lead.callbackDate1 || lead.callbackDate2 || lead.callbackDate3 || lead.availability || lead.booking) ? (
@@ -584,6 +599,15 @@ const ClientLeadDetail = () => {
                 </Button>
               </CardContent>
             </Card>
+          </div>
+        </div>
+          </div>
+
+          {/* Task Panel - Right Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <TaskPanel leadId={lead.id} tasks={lead.tasks} />
+            </div>
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
+import TaskPanel from "@/components/TaskPanel";
 
 interface LeadData {
   id: string;
@@ -54,6 +55,17 @@ interface LeadData {
   callbackTime2: string | null;
   callbackDate3: string | null;
   callbackTime3: string | null;
+
+  // Task completion status
+  tasks: {
+    task1: boolean;
+    task2: boolean;
+    task3: boolean;
+    task4: boolean;
+    task5: boolean;
+    task6: boolean;
+    task7: boolean;
+  };
 }
 
 interface AirtableClient {
@@ -350,7 +362,9 @@ const AdminLeadDetail = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-4 space-y-6">
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList className="text-base text-muted-foreground">
@@ -840,6 +854,14 @@ const AdminLeadDetail = () => {
               <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.feedback}</p>
             </div>
           )}
+        </div>
+        </div>
+
+        {/* Task Panel - Right Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <TaskPanel leadId={lead.id} tasks={lead.tasks} />
+          </div>
         </div>
       </div>
     </AdminLayout>

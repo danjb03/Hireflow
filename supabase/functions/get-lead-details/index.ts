@@ -112,6 +112,17 @@ Deno.serve(async (req) => {
 
       // Rep info
       repId: fields['Rep'] ? fields['Rep'][0] : null,
+
+      // Task completion status
+      tasks: {
+        task1: fields['Task 1 Complete'] || false,
+        task2: fields['Task 2 Complete'] || false,
+        task3: fields['Task 3 Complete'] || false,
+        task4: fields['Task 4 Complete'] || false,
+        task5: fields['Task 5 Complete'] || false,
+        task6: fields['Task 6 Complete'] || false,
+        task7: fields['Task 7 Complete'] || false,
+      },
     };
 
     return new Response(
