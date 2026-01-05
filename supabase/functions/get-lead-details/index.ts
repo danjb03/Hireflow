@@ -31,6 +31,15 @@ Deno.serve(async (req) => {
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
+    // Check if user is admin
+    const { data: userRoles } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const isAdmin = userRoles?.some(r => r.role === 'admin');
+
+    // Fetch the lead first
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
     const response = await fetch(airtableUrl, {
       headers: {
@@ -43,6 +52,50 @@ Deno.serve(async (req) => {
 
     const record = await response.json();
     const fields = record.fields;
+
+    // SECURITY: If not admin, verify user has access to this lead
+    if (!isAdmin) {
+      // Check if user is a Rep who uploaded this lead
+      const repsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Reps?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+      const repsResponse = await fetch(repsUrl, {
+        headers: { 'Authorization': `Bearer ${airtableToken}` }
+      });
+      const repsData = await repsResponse.json();
+      const repRecords = repsData.records || [];
+
+      if (repRecords.length > 0) {
+        // User is a rep - check if this lead belongs to them
+        const repRecordId = repRecords[0].id;
+        const leadRepIds = fields['Rep'] || [];
+        if (!leadRepIds.includes(repRecordId)) {
+          throw new Error('Access denied: This lead does not belong to you');
+        }
+      } else {
+        // User is a client - check if lead is assigned to them AND is Approved
+        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+        const clientsResponse = await fetch(clientsUrl, {
+          headers: { 'Authorization': `Bearer ${airtableToken}` }
+        });
+        const clientsData = await clientsResponse.json();
+        const clientRecords = clientsData.records || [];
+
+        if (clientRecords.length === 0) {
+          throw new Error('Access denied: User not found');
+        }
+
+        const clientRecordId = clientRecords[0].id;
+        const leadClientIds = fields['Clients'] || [];
+        const leadStatus = fields['Status'] || '';
+
+        if (!leadClientIds.includes(clientRecordId)) {
+          throw new Error('Access denied: This lead is not assigned to you');
+        }
+
+        if (leadStatus !== 'Approved') {
+          throw new Error('Access denied: This lead is not yet approved');
+        }
+      }
+    }
     
     // Handle Clients field which can be an array of record IDs
     let clientsValue = 'Unassigned';

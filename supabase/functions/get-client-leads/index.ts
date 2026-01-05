@@ -71,10 +71,10 @@ Deno.serve(async (req) => {
       allLeads = transformAirtableRecords(data.records || []);
 
     } else {
-      // Recruiter: Fetch only leads they uploaded (linked via Rep field)
-      // First, find the Rep record ID by matching the user's email
-      console.log('Looking up rep by email:', user.email);
+      // Non-admin: Check if user is a Rep or a Client
+      console.log('Looking up user by email:', user.email);
 
+      // First, check if user is a Rep
       const repsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Reps?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
       const repsResponse = await fetch(repsUrl, {
         headers: {
@@ -90,40 +90,82 @@ Deno.serve(async (req) => {
       const repsData = await repsResponse.json();
       const repRecords = repsData.records || [];
 
-      if (repRecords.length === 0) {
-        console.log('No rep found for email:', user.email);
-        // Return empty leads if no rep found
-        return new Response(
-          JSON.stringify({ leads: [] }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      if (repRecords.length > 0) {
+        // User is a Rep - show their uploaded leads
+        const repRecordId = repRecords[0].id;
+        const repName = repRecords[0].fields?.Name || '';
+        console.log('Found rep:', repName, 'with ID:', repRecordId);
 
-      const repRecordId = repRecords[0].id;
-      const repName = repRecords[0].fields?.Name || '';
-      console.log('Found rep:', repName, 'with ID:', repRecordId);
+        const filterFormula = `FIND('${repRecordId}', ARRAYJOIN({Rep}))`;
+        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
-      // Fetch leads where Rep field contains this rep's record ID
-      // Using FIND to search in the linked record field
-      const filterFormula = `FIND('${repRecordId}', ARRAYJOIN({Rep}))`;
-      const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
+        const response = await fetch(airtableUrl, {
+          headers: {
+            'Authorization': `Bearer ${airtableToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-      console.log('Fetching leads with filter:', filterFormula);
-
-      const response = await fetch(airtableUrl, {
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
+        if (!response.ok) {
+          throw new Error(`Airtable API error: ${response.status}`);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`Airtable API error: ${response.status}`);
+        const data = await response.json();
+        allLeads = transformAirtableRecords(data.records || []);
+        console.log('Found', allLeads.length, 'leads for rep:', repName);
+
+      } else {
+        // User is not a Rep - check if they're a Client
+        console.log('Not a rep, checking if user is a client:', user.email);
+
+        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+        const clientsResponse = await fetch(clientsUrl, {
+          headers: {
+            'Authorization': `Bearer ${airtableToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!clientsResponse.ok) {
+          throw new Error(`Airtable API error fetching client: ${clientsResponse.status}`);
+        }
+
+        const clientsData = await clientsResponse.json();
+        const clientRecords = clientsData.records || [];
+
+        if (clientRecords.length === 0) {
+          console.log('No client found for email:', user.email);
+          return new Response(
+            JSON.stringify({ leads: [] }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const clientRecordId = clientRecords[0].id;
+        const clientName = clientRecords[0].fields?.Name || '';
+        console.log('Found client:', clientName, 'with ID:', clientRecordId);
+
+        // SECURITY: Clients only see leads assigned to them AND with Status = "Approved"
+        const filterFormula = `AND(FIND('${clientRecordId}', ARRAYJOIN({Clients})), {Status} = 'Approved')`;
+        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
+
+        console.log('Fetching approved leads for client with filter:', filterFormula);
+
+        const response = await fetch(airtableUrl, {
+          headers: {
+            'Authorization': `Bearer ${airtableToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Airtable API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        allLeads = transformAirtableRecords(data.records || []);
+        console.log('Found', allLeads.length, 'approved leads for client:', clientName);
       }
-
-      const data = await response.json();
-      allLeads = transformAirtableRecords(data.records || []);
-      console.log('Found', allLeads.length, 'leads for rep:', repName);
     }
 
     console.log('Fetched total leads:', allLeads.length);
