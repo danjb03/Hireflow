@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -11,32 +9,22 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth is optional - allows both logged-in users and public submissions
-    const authHeader = req.headers.get('Authorization');
-    let userEmail = 'public';
-
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-      );
-
-      const { data: { user } } = await supabaseClient.auth.getUser(token);
-      if (user?.email) {
-        userEmail = user.email;
-      }
-    }
-
-    console.log('Lead submission from:', userEmail);
-
     const leadData = await req.json();
-    if (!leadData.companyName) throw new Error('Company name is required');
-    if (!leadData.repId) throw new Error('Rep selection is required');
+    console.log('Received lead data:', JSON.stringify(leadData));
+
+    if (!leadData.companyName) {
+      throw new Error('Company name is required');
+    }
+    if (!leadData.repId) {
+      throw new Error('Rep selection is required');
+    }
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
-    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
+
+    if (!airtableToken || !airtableBaseId) {
+      throw new Error('Airtable configuration missing');
+    }
 
     // Build Airtable fields object
     const airtableFields: Record<string, any> = {
@@ -73,29 +61,28 @@ Deno.serve(async (req) => {
       airtableFields['Rep'] = [leadData.repId];
     }
 
-    console.log('Creating lead in Airtable with fields:', Object.keys(airtableFields));
+    console.log('Creating lead with fields:', Object.keys(airtableFields).join(', '));
 
     // Create record in Airtable
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
+
     const response = await fetch(airtableUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${airtableToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        fields: airtableFields
-      })
+      body: JSON.stringify({ fields: airtableFields })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Airtable error:', errorText);
-      throw new Error(`Failed to create lead: ${response.status} - ${errorText}`);
+      console.error('Airtable error:', response.status, errorText);
+      throw new Error(`Airtable error: ${response.status} - ${errorText}`);
     }
 
     const createdRecord = await response.json();
-    console.log(`Successfully created lead: ${createdRecord.id}`);
+    console.log('Created lead:', createdRecord.id);
 
     return new Response(
       JSON.stringify({ success: true, lead: createdRecord }),
