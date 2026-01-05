@@ -221,14 +221,9 @@ function transformAirtableRecords(records: any[]): any[] {
       jobType: fields['Job Type'] || null,
       jobLevel: fields['Job Level'] || null,
       
-      // AI & Dates - normalize aiSummary which may be an object {state, value, isStale} or a string
-      aiSummary: (() => {
-        const summary = fields['AI Summary'];
-        if (!summary) return null;
-        if (typeof summary === 'string') return summary;
-        if (typeof summary === 'object' && summary.value) return String(summary.value);
-        return null;
-      })(),
+      // Internal Notes (raw rep notes) and Client Notes (AI improved)
+      internalNotes: fields['Internal Notes'] || null,
+      clientNotes: fields['Client Notes'] || null,
       booking: fields['Booking'] || null,
       availability: fields['Availability'] || null,
       lastContactDate: fields['Last Contact Date'] || null,

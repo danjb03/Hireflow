@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
     if (leadData.contactTitle) airtableFields['Contact Title'] = leadData.contactTitle;
     if (leadData.email) airtableFields['Email'] = leadData.email;
-    if (leadData.phone) airtableFields['Phone'] = leadData.phone;
+    if (leadData.phone) airtableFields['Phone'] = String(leadData.phone).replace(/[^\d+\-\s()]/g, '');
     if (leadData.contactLinkedIn) airtableFields['Contact LinkedIn'] = leadData.contactLinkedIn;
 
     // Job Info
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
 
     // Call Notes
-    if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;
+    if (leadData.aiSummary) airtableFields['Internal Notes'] = leadData.aiSummary;
 
     // Callback DateTime fields (ISO format for Airtable)
     if (leadData.callback1) airtableFields['Callback 1'] = new Date(leadData.callback1).toISOString();

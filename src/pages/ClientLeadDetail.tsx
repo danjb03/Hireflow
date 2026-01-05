@@ -54,7 +54,7 @@ interface LeadDetail {
   jobType: string | null;
   jobLevel: string | null;
 
-  aiSummary: string | null;
+  clientNotes: string | null;
   booking: string | null;
   availability: string | null;
   lastContactDate: string | null;
@@ -518,20 +518,18 @@ const ClientLeadDetail = () => {
               </Card>
             )}
 
-            {/* AI Summary */}
-            {lead.aiSummary && (
+            {/* Client Notes (AI Improved) */}
+            {lead.clientNotes && (
               <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-purple-600" />
-                    AI Summary
+                    Call Notes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
-                    {typeof lead.aiSummary === 'string'
-                      ? lead.aiSummary
-                      : (lead.aiSummary as any)?.value ?? 'No summary available'}
+                    {lead.clientNotes}
                   </p>
                 </CardContent>
               </Card>

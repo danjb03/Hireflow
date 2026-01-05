@@ -41,7 +41,8 @@ interface LeadData {
   jobType: string | null;
   jobLevel: string | null;
 
-  aiSummary: string | null;
+  internalNotes: string | null;
+  clientNotes: string | null;
   availability: string | null;
   lastContactDate: string | null;
   nextAction: string | null;
@@ -85,6 +86,7 @@ const AdminLeadDetail = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [availability, setAvailability] = useState("");
   const [userEmail, setUserEmail] = useState<string>("");
+  const [improvingNotes, setImprovingNotes] = useState(false);
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -301,6 +303,46 @@ const AdminLeadDetail = () => {
         description: "Failed to mark lead as not qualified",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleImproveNotes = async () => {
+    if (!lead?.internalNotes) {
+      toast({
+        title: "No Notes",
+        description: "There are no internal notes to improve.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImprovingNotes(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("improve-notes-ai", {
+        body: {
+          leadId: id,
+          internalNotes: lead.internalNotes
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.clientNotes) {
+        setLead(prev => prev ? { ...prev, clientNotes: data.clientNotes } : prev);
+        toast({
+          title: "Notes Improved",
+          description: "Client notes have been generated and saved.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error improving notes:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to improve notes with AI.",
+        variant: "destructive",
+      });
+    } finally {
+      setImprovingNotes(false);
     }
   };
 
@@ -795,17 +837,52 @@ const AdminLeadDetail = () => {
             )}
           </div>
 
-          {/* AI Summary Card */}
-          {lead.aiSummary && (
+          {/* Internal Notes Card (Admin Only) */}
+          {lead.internalNotes && (
+            <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-slate-200 border rounded-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <FileText className="h-5 w-5 text-slate-600" />
+                  Internal Notes (Rep Submission)
+                </div>
+                <Button
+                  onClick={handleImproveNotes}
+                  disabled={improvingNotes}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 hover:from-purple-600 hover:to-blue-600 hover:text-white"
+                >
+                  {improvingNotes ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Improving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Improve with AI
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                {lead.internalNotes}
+              </p>
+            </div>
+          )}
+
+          {/* Client Notes Card (AI Improved) */}
+          {lead.clientNotes && (
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 border rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-2 text-lg font-semibold mb-4">
                 <Sparkles className="h-5 w-5 text-purple-600" />
-                AI Summary
+                Client Notes (AI Improved)
               </div>
               <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
-                {typeof lead.aiSummary === 'string'
-                  ? lead.aiSummary
-                  : (lead.aiSummary as any)?.value ?? 'No summary available'}
+                {lead.clientNotes}
+              </p>
+              <p className="text-xs text-muted-foreground mt-4 italic">
+                These polished notes are visible to the client.
               </p>
             </div>
           )}
