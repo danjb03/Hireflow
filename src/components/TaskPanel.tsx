@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface TaskPanelProps {
   leadId: string;
-  tasks: {
+  tasks?: {
     task1: boolean;
     task2: boolean;
     task3: boolean;
@@ -28,9 +28,19 @@ const TASK_LABELS = [
   "If still no answer: reach out via SMS, email, and LinkedIn",
 ];
 
+const DEFAULT_TASKS = {
+  task1: false,
+  task2: false,
+  task3: false,
+  task4: false,
+  task5: false,
+  task6: false,
+  task7: false,
+};
+
 const TaskPanel = ({ leadId, tasks: initialTasks }: TaskPanelProps) => {
   const { toast } = useToast();
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(initialTasks || DEFAULT_TASKS);
   const [updating, setUpdating] = useState<number | null>(null);
 
   const handleTaskToggle = async (taskNumber: number, completed: boolean) => {
@@ -45,18 +55,28 @@ const TaskPanel = ({ leadId, tasks: initialTasks }: TaskPanelProps) => {
         body: { leadId, taskNumber, completed }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Function invoke error:', response.error);
+        throw response.error;
+      }
+
+      // Check if response data contains an error
+      if (response.data?.error) {
+        console.error('Function returned error:', response.data.error);
+        throw new Error(response.data.error);
+      }
 
       toast({
         title: completed ? "Task completed" : "Task unchecked",
         description: TASK_LABELS[taskNumber - 1],
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Task update failed:', error);
       // Revert on error
       setTasks(prev => ({ ...prev, [taskKey]: !completed }));
       toast({
         title: "Error",
-        description: "Failed to update task. Please try again.",
+        description: error?.message || "Failed to update task. Please try again.",
         variant: "destructive"
       });
     } finally {

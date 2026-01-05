@@ -24,9 +24,14 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error('User not authenticated');
 
-    const { leadId, taskNumber, completed } = await req.json();
+    const body = await req.json();
+    console.log('Received request body:', JSON.stringify(body));
+
+    const { leadId, taskNumber, completed } = body;
     if (!leadId) throw new Error('Lead ID is required');
-    if (taskNumber < 1 || taskNumber > 7) throw new Error('Task number must be between 1 and 7');
+    if (typeof taskNumber !== 'number' || taskNumber < 1 || taskNumber > 7) {
+      throw new Error(`Task number must be between 1 and 7, got: ${taskNumber}`);
+    }
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
