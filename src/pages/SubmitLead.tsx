@@ -47,15 +47,15 @@ const SubmitLead = () => {
   const loadReps = async () => {
     try {
       setRepsError(null);
-      const { data: { session } } = await supabase.auth.getSession();
 
+      // Public access - only need the apikey, no auth required
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-airtable-reps`,
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${session?.access_token || ''}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -98,27 +98,37 @@ const SubmitLead = () => {
     setSubmitting(true);
 
     try {
-      const response = await supabase.functions.invoke('submit-lead', {
-        body: {
-          companyName: formData.companyName,
-          contactName: formData.contactName,
-          email: formData.email,
-          phone: formData.phone,
-          companyWebsite: formData.companyWebsite,
-          companyLinkedIn: formData.companyLinkedIn,
-          contactTitle: formData.contactTitle,
-          contactLinkedIn: formData.contactLinkedIn,
-          jobTitle: formData.jobTitle,
-          jobDescription: formData.jobDescription,
-          aiSummary: formData.aiSummary,
-          repId: formData.repId,
-          callback1: formData.callback1,
-          callback2: formData.callback2,
-          callback3: formData.callback3,
+      // Public access - use fetch with just apikey
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`,
+        {
+          method: "POST",
+          headers: {
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            companyName: formData.companyName,
+            contactName: formData.contactName,
+            email: formData.email,
+            phone: formData.phone,
+            companyWebsite: formData.companyWebsite,
+            companyLinkedIn: formData.companyLinkedIn,
+            contactTitle: formData.contactTitle,
+            contactLinkedIn: formData.contactLinkedIn,
+            jobTitle: formData.jobTitle,
+            jobDescription: formData.jobDescription,
+            aiSummary: formData.aiSummary,
+            repId: formData.repId,
+            callback1: formData.callback1,
+            callback2: formData.callback2,
+            callback3: formData.callback3,
+          }),
         }
-      });
+      );
 
-      if (response.error) throw response.error;
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
 
       toast({
         title: "Lead Submitted!",
