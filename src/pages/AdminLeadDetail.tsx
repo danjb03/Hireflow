@@ -290,7 +290,7 @@ const AdminLeadDetail = () => {
 
       toast({
         title: "Success",
-        description: "Lead marked as Not Qualified and removed from active leads",
+        description: "Lead marked as Rejected and removed from active leads",
       });
 
       navigate("/admin/leads");
@@ -589,19 +589,19 @@ const AdminLeadDetail = () => {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="shrink-0">
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Mark as Not Qualified
+                  Reject Lead
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Mark as Not Qualified</AlertDialogTitle>
+                  <AlertDialogTitle>Reject Lead</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will mark the lead as "Not Qualified" and remove it from the active leads view. The lead will still exist in Airtable but won't appear in the main leads list.
+                    This will mark the lead as "Rejected" and remove it from the active leads view. The lead will still exist in Airtable but won't appear in the main leads list.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteLead} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Mark as Not Qualified</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDeleteLead} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Reject Lead</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
