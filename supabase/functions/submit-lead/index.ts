@@ -59,8 +59,6 @@ Deno.serve(async (req) => {
     // Job Info
     if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
     if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
-    if (leadData.jobType) airtableFields['Job Type'] = leadData.jobType;
-    if (leadData.jobLevel) airtableFields['Job Level'] = leadData.jobLevel;
 
     // Call Notes
     if (leadData.aiSummary) airtableFields['AI Summary'] = leadData.aiSummary;

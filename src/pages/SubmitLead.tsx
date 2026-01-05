@@ -31,8 +31,6 @@ const SubmitLead = () => {
     contactTitle: "",
     contactLinkedIn: "",
     jobTitle: "",
-    jobType: "",
-    jobLevel: "",
     jobDescription: "",
     aiSummary: "",
     repId: "",
@@ -101,8 +99,6 @@ const SubmitLead = () => {
           contactTitle: formData.contactTitle,
           contactLinkedIn: formData.contactLinkedIn,
           jobTitle: formData.jobTitle,
-          jobType: formData.jobType,
-          jobLevel: formData.jobLevel,
           jobDescription: formData.jobDescription,
           aiSummary: formData.aiSummary,
           repId: formData.repId,
@@ -123,8 +119,7 @@ const SubmitLead = () => {
       setFormData({
         companyName: "", contactName: "", email: "", phone: "",
         companyWebsite: "", companyLinkedIn: "", contactTitle: "",
-        contactLinkedIn: "", jobTitle: "", jobType: "", jobLevel: "",
-        jobDescription: "", aiSummary: "", repId: "",
+        contactLinkedIn: "", jobTitle: "", jobDescription: "", aiSummary: "", repId: "",
         callback1: "", callback2: "", callback3: "",
       });
     } catch (error) {
@@ -253,36 +248,12 @@ const SubmitLead = () => {
                 What role(s) are they hiring for? What did they mention on the call?
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
                 <Label htmlFor="jobTitle">Job Title / Role They're Hiring For</Label>
                 <Input id="jobTitle" placeholder="e.g. Software Developer, Sales Manager" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobType">Job Type</Label>
-                <Select value={formData.jobType} onValueChange={v => updateField('jobType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Full-time">Full-time</SelectItem>
-                    <SelectItem value="Part-time">Part-time</SelectItem>
-                    <SelectItem value="Contract">Contract</SelectItem>
-                    <SelectItem value="Temporary">Temporary</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jobLevel">Job Level</Label>
-                <Select value={formData.jobLevel} onValueChange={v => updateField('jobLevel', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Entry">Entry</SelectItem>
-                    <SelectItem value="Mid">Mid</SelectItem>
-                    <SelectItem value="Senior">Senior</SelectItem>
-                    <SelectItem value="Executive">Executive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="jobDescription">Role Details</Label>
                 <Textarea
                   id="jobDescription"
