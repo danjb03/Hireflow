@@ -74,7 +74,7 @@ const AdminSubmitLead = () => {
       if (result.success) {
         setReps(result.reps || []);
         if (!result.reps || result.reps.length === 0) {
-          setRepsError("No active reps found. Please ensure reps have Status = 'Active' in Airtable.");
+          setRepsError("No reps found. Please add reps to the Reps table in Airtable.");
         }
       } else {
         setRepsError(result.error || "Failed to load reps");
@@ -187,7 +187,7 @@ const AdminSubmitLead = () => {
                 </div>
               ) : reps.length === 0 ? (
                 <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-md text-yellow-700 text-sm">
-                  No reps available. Please add reps with Status = "Active" in Airtable.
+                  No reps available. Please add reps to the Reps table in Airtable.
                 </div>
               ) : (
                 <Select

@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
       throw new Error("Airtable configuration missing");
     }
 
-    // Fetch reps from Airtable
+    // Fetch all reps from Airtable (no status filter)
     const response = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(REPS_TABLE_NAME)}?filterByFormula={Status}="Active"&sort[0][field]=Name&sort[0][direction]=asc`,
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(REPS_TABLE_NAME)}?sort[0][field]=Name&sort[0][direction]=asc`,
       {
         headers: {
           Authorization: `Bearer ${AIRTABLE_API_TOKEN}`,
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       email: record.fields.Email || "",
     }));
 
-    console.log(`Found ${reps.length} active reps`);
+    console.log(`Found ${reps.length} reps`);
 
     return new Response(
       JSON.stringify({ success: true, reps }),
