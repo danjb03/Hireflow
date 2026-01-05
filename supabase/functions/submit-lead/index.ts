@@ -41,7 +41,13 @@ Deno.serve(async (req) => {
     if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
     if (leadData.contactTitle) airtableFields['Contact Title'] = leadData.contactTitle;
     if (leadData.email) airtableFields['Email'] = leadData.email;
-    if (leadData.phone) airtableFields['Phone'] = String(leadData.phone).replace(/[^\d+\-\s()]/g, '');
+    if (leadData.phone) {
+      // Strip all non-digits and convert to number for Airtable Number field
+      const phoneDigits = String(leadData.phone).replace(/\D/g, '');
+      if (phoneDigits) {
+        airtableFields['Phone'] = parseInt(phoneDigits, 10);
+      }
+    }
     if (leadData.contactLinkedIn) airtableFields['Contact LinkedIn'] = leadData.contactLinkedIn;
 
     // Job Info
