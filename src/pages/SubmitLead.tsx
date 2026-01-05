@@ -48,13 +48,15 @@ const SubmitLead = () => {
     try {
       setRepsError(null);
 
-      // Public access - only need the apikey, no auth required
+      // Public access - use anon key as bearer token for Supabase gateway
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-airtable-reps`,
         {
           method: "GET",
           headers: {
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "apikey": anonKey,
+            "Authorization": `Bearer ${anonKey}`,
             "Content-Type": "application/json",
           },
         }
@@ -98,13 +100,15 @@ const SubmitLead = () => {
     setSubmitting(true);
 
     try {
-      // Public access - use fetch with just apikey
+      // Public access - use anon key as bearer token for Supabase gateway
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-lead`,
         {
           method: "POST",
           headers: {
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "apikey": anonKey,
+            "Authorization": `Bearer ${anonKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
