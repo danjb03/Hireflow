@@ -20,6 +20,7 @@ const SubmitLead = () => {
   const [submitting, setSubmitting] = useState(false);
   const [reps, setReps] = useState<AirtableRep[]>([]);
   const [loadingReps, setLoadingReps] = useState(true);
+  const [repsError, setRepsError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -45,6 +46,7 @@ const SubmitLead = () => {
 
   const loadReps = async () => {
     try {
+      setRepsError(null);
       const { data: { session } } = await supabase.auth.getSession();
 
       const response = await fetch(
@@ -59,11 +61,19 @@ const SubmitLead = () => {
       );
 
       const result = await response.json();
+      console.log("Reps response:", result);
+
       if (result.success) {
         setReps(result.reps || []);
+        if (!result.reps || result.reps.length === 0) {
+          setRepsError("No active reps found. Please ensure reps have Status = 'Active' in Airtable.");
+        }
+      } else {
+        setRepsError(result.error || "Failed to load reps");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading reps:", error);
+      setRepsError(error?.message || "Failed to load reps");
     } finally {
       setLoadingReps(false);
     }
@@ -159,6 +169,17 @@ const SubmitLead = () => {
                 <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-muted-foreground text-sm">Loading reps...</span>
+                </div>
+              ) : repsError ? (
+                <div className="p-3 border border-red-200 bg-red-50 rounded-md text-red-700 text-sm">
+                  {repsError}
+                  <Button variant="link" className="text-red-700 p-0 h-auto ml-2" onClick={loadReps}>
+                    Retry
+                  </Button>
+                </div>
+              ) : reps.length === 0 ? (
+                <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-md text-yellow-700 text-sm">
+                  No reps available. Please add reps with Status = "Active" in Airtable.
                 </div>
               ) : (
                 <Select
