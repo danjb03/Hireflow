@@ -28,11 +28,12 @@ Deno.serve(async (req) => {
     const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
     if (!isAdmin) throw new Error('Admin access required');
 
-    // Use service role client for queries
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+
+    if (!airtableToken || !airtableBaseId) {
+      throw new Error('Airtable configuration missing');
+    }
 
     // Parse query parameters
     const url = new URL(req.url);
@@ -40,43 +41,69 @@ Deno.serve(async (req) => {
     const startDate = url.searchParams.get('startDate');
     const endDate = url.searchParams.get('endDate');
 
-    // Build query
-    let query = supabaseAdmin
-      .from('daily_reports')
-      .select(`
-        *,
-        sales_reps (
-          id,
-          name,
-          email,
-          daily_calls_target,
-          daily_hours_target,
-          daily_bookings_target,
-          daily_pipeline_target
-        )
-      `)
-      .order('report_date', { ascending: false });
+    // Get all reps for target info
+    const repsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reps')}`;
+    const repsResponse = await fetch(repsUrl, {
+      headers: { 'Authorization': `Bearer ${airtableToken}` }
+    });
+    const repsData = await repsResponse.json();
 
-    // Apply filters
+    const repsMap = new Map();
+    (repsData.records || []).forEach((r: any) => {
+      repsMap.set(r.id, {
+        id: r.id,
+        name: r.fields?.Name || 'Unknown',
+        email: r.fields?.Email || null,
+        daily_calls_target: r.fields?.['Daily Calls Target'] || 100,
+        daily_hours_target: r.fields?.['Daily Hours Target'] || 4,
+        daily_bookings_target: r.fields?.['Daily Bookings Target'] || 1,
+        daily_pipeline_target: r.fields?.['Daily Pipeline Target'] || 5000,
+      });
+    });
+
+    // Build filter formula for reports
+    const filters = [];
     if (repId) {
-      query = query.eq('rep_id', repId);
+      filters.push(`FIND('${repId}', ARRAYJOIN({Rep}))`);
     }
-
     if (startDate) {
-      query = query.gte('report_date', startDate);
+      filters.push(`{Report Date}>='${startDate}'`);
     }
-
     if (endDate) {
-      query = query.lte('report_date', endDate);
+      filters.push(`{Report Date}<='${endDate}'`);
     }
 
-    const { data: reports, error } = await query;
+    let reportsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?sort[0][field]=Report Date&sort[0][direction]=desc`;
+    if (filters.length > 0) {
+      const filterFormula = filters.length === 1 ? filters[0] : `AND(${filters.join(',')})`;
+      reportsUrl += `&filterByFormula=${encodeURIComponent(filterFormula)}`;
+    }
 
-    if (error) throw error;
+    const reportsResponse = await fetch(reportsUrl, {
+      headers: { 'Authorization': `Bearer ${airtableToken}` }
+    });
 
-    // Calculate target comparisons for each report
-    const enrichedReports = (reports || []).map((report: any) => {
-      const rep = report.sales_reps;
+    if (!reportsResponse.ok) throw new Error('Failed to fetch reports');
+    const reportsData = await reportsResponse.json();
+
+    // Transform and enrich reports
+    const enrichedReports = (reportsData.records || []).map((r: any) => {
+      const repIdFromReport = r.fields?.Rep?.[0];
+      const rep = repsMap.get(repIdFromReport);
+
+      const report = {
+        id: r.id,
+        rep_id: repIdFromReport,
+        report_date: r.fields?.['Report Date'] || null,
+        time_on_dialer_minutes: r.fields?.['Time on Dialer'] || 0,
+        calls_made: r.fields?.['Calls Made'] || 0,
+        bookings_made: r.fields?.['Bookings Made'] || 0,
+        pipeline_value: r.fields?.['Pipeline Value'] || 0,
+        notes: r.fields?.Notes || null,
+        screenshot_url: r.fields?.['Screenshot URL'] || null,
+        status: r.fields?.Status || 'Pending',
+      };
+
       if (!rep) return report;
 
       const hoursWorked = report.time_on_dialer_minutes / 60;

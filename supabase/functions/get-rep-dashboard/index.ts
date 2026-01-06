@@ -28,55 +28,91 @@ Deno.serve(async (req) => {
     const { data: isAdmin } = await supabaseClient.rpc('is_admin', { _user_id: user.id });
     if (!isAdmin) throw new Error('Admin access required');
 
-    // Use service role client for queries
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+
+    if (!airtableToken || !airtableBaseId) {
+      throw new Error('Airtable configuration missing');
+    }
 
     // Parse query parameters
     const url = new URL(req.url);
     const dateParam = url.searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-    // Get all active reps
-    const { data: reps, error: repsError } = await supabaseAdmin
-      .from('sales_reps')
-      .select('*')
-      .eq('is_active', true)
-      .order('name');
+    // Get all reps from Airtable
+    const repsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reps')}?sort[0][field]=Name&sort[0][direction]=asc`;
+    const repsResponse = await fetch(repsUrl, {
+      headers: { 'Authorization': `Bearer ${airtableToken}` }
+    });
 
-    if (repsError) throw repsError;
+    if (!repsResponse.ok) throw new Error('Failed to fetch reps');
+    const repsData = await repsResponse.json();
 
-    // Get today's reports
-    const { data: todayReports, error: reportsError } = await supabaseAdmin
-      .from('daily_reports')
-      .select('*')
-      .eq('report_date', dateParam);
+    const reps = (repsData.records || []).map((r: any) => ({
+      id: r.id,
+      name: r.fields?.Name || 'Unknown',
+      email: r.fields?.Email || null,
+      daily_calls_target: r.fields?.['Daily Calls Target'] || 100,
+      daily_hours_target: r.fields?.['Daily Hours Target'] || 4,
+      daily_bookings_target: r.fields?.['Daily Bookings Target'] || 1,
+      daily_pipeline_target: r.fields?.['Daily Pipeline Target'] || 5000,
+    }));
 
-    if (reportsError) throw reportsError;
+    // Get today's reports from Airtable
+    const reportsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?filterByFormula={Report Date}='${dateParam}'`;
+    const reportsResponse = await fetch(reportsUrl, {
+      headers: { 'Authorization': `Bearer ${airtableToken}` }
+    });
 
-    // Get last 7 days of reports for trend data
+    if (!reportsResponse.ok) throw new Error('Failed to fetch reports');
+    const reportsData = await reportsResponse.json();
+
+    const todayReports = (reportsData.records || []).map((r: any) => ({
+      id: r.id,
+      rep_id: r.fields?.Rep?.[0] || null,
+      report_date: r.fields?.['Report Date'] || null,
+      time_on_dialer_minutes: r.fields?.['Time on Dialer'] || 0,
+      calls_made: r.fields?.['Calls Made'] || 0,
+      bookings_made: r.fields?.['Bookings Made'] || 0,
+      pipeline_value: r.fields?.['Pipeline Value'] || 0,
+      notes: r.fields?.Notes || null,
+      screenshot_url: r.fields?.['Screenshot URL'] || null,
+      status: r.fields?.Status || 'Pending',
+      ai_extracted_calls: r.fields?.['AI Extracted Calls'] || null,
+      ai_extracted_time_minutes: r.fields?.['AI Extracted Time'] || null,
+      ai_confidence_score: r.fields?.['AI Confidence'] || null,
+    }));
+
+    // Get last 7 days of reports
     const sevenDaysAgo = new Date(dateParam);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
 
-    const { data: recentReports, error: recentError } = await supabaseAdmin
-      .from('daily_reports')
-      .select('*')
-      .gte('report_date', sevenDaysAgo.toISOString().split('T')[0])
-      .lte('report_date', dateParam);
+    const recentReportsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?filterByFormula=AND({Report Date}>='${sevenDaysAgoStr}',{Report Date}<='${dateParam}')`;
+    const recentReportsResponse = await fetch(recentReportsUrl, {
+      headers: { 'Authorization': `Bearer ${airtableToken}` }
+    });
 
-    if (recentError) throw recentError;
+    const recentReportsData = await recentReportsResponse.json();
+    const recentReports = (recentReportsData.records || []).map((r: any) => ({
+      id: r.id,
+      rep_id: r.fields?.Rep?.[0] || null,
+      time_on_dialer_minutes: r.fields?.['Time on Dialer'] || 0,
+      calls_made: r.fields?.['Calls Made'] || 0,
+      bookings_made: r.fields?.['Bookings Made'] || 0,
+      pipeline_value: r.fields?.['Pipeline Value'] || 0,
+    }));
 
     // Build dashboard data per rep
-    const repDashboards = (reps || []).map((rep: any) => {
-      const todayReport = (todayReports || []).find((r: any) => r.rep_id === rep.id);
-      const repReports = (recentReports || []).filter((r: any) => r.rep_id === rep.id);
+    const repDashboards = reps.map((rep: any) => {
+      const todayReport = todayReports.find((r: any) => r.rep_id === rep.id);
+      const repReports = recentReports.filter((r: any) => r.rep_id === rep.id);
 
       // Calculate today's performance vs targets
       const todayPerformance = todayReport ? {
         hasReport: true,
         reportId: todayReport.id,
-        reportStatus: todayReport.status || 'pending',
+        reportStatus: todayReport.status || 'Pending',
         calls: {
           actual: todayReport.calls_made,
           target: rep.daily_calls_target,
@@ -107,7 +143,7 @@ Deno.serve(async (req) => {
         },
         notes: todayReport.notes,
         screenshotUrl: todayReport.screenshot_url,
-        submittedAt: todayReport.submitted_at,
+        submittedAt: null,
         aiExtractedCalls: todayReport.ai_extracted_calls,
         aiExtractedTimeMinutes: todayReport.ai_extracted_time_minutes,
         aiConfidenceScore: todayReport.ai_confidence_score
@@ -176,12 +212,12 @@ Deno.serve(async (req) => {
 
     // Calculate team totals
     const teamTotals = {
-      totalReps: reps?.length || 0,
-      reportsSubmittedToday: (todayReports || []).length,
-      totalCalls: (todayReports || []).reduce((sum: number, r: any) => sum + r.calls_made, 0),
-      totalHours: Math.round((todayReports || []).reduce((sum: number, r: any) => sum + r.time_on_dialer_minutes, 0) / 60 * 10) / 10,
-      totalBookings: (todayReports || []).reduce((sum: number, r: any) => sum + r.bookings_made, 0),
-      totalPipeline: (todayReports || []).reduce((sum: number, r: any) => sum + Number(r.pipeline_value), 0),
+      totalReps: reps.length,
+      reportsSubmittedToday: todayReports.length,
+      totalCalls: todayReports.reduce((sum: number, r: any) => sum + r.calls_made, 0),
+      totalHours: Math.round(todayReports.reduce((sum: number, r: any) => sum + r.time_on_dialer_minutes, 0) / 60 * 10) / 10,
+      totalBookings: todayReports.reduce((sum: number, r: any) => sum + r.bookings_made, 0),
+      totalPipeline: todayReports.reduce((sum: number, r: any) => sum + Number(r.pipeline_value), 0),
       statusBreakdown: {
         ahead: repDashboards.filter((r: any) => r.overallStatus === 'ahead').length,
         onTrack: repDashboards.filter((r: any) => r.overallStatus === 'on_track').length,
