@@ -63,6 +63,11 @@ Deno.serve(async (req) => {
       airtableFields['Rep'] = [leadData.repId];
     }
 
+    // Close Link URL (admin only field)
+    if (leadData.closeLinkUrl) {
+      airtableFields['Close Link URL'] = leadData.closeLinkUrl;
+    }
+
     console.log('Creating lead with fields:', Object.keys(airtableFields).join(', '));
 
     // Create record in Airtable

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Building2, User, Briefcase, FileText, Users, Calendar } from "lucide-react";
+import { Loader2, Building2, User, Briefcase, FileText, Users, Calendar, Link } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -41,6 +41,7 @@ const AdminSubmitLead = () => {
     callback1: "",
     callback2: "",
     callback3: "",
+    closeLinkUrl: "",
   });
 
   useEffect(() => {
@@ -123,6 +124,7 @@ const AdminSubmitLead = () => {
           callback1: formData.callback1,
           callback2: formData.callback2,
           callback3: formData.callback3,
+          closeLinkUrl: formData.closeLinkUrl,
         }
       });
 
@@ -138,7 +140,7 @@ const AdminSubmitLead = () => {
         companyName: "", contactName: "", email: "", phone: "",
         companyWebsite: "", companyLinkedIn: "", contactTitle: "",
         contactLinkedIn: "", jobTitle: "", jobDescription: "", aiSummary: "", repId: "",
-        callback1: "", callback2: "", callback3: "",
+        callback1: "", callback2: "", callback3: "", closeLinkUrl: "",
       });
     } catch (error) {
       console.error('Error submitting lead:', error);
@@ -332,6 +334,30 @@ const AdminSubmitLead = () => {
                   type="datetime-local"
                   value={formData.callback3}
                   onChange={e => updateField('callback3', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Close Link URL - Admin Only */}
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link className="h-5 w-5" />
+                Close Link URL
+              </CardTitle>
+              <CardDescription>
+                Admin only - Add a Close.com or CRM link for this lead
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="closeLinkUrl">Close Link URL</Label>
+                <Input
+                  id="closeLinkUrl"
+                  placeholder="https://app.close.com/lead/..."
+                  value={formData.closeLinkUrl}
+                  onChange={e => updateField('closeLinkUrl', e.target.value)}
                 />
               </div>
             </CardContent>
