@@ -78,10 +78,14 @@ Deno.serve(async (req) => {
         companyName: record.fields['Company Name'] || null,
         contactPerson: record.fields['Contact Person'] || null,
         leadsPurchased: record.fields['Leads Purchased'] || 0,
+        // Campaign dates from Airtable
+        campaignStartDate: record.fields['Campaign Start Date'] || record.fields['Start Date'] || null,
+        targetEndDate: record.fields['Target End Date'] || record.fields['End Date'] || null,
         // Stats will be populated below if includeStats is true
         leadsDelivered: 0,
         leadsRemaining: 0,
-        leadStats: null
+        leadStats: null,
+        firstLeadDate: null // Will be populated from leads if includeStats is true
       }));
 
       allClients = allClients.concat(pageClients);
@@ -98,8 +102,8 @@ Deno.serve(async (req) => {
 
       do {
         const urlWithOffset = leadsOffset
-          ? `${leadsUrl}?offset=${leadsOffset}&fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback`
-          : `${leadsUrl}?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback`;
+          ? `${leadsUrl}?offset=${leadsOffset}&fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`
+          : `${leadsUrl}?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`;
 
         const response = await fetch(urlWithOffset, {
           headers: {
@@ -126,11 +130,13 @@ Deno.serve(async (req) => {
         rejected: number;
         needsWork: number;
         booked: number;
+        firstLeadDate: string | null;
       }> = {};
 
       for (const lead of allLeads) {
         const clientIds = lead.fields['Clients'] || [];
         const status = lead.fields['Status'] || 'New';
+        const dateCreated = lead.fields['Date Created'] || null;
 
         for (const clientId of clientIds) {
           if (!clientLeadStats[clientId]) {
@@ -140,11 +146,20 @@ Deno.serve(async (req) => {
               approved: 0,
               rejected: 0,
               needsWork: 0,
-              booked: 0
+              booked: 0,
+              firstLeadDate: null
             };
           }
 
           clientLeadStats[clientId].total++;
+
+          // Track earliest lead date for this client
+          if (dateCreated) {
+            if (!clientLeadStats[clientId].firstLeadDate ||
+                new Date(dateCreated) < new Date(clientLeadStats[clientId].firstLeadDate!)) {
+              clientLeadStats[clientId].firstLeadDate = dateCreated;
+            }
+          }
 
           // Categorize by Status field (primary)
           const statusLower = status.toLowerCase().trim();
@@ -171,10 +186,15 @@ Deno.serve(async (req) => {
           client.leadsDelivered = stats.total;
           client.leadsRemaining = Math.max(0, (client.leadsPurchased || 0) - stats.total);
           client.leadStats = stats;
+          // Use first lead date as campaign start if no explicit start date
+          client.firstLeadDate = stats.firstLeadDate;
+          if (!client.campaignStartDate && stats.firstLeadDate) {
+            client.campaignStartDate = stats.firstLeadDate;
+          }
         } else {
           client.leadsDelivered = 0;
           client.leadsRemaining = client.leadsPurchased || 0;
-          client.leadStats = { total: 0, new: 0, approved: 0, rejected: 0, needsWork: 0, booked: 0 };
+          client.leadStats = { total: 0, new: 0, approved: 0, rejected: 0, needsWork: 0, booked: 0, firstLeadDate: null };
         }
       }
     }

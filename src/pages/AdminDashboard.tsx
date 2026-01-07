@@ -29,6 +29,8 @@ interface Client {
   // Enhanced with Airtable data
   airtable_leads_purchased?: number;
   airtable_leads_delivered?: number;
+  airtable_campaign_start_date?: string | null;
+  airtable_target_end_date?: string | null;
 }
 
 interface AirtableClientStats {
@@ -37,6 +39,9 @@ interface AirtableClientStats {
   leadsPurchased: number;
   leadsDelivered: number;
   leadsRemaining: number;
+  campaignStartDate: string | null;
+  targetEndDate: string | null;
+  firstLeadDate: string | null;
 }
 
 interface Stats {
@@ -152,6 +157,8 @@ const AdminDashboard = () => {
             ...client,
             airtable_leads_purchased: airtableStats.leadsPurchased,
             airtable_leads_delivered: airtableStats.leadsDelivered,
+            airtable_campaign_start_date: airtableStats.campaignStartDate,
+            airtable_target_end_date: airtableStats.targetEndDate,
           };
         }
         return client;
@@ -455,20 +462,26 @@ const AdminDashboard = () => {
                             const leadsPurchased = client.airtable_leads_purchased ?? client.leads_purchased ?? 0;
                             const completion = getCompletionPercentage(leadsDelivered, leadsPurchased);
 
+                            // Use Airtable campaign start date, fallback to Supabase onboarding_date
+                            const campaignStartDate = client.airtable_campaign_start_date || client.onboarding_date;
+
                             // Calculate leads per day based on actual delivery
                             let calculatedLeadsPerDay: number | null = null;
-                            if (client.onboarding_date && leadsDelivered > 0) {
+                            if (campaignStartDate && leadsDelivered > 0) {
                               const daysSinceStart = Math.max(1, Math.ceil(
-                                (Date.now() - new Date(client.onboarding_date).getTime()) / (1000 * 60 * 60 * 24)
+                                (Date.now() - new Date(campaignStartDate).getTime()) / (1000 * 60 * 60 * 24)
                               ));
                               calculatedLeadsPerDay = Math.round((leadsDelivered / daysSinceStart) * 10) / 10;
                             }
                             const displayLeadsPerDay = client.leads_per_day ?? calculatedLeadsPerDay;
 
+                            // Use Airtable target end date, fallback to Supabase target_delivery_date
+                            const targetEndDate = client.airtable_target_end_date || client.target_delivery_date;
+
                             // Calculate days remaining
                             let daysRemaining: number | null = null;
-                            if (client.target_delivery_date) {
-                              daysRemaining = getDaysRemaining(new Date(client.target_delivery_date));
+                            if (targetEndDate) {
+                              daysRemaining = getDaysRemaining(new Date(targetEndDate));
                             } else if (displayLeadsPerDay && displayLeadsPerDay > 0 && leadsPurchased > leadsDelivered) {
                               // Estimate based on current rate
                               const remaining = leadsPurchased - leadsDelivered;
