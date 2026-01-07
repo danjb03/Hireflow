@@ -248,6 +248,40 @@ const AdminAllLeads = () => {
     setCurrentPage(1);
   };
 
+  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("update-lead-status", {
+        body: { leadId, status: newStatus },
+      });
+
+      if (error) {
+        console.error("Function error:", error);
+        throw new Error(error.message || "Failed to update status");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      // Update local state immediately
+      setAllLeads(prev => prev.map(lead =>
+        lead.id === leadId ? { ...lead, status: newStatus } : lead
+      ));
+
+      toast({
+        title: "Success",
+        description: `Lead status updated to ${newStatus}`,
+      });
+    } catch (error: any) {
+      console.error("Error updating status:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update status",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAssignClient = async (leadId: string, airtableClientId: string) => {
     try {
       // Now we pass the Airtable client ID directly - no lookup needed
@@ -480,7 +514,26 @@ const AdminAllLeads = () => {
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        <StatusBadge status={lead.status} size="sm" />
+                        <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                          <Select
+                            value={lead.status}
+                            onValueChange={(value) => handleUpdateLeadStatus(lead.id, value)}
+                          >
+                            <SelectTrigger
+                              className="w-32 h-7 text-xs border-0 bg-transparent hover:bg-muted/50 focus:ring-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <StatusBadge status={lead.status} size="sm" />
+                            </SelectTrigger>
+                            <SelectContent className="z-50" onPointerDownOutside={(e) => e.stopPropagation()}>
+                              <SelectItem value="NEW">New</SelectItem>
+                              <SelectItem value="Lead">Lead</SelectItem>
+                              <SelectItem value="Approved">Approved</SelectItem>
+                              <SelectItem value="Needs Work">Needs Work</SelectItem>
+                              <SelectItem value="Rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </TableCell>
                       <TableCell className="px-4 py-3">
                         {getClientDisplayName(lead.assignedClient) === "Unassigned" ? (
