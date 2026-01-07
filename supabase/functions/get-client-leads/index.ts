@@ -288,13 +288,10 @@ function transformAirtableRecords(records: any[]): any[] {
       nextAction: fields['Next Action'] || null,
       dateCreated: fields['Date Created'] || record.createdTime,
 
-      // Callback appointment slots
-      callbackDate1: fields['Callback Date 1'] || null,
-      callbackTime1: fields['Callback Time 1'] || null,
-      callbackDate2: fields['Callback Date 2'] || null,
-      callbackTime2: fields['Callback Time 2'] || null,
-      callbackDate3: fields['Callback Date 3'] || null,
-      callbackTime3: fields['Callback Time 3'] || null,
+      // Callback appointment slots (combined datetime fields)
+      callback1: fields['Callback 1'] || null,
+      callback2: fields['Callback 2'] || null,
+      callback3: fields['Callback 3'] || null,
 
       // Rep info
       repId: fields['Rep'] ? fields['Rep'][0] : null,

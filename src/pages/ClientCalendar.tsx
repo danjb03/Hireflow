@@ -10,10 +10,13 @@ import ClientLayout from "@/components/ClientLayout";
 interface Lead {
   id: string;
   companyName: string;
-  contactName: string;
+  contactName: string | null;
   status: string;
-  booking: string | null;
-  availability: string | null;
+  callback1: string | null;
+  callback2: string | null;
+  callback3: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
 const ClientCalendar = () => {
@@ -47,11 +50,12 @@ const ClientCalendar = () => {
 
       if (error) throw error;
 
-      // Filter leads that have a booking
-      const leadsWithBooking = (data.leads || []).filter((lead: any) => lead.booking);
-      setLeadsWithCallbacks(leadsWithBooking);
+      // Filter leads that have callback1 (first callback date/time)
+      const leadsWithCallback = (data.leads || []).filter((lead: any) => lead.callback1);
+      console.log('Leads with callbacks:', leadsWithCallback.length, leadsWithCallback);
+      setLeadsWithCallbacks(leadsWithCallback);
     } catch (error: any) {
-      toast.error("Failed to load bookings: " + error.message);
+      toast.error("Failed to load callbacks: " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -68,52 +72,29 @@ const ClientCalendar = () => {
     return { daysInMonth, startingDayOfWeek };
   };
 
-  const parseBookingDate = (booking: string): Date | null => {
-    // Try UK format first: DD/MM/YYYY (with optional time)
-    const ukMatch = booking.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (ukMatch) {
-      const day = parseInt(ukMatch[1], 10);
-      const month = parseInt(ukMatch[2], 10) - 1; // JS months are 0-indexed
-      const year = parseInt(ukMatch[3], 10);
-      const parsed = new Date(year, month, day);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
-    }
+  const parseCallbackDate = (callback: string): Date | null => {
+    if (!callback) return null;
 
-    // Try ISO format: YYYY-MM-DD
-    const isoMatch = booking.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (isoMatch) {
-      const parsed = new Date(isoMatch[0]);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
+    // Airtable datetime is ISO format: 2025-01-15T14:30:00.000Z
+    const parsed = new Date(callback);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
     }
-
-    // Try written format: January 15, 2025 or Jan 15, 2025
-    const writtenMatch = booking.match(/((?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4})/i);
-    if (writtenMatch) {
-      const parsed = new Date(writtenMatch[1]);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
-    }
-
-    // Try direct parse as fallback
-    const directParse = new Date(booking);
-    if (!isNaN(directParse.getTime())) {
-      return directParse;
-    }
-
     return null;
+  };
+
+  const formatCallbackTime = (callback: string): string => {
+    const date = parseCallbackDate(callback);
+    if (!date) return '';
+    return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   };
 
   const getLeadsForDate = (date: Date) => {
     return leadsWithCallbacks.filter(lead => {
-      if (!lead.booking) return false;
-      const bookingDate = parseBookingDate(lead.booking);
-      if (!bookingDate) return false;
-      return bookingDate.toDateString() === date.toDateString();
+      if (!lead.callback1) return false;
+      const callbackDate = parseCallbackDate(lead.callback1);
+      if (!callbackDate) return false;
+      return callbackDate.toDateString() === date.toDateString();
     });
   };
 
@@ -265,17 +246,18 @@ const ClientCalendar = () => {
                         {lead.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{lead.contactName}</p>
-                    {lead.booking && (
+                    {lead.contactName && (
+                      <p className="text-sm text-muted-foreground mb-2">{lead.contactName}</p>
+                    )}
+                    {lead.callback1 && (
                       <p className="text-sm font-medium text-emerald-600 flex items-center gap-2 mb-1">
                         <Clock className="h-4 w-4" />
-                        {lead.booking}
+                        Callback: {formatCallbackTime(lead.callback1)}
                       </p>
                     )}
-                    {lead.availability && (
-                      <p className="text-xs text-blue-600 flex items-center gap-2">
-                        <Clock className="h-3 w-3" />
-                        Alt: {lead.availability}
+                    {lead.phone && (
+                      <p className="text-xs text-muted-foreground">
+                        📞 {lead.phone}
                       </p>
                     )}
                   </div>
