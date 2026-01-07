@@ -199,9 +199,9 @@ const ClientLeadDetail = () => {
         {(lead.callback1 || lead.callback2 || lead.callback3 || lead.availability || lead.booking) ? (
           <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-emerald-700">
+              <CardTitle className="flex items-center gap-2 text-lg text-emerald-700">
                 <Phone className="h-5 w-5" />
-                📞 Scheduled Callback
+                Scheduled Callback
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -221,88 +221,86 @@ const ClientLeadDetail = () => {
                   countdownText = 'OVERDUE';
                   countdownColor = 'text-red-600 bg-red-100';
                 } else if (isToday) {
-                  countdownText = `TODAY - ${diffHours} hours`;
+                  countdownText = `TODAY - ${diffHours}h`;
                   countdownColor = 'text-orange-600 bg-orange-100';
                 } else if (diffDays === 1) {
                   countdownText = 'TOMORROW';
                   countdownColor = 'text-amber-600 bg-amber-100';
-                } else if (diffDays <= 7) {
-                  countdownText = `${diffDays} days away`;
-                  countdownColor = 'text-emerald-600 bg-emerald-100';
                 } else {
-                  countdownText = `${diffDays} days away`;
+                  countdownText = `${diffDays} days`;
+                  countdownColor = 'text-emerald-600 bg-emerald-100';
                 }
 
                 return (
-                  <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-emerald-300 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-emerald-500 rounded-full">
-                        <Clock className="h-6 w-6 text-white" />
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-emerald-300">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-500 rounded-full">
+                        <Clock className="h-5 w-5 text-white" />
                       </div>
                       <div>
                         <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Primary Callback</p>
-                        <p className="text-xl font-bold text-emerald-800">
-                          {callbackDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        <p className="text-base font-bold text-emerald-800">
+                          {callbackDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
                         </p>
-                        <p className="text-lg font-semibold text-emerald-700">
+                        <p className="text-sm font-semibold text-emerald-700">
                           {callbackDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
-                    <div className={`px-4 py-2 rounded-full font-bold text-sm ${countdownColor}`}>
+                    <div className={`px-3 py-1 rounded-full font-bold text-xs ${countdownColor}`}>
                       {countdownText}
                     </div>
                   </div>
                 );
               })()}
               {lead.callback2 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-1.5 bg-emerald-100 rounded-full">
+                    <Clock className="h-3 w-3 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Alternative Option 2</p>
-                    <p className="text-base font-semibold text-emerald-700">
-                      {new Date(lead.callback2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback2).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    <p className="text-xs text-emerald-600 font-medium">Alternative 2</p>
+                    <p className="text-sm font-semibold text-emerald-700">
+                      {new Date(lead.callback2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {new Date(lead.callback2).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
               {lead.callback3 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-1.5 bg-emerald-100 rounded-full">
+                    <Clock className="h-3 w-3 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Alternative Option 3</p>
-                    <p className="text-base font-semibold text-emerald-700">
-                      {new Date(lead.callback3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback3).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    <p className="text-xs text-emerald-600 font-medium">Alternative 3</p>
+                    <p className="text-sm font-semibold text-emerald-700">
+                      {new Date(lead.callback3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {new Date(lead.callback3).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
               {lead.availability && !lead.callback1 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 p-2 bg-white/60 rounded-lg border border-emerald-200">
+                  <div className="p-1.5 bg-emerald-100 rounded-full">
+                    <Clock className="h-3 w-3 text-emerald-600" />
                   </div>
                   <div>
                     <p className="text-xs text-emerald-600 font-medium">Availability Notes</p>
-                    <p className="text-base font-semibold text-emerald-700">{lead.availability}</p>
+                    <p className="text-sm font-semibold text-emerald-700">{lead.availability}</p>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 border-2 mb-6">
-            <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-gray-200 rounded-full">
-                <Phone className="h-6 w-6 text-gray-500" />
+          <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 border mb-6">
+            <CardContent className="flex items-center gap-3 py-4">
+              <div className="p-2 bg-gray-200 rounded-full">
+                <Phone className="h-5 w-5 text-gray-500" />
               </div>
               <div>
-                <p className="text-base text-gray-600 font-medium">Scheduled Callback</p>
-                <p className="text-base text-muted-foreground">No callback scheduled yet</p>
+                <p className="text-sm text-gray-600 font-medium">Scheduled Callback</p>
+                <p className="text-sm text-muted-foreground">No callback scheduled yet</p>
               </div>
             </CardContent>
           </Card>
@@ -314,30 +312,30 @@ const ClientLeadDetail = () => {
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <h1 className="text-4xl font-bold text-foreground">{lead.companyName}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">{lead.companyName}</h1>
                   <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
                 </div>
                 {lead.companyDescription && (
-                  <p className="text-muted-foreground text-lg mt-2 leading-relaxed">{lead.companyDescription}</p>
+                  <p className="text-muted-foreground text-sm mt-2 leading-relaxed">{lead.companyDescription}</p>
                 )}
                 <div className="flex flex-wrap gap-4 mt-4">
                   {lead.companyWebsite && (
-                    <a 
-                      href={lead.companyWebsite} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-1 text-base"
+                    <a
+                      href={lead.companyWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
                     >
                       <Globe className="h-4 w-4" />
                       {lead.companyWebsite}
                     </a>
                   )}
                   {lead.companyLinkedIn && (
-                    <a 
-                      href={lead.companyLinkedIn} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-1 text-base"
+                    <a
+                      href={lead.companyLinkedIn}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
                     >
                       <Linkedin className="h-4 w-4" />
                       Company LinkedIn
@@ -352,29 +350,29 @@ const ClientLeadDetail = () => {
         {/* Contact Details - Now at Top */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <User className="h-6 w-6" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="h-5 w-5" />
               Contact Details
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {lead.contactName && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground">Contact Name</p>
-                  <p className="text-foreground font-semibold text-lg">{lead.contactName}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Contact Name</p>
+                  <p className="text-foreground font-semibold">{lead.contactName}</p>
                 </div>
               )}
               {lead.contactTitle && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground">Contact Title</p>
-                  <p className="text-foreground font-medium">{lead.contactTitle}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Contact Title</p>
+                  <p className="text-foreground">{lead.contactTitle}</p>
                 </div>
               )}
               {lead.jobTitle && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground">Job Title (Role Hiring)</p>
-                  <p className="flex items-center gap-2 text-foreground font-medium">
+                  <p className="text-sm font-medium text-muted-foreground">Job Title (Role Hiring)</p>
+                  <p className="flex items-center gap-2 text-foreground">
                     <Briefcase className="h-4 w-4 text-primary" />
                     {lead.jobTitle}
                   </p>
@@ -382,8 +380,8 @@ const ClientLeadDetail = () => {
               )}
               {lead.email && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground">Email</p>
-                  <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline font-medium break-all">
+                  <p className="text-sm font-medium text-muted-foreground">Email</p>
+                  <a href={`mailto:${lead.email}`} className="flex items-center gap-2 text-primary hover:underline text-sm break-all">
                     <Mail className="h-4 w-4 flex-shrink-0" />
                     {lead.email}
                   </a>
@@ -391,8 +389,8 @@ const ClientLeadDetail = () => {
               )}
               {lead.phone && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground">Phone</p>
-                  <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline font-medium">
+                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                  <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-primary hover:underline text-sm">
                     <Phone className="h-4 w-4" />
                     {lead.phone}
                   </a>
@@ -401,8 +399,8 @@ const ClientLeadDetail = () => {
             </div>
             {lead.contactLinkedIn && (
               <div className="mt-4 pt-4 border-t">
-                <a href={lead.contactLinkedIn} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline font-medium">
-                  <Linkedin className="h-5 w-5" />
+                <a href={lead.contactLinkedIn} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                  <Linkedin className="h-4 w-4" />
                   View Contact LinkedIn Profile
                 </a>
               </div>
@@ -416,23 +414,23 @@ const ClientLeadDetail = () => {
             {/* Company Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Building2 className="h-5 w-5" />
                   Company Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4">
+                <div className="grid gap-3">
                   {lead.industry && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Industry</p>
-                      <p className="text-foreground">{lead.industry}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Industry</p>
+                      <p className="text-foreground text-sm">{lead.industry}</p>
                     </div>
                   )}
                   {lead.companySize && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Company Size</p>
-                      <p className="flex items-center gap-1 text-foreground">
+                      <p className="text-sm font-medium text-muted-foreground">Company Size</p>
+                      <p className="flex items-center gap-1 text-foreground text-sm">
                         <Users className="h-4 w-4" />
                         {lead.companySize}
                       </p>
@@ -440,20 +438,20 @@ const ClientLeadDetail = () => {
                   )}
                   {lead.employeeCount && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Employee Count</p>
-                      <p className="text-foreground">{lead.employeeCount}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Employee Count</p>
+                      <p className="text-foreground text-sm">{lead.employeeCount}</p>
                     </div>
                   )}
                   {lead.country && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Country</p>
-                      <p className="text-foreground">{lead.country}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Country</p>
+                      <p className="text-foreground text-sm">{lead.country}</p>
                     </div>
                   )}
                   {lead.address && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Address / Location</p>
-                      <p className="flex items-center gap-1 text-foreground">
+                      <p className="text-sm font-medium text-muted-foreground">Address / Location</p>
+                      <p className="flex items-center gap-1 text-foreground text-sm">
                         <MapPin className="h-4 w-4" />
                         {lead.address}
                       </p>
@@ -461,12 +459,12 @@ const ClientLeadDetail = () => {
                   )}
                   {lead.companyLinkedIn && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Company LinkedIn</p>
-                      <a 
-                        href={lead.companyLinkedIn} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-primary hover:underline inline-flex items-center gap-1"
+                      <p className="text-sm font-medium text-muted-foreground">Company LinkedIn</p>
+                      <a
+                        href={lead.companyLinkedIn}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline inline-flex items-center gap-1 text-sm"
                       >
                         <Linkedin className="h-4 w-4" />
                         View Profile
@@ -478,8 +476,8 @@ const ClientLeadDetail = () => {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-base font-medium text-muted-foreground mb-2">Description</p>
-                      <p className="text-foreground text-base leading-relaxed">{lead.companyDescription}</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Description</p>
+                      <p className="text-foreground text-sm leading-relaxed">{lead.companyDescription}</p>
                     </div>
                   </>
                 )}
@@ -493,44 +491,44 @@ const ClientLeadDetail = () => {
             {(lead.jobTitle || lead.jobDescription || lead.jobUrl || lead.jobType || lead.jobLevel) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <Briefcase className="h-5 w-5" />
                     Job Openings
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   {lead.jobTitle && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Job Title</p>
-                      <p className="text-foreground font-medium">{lead.jobTitle}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Job Title</p>
+                      <p className="text-foreground font-medium text-sm">{lead.jobTitle}</p>
                     </div>
                   )}
-                  
+
                   {lead.jobType && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Job Type</p>
-                      <p className="text-foreground">{lead.jobType}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Job Type</p>
+                      <p className="text-foreground text-sm">{lead.jobType}</p>
                     </div>
                   )}
-                  
+
                   {lead.jobLevel && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground">Job Level</p>
-                      <p className="text-foreground">{lead.jobLevel}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Job Level</p>
+                      <p className="text-foreground text-sm">{lead.jobLevel}</p>
                     </div>
                   )}
-                  
+
                   {lead.jobDescription && (
                     <div>
-                      <p className="text-base font-medium text-muted-foreground mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-base text-foreground leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Job Description</p>
+                      <div className="max-h-40 overflow-y-auto text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                         {lead.jobDescription}
                       </div>
                     </div>
                   )}
-                  
+
                   {lead.jobUrl && (
-                    <Button variant="outline" asChild className="gap-2">
+                    <Button variant="outline" size="sm" asChild className="gap-2">
                       <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
                         View Job Posting URL
                         <ExternalLink className="h-4 w-4" />
@@ -545,13 +543,13 @@ const ClientLeadDetail = () => {
             {lead.clientNotes && (
               <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <Sparkles className="h-5 w-5 text-purple-600" />
                     Call Notes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
                     {lead.clientNotes}
                   </p>
                 </CardContent>
@@ -561,28 +559,28 @@ const ClientLeadDetail = () => {
             {/* Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Clock className="h-5 w-5" />
                   Activity
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {lead.lastContactDate && (
                   <div>
-                    <p className="text-base font-medium text-muted-foreground">Last Contact Date</p>
-                    <p className="text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Last Contact Date</p>
+                    <p className="text-foreground text-sm">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
                   </div>
                 )}
                 {lead.nextAction && (
                   <div>
-                    <p className="text-base font-medium text-muted-foreground">Next Action</p>
-                    <p className="text-foreground">{lead.nextAction}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Next Action</p>
+                    <p className="text-foreground text-sm">{lead.nextAction}</p>
                   </div>
                 )}
                 {lead.dateCreated && (
                   <div>
-                    <p className="text-base font-medium text-muted-foreground">Date Created</p>
-                    <p className="text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Date Created</p>
+                    <p className="text-foreground text-sm">{new Date(lead.dateCreated).toLocaleDateString()}</p>
                   </div>
                 )}
               </CardContent>
@@ -591,7 +589,7 @@ const ClientLeadDetail = () => {
             {/* Feedback Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <FileText className="h-5 w-5" />
                   Your Feedback
                 </CardTitle>
@@ -601,13 +599,14 @@ const ClientLeadDetail = () => {
                   placeholder="Share your feedback about this lead..."
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
-                  rows={6}
-                  className="resize-none"
+                  rows={4}
+                  className="resize-none text-sm"
                 />
-                <Button 
+                <Button
                   onClick={handleSubmitFeedback}
                   disabled={isSubmittingFeedback || !feedback.trim()}
                   className="w-full"
+                  size="sm"
                 >
                   {isSubmittingFeedback ? (
                     <>
