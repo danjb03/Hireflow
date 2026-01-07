@@ -58,14 +58,18 @@ Deno.serve(async (req) => {
       daily_pipeline_target: r.fields?.['Daily Pipeline Target'] || 5000,
     }));
 
-    // Get today's reports from Airtable
+    // Get today's reports from Airtable (handle missing table gracefully)
     const reportsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?filterByFormula={Report Date}='${dateParam}'`;
     const reportsResponse = await fetch(reportsUrl, {
       headers: { 'Authorization': `Bearer ${airtableToken}` }
     });
 
-    if (!reportsResponse.ok) throw new Error('Failed to fetch reports');
-    const reportsData = await reportsResponse.json();
+    let reportsData = { records: [] };
+    if (reportsResponse.ok) {
+      reportsData = await reportsResponse.json();
+    } else {
+      console.log('Reports table not found or error - continuing with empty reports');
+    }
 
     const todayReports = (reportsData.records || []).map((r: any) => ({
       id: r.id,
@@ -93,7 +97,10 @@ Deno.serve(async (req) => {
       headers: { 'Authorization': `Bearer ${airtableToken}` }
     });
 
-    const recentReportsData = await recentReportsResponse.json();
+    let recentReportsData = { records: [] };
+    if (recentReportsResponse.ok) {
+      recentReportsData = await recentReportsResponse.json();
+    }
     const recentReports = (recentReportsData.records || []).map((r: any) => ({
       id: r.id,
       rep_id: r.fields?.Rep?.[0] || null,
