@@ -62,13 +62,10 @@ interface LeadDetail {
   dateCreated: string;
   feedback: string | null;
 
-  // Callback appointment slots
-  callbackDate1: string | null;
-  callbackTime1: string | null;
-  callbackDate2: string | null;
-  callbackTime2: string | null;
-  callbackDate3: string | null;
-  callbackTime3: string | null;
+  // Callback appointment slots (combined datetime)
+  callback1: string | null;
+  callback2: string | null;
+  callback3: string | null;
 
   // Task completion status
   tasks: {
@@ -199,55 +196,92 @@ const ClientLeadDetail = () => {
             </Button>
 
         {/* Callback Appointment Slots */}
-        {(lead.callbackDate1 || lead.callbackDate2 || lead.callbackDate3 || lead.availability || lead.booking) ? (
+        {(lead.callback1 || lead.callback2 || lead.callback3 || lead.availability || lead.booking) ? (
           <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-emerald-700">
                 <Phone className="h-5 w-5" />
-                Callback Appointment Options
+                📞 Scheduled Callback
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {lead.callbackDate1 && lead.callbackTime1 && (
+              {lead.callback1 && (() => {
+                const callbackDate = new Date(lead.callback1);
+                const now = new Date();
+                const diffTime = callbackDate.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+                const isPast = diffTime < 0;
+                const isToday = diffDays === 0 || (diffDays === 1 && diffHours <= 24);
+
+                let countdownText = '';
+                let countdownColor = 'text-emerald-600 bg-emerald-100';
+
+                if (isPast) {
+                  countdownText = 'OVERDUE';
+                  countdownColor = 'text-red-600 bg-red-100';
+                } else if (isToday) {
+                  countdownText = `TODAY - ${diffHours} hours`;
+                  countdownColor = 'text-orange-600 bg-orange-100';
+                } else if (diffDays === 1) {
+                  countdownText = 'TOMORROW';
+                  countdownColor = 'text-amber-600 bg-amber-100';
+                } else if (diffDays <= 7) {
+                  countdownText = `${diffDays} days away`;
+                  countdownColor = 'text-emerald-600 bg-emerald-100';
+                } else {
+                  countdownText = `${diffDays} days away`;
+                }
+
+                return (
+                  <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-emerald-300 shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-emerald-500 rounded-full">
+                        <Clock className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Primary Callback</p>
+                        <p className="text-xl font-bold text-emerald-800">
+                          {callbackDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                        <p className="text-lg font-semibold text-emerald-700">
+                          {callbackDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`px-4 py-2 rounded-full font-bold text-sm ${countdownColor}`}>
+                      {countdownText}
+                    </div>
+                  </div>
+                );
+              })()}
+              {lead.callback2 && (
                 <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
                   <div className="p-2 bg-emerald-100 rounded-full">
                     <Clock className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 1 (Primary)</p>
+                    <p className="text-xs text-emerald-600 font-medium">Alternative Option 2</p>
                     <p className="text-base font-semibold text-emerald-700">
-                      {new Date(lead.callbackDate1).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime1}
+                      {new Date(lead.callback2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback2).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
-              {lead.callbackDate2 && lead.callbackTime2 && (
+              {lead.callback3 && (
                 <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
                   <div className="p-2 bg-emerald-100 rounded-full">
                     <Clock className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 2 (Alternative)</p>
+                    <p className="text-xs text-emerald-600 font-medium">Alternative Option 3</p>
                     <p className="text-base font-semibold text-emerald-700">
-                      {new Date(lead.callbackDate2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime2}
+                      {new Date(lead.callback3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback3).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
-              {lead.callbackDate3 && lead.callbackTime3 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 3 (Alternative)</p>
-                    <p className="text-base font-semibold text-emerald-700">
-                      {new Date(lead.callbackDate3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime3}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {lead.availability && !lead.callbackDate1 && (
+              {lead.availability && !lead.callback1 && (
                 <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
                   <div className="p-2 bg-emerald-100 rounded-full">
                     <Clock className="h-4 w-4 text-emerald-600" />
@@ -258,28 +292,17 @@ const ClientLeadDetail = () => {
                   </div>
                 </div>
               )}
-              {lead.booking && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-blue-200">
-                  <div className="p-2 bg-blue-100 rounded-full">
-                    <Phone className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-blue-600 font-medium">Original Booking</p>
-                    <p className="text-base font-semibold text-blue-700">{lead.booking}</p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 border-2 mb-6">
+          <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 border-2 mb-6">
             <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Phone className="h-6 w-6 text-emerald-600" />
+              <div className="p-3 bg-gray-200 rounded-full">
+                <Phone className="h-6 w-6 text-gray-500" />
               </div>
               <div>
-                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
-                <p className="text-base text-muted-foreground">No callback scheduled</p>
+                <p className="text-base text-gray-600 font-medium">Scheduled Callback</p>
+                <p className="text-base text-muted-foreground">No callback scheduled yet</p>
               </div>
             </CardContent>
           </Card>
