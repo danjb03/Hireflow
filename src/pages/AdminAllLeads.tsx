@@ -348,10 +348,10 @@ const AdminAllLeads = () => {
     if (!assignedClient || assignedClient === "Unassigned") {
       return "Unassigned";
     }
-    
+
     // Ensure it's a string before calling string methods
     const clientValue = String(assignedClient);
-    
+
     // If it looks like an Airtable record ID (starts with "rec"), it means the backend
     // couldn't resolve it - show a fallback. Otherwise, it should be the client name.
     if (clientValue.startsWith('rec')) {
@@ -359,8 +359,32 @@ const AdminAllLeads = () => {
       const client = clients.find(c => c.client_name === clientValue);
       return client?.client_name || clientValue;
     }
-    
+
     return clientValue;
+  };
+
+  // Color palette for client badges - each client gets a consistent color
+  const clientColors = [
+    { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200" },
+    { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" },
+    { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-200" },
+    { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" },
+    { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200" },
+    { bg: "bg-cyan-100", text: "text-cyan-700", border: "border-cyan-200" },
+    { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200" },
+    { bg: "bg-pink-100", text: "text-pink-700", border: "border-pink-200" },
+    { bg: "bg-teal-100", text: "text-teal-700", border: "border-teal-200" },
+    { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200" },
+  ];
+
+  const getClientColor = (clientName: string) => {
+    // Generate a consistent hash from client name
+    let hash = 0;
+    for (let i = 0; i < clientName.length; i++) {
+      hash = clientName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % clientColors.length;
+    return clientColors[index];
   };
 
   const indexOfLastLead = currentPage * leadsPerPage;
@@ -560,9 +584,15 @@ const AdminAllLeads = () => {
                             <span className="text-xs text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          <Badge className="bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 text-xs font-medium">
-                            {String(getClientDisplayName(lead.assignedClient))}
-                          </Badge>
+                          (() => {
+                            const clientName = getClientDisplayName(lead.assignedClient);
+                            const color = getClientColor(clientName);
+                            return (
+                              <Badge className={`${color.bg} ${color.text} border ${color.border} rounded-full px-2 py-0.5 text-xs font-medium`}>
+                                {clientName}
+                              </Badge>
+                            );
+                          })()
                         )}
                       </TableCell>
                       <TableCell className="px-4 py-3">
