@@ -140,7 +140,13 @@ Deno.serve(async (req) => {
       
       // Internal Notes (raw rep notes) and Client Notes (AI improved)
       internalNotes: fields['Internal Notes'] || null,
-      clientNotes: fields['Client Notes'] || null,
+      clientNotes: (() => {
+        const notes = fields['Client Notes'];
+        if (!notes) return null;
+        if (typeof notes === 'string') return notes;
+        if (typeof notes === 'object' && notes.value) return String(notes.value);
+        return null;
+      })(),
       booking: fields['Booking'] || null,
       availability: fields['Availability'] || null,
       lastContactDate: fields['Last Contact Date'] || null,
