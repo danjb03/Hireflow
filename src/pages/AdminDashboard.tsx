@@ -309,7 +309,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 stagger-children">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5 stagger-children">
           <Card hover="lift">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
@@ -318,7 +318,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalClients}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Clients</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Clients</p>
             </CardContent>
           </Card>
 
@@ -342,7 +342,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Approved}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved Leads</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
             </CardContent>
           </Card>
 
@@ -355,6 +355,18 @@ const AdminDashboard = () => {
               </div>
               <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown['Needs Work']}</div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Needs Work</p>
+            </CardContent>
+          </Card>
+
+          <Card hover="lift">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/5 flex items-center justify-center">
+                  <X className="h-5 w-5 text-destructive" />
+                </div>
+              </div>
+              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Rejected}</div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rejected</p>
             </CardContent>
           </Card>
         </div>

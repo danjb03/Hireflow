@@ -32,21 +32,26 @@ Deno.serve(async (req) => {
 
     console.log('Fetching stats from Airtable base:', airtableBaseId);
 
-    // Get total clients (excluding admins)
-    const { data: adminRoles } = await supabaseClient
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
+    // Get total clients from Airtable (active clients)
+    const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Clients')}`;
+    const clientsResponse = await fetch(clientsUrl, {
+      headers: {
+        'Authorization': `Bearer ${airtableToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    const adminUserIds = new Set(adminRoles?.map(r => r.user_id) || []);
+    let totalClients = 0;
+    if (clientsResponse.ok) {
+      const clientsData = await clientsResponse.json();
+      // Count active clients (exclude Inactive status)
+      totalClients = (clientsData.records || []).filter((c: any) => {
+        const status = c.fields?.Status || '';
+        return status !== 'Inactive' && status !== 'Not Active';
+      }).length;
+    }
 
-    const { data: allProfiles } = await supabaseClient
-      .from('profiles')
-      .select('id');
-
-    const totalClients = allProfiles?.filter(p => !adminUserIds.has(p.id)).length || 0;
-
-    // Fetch all leads from Airtable - try without URL encoding first
+    // Fetch all leads from Airtable
     const tableName = 'Qualified Lead Table';
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}`;
     console.log('Requesting URL:', airtableUrl);
@@ -74,22 +79,28 @@ Deno.serve(async (req) => {
     const records = data.records || [];
 
     const totalLeads = records.length;
-    const statusCounts = {
+    const statusCounts: Record<string, number> = {
       New: 0,
+      Lead: 0,
       Approved: 0,
       Rejected: 0,
-      'Needs work': 0,
+      'Needs Work': 0,
+      Booked: 0,
       Unknown: 0,
     };
 
-    // Count by status
+    // Count by status (normalize casing)
     records.forEach((record: any) => {
-      const status = record.fields['Status'];
-      if (status && statusCounts[status as keyof typeof statusCounts] !== undefined) {
-        statusCounts[status as keyof typeof statusCounts]++;
-      } else {
-        statusCounts.Unknown++;
-      }
+      const status = (record.fields['Status'] || '').trim();
+      const statusLower = status.toLowerCase();
+
+      if (statusLower === 'new') statusCounts.New++;
+      else if (statusLower === 'lead') statusCounts.Lead++;
+      else if (statusLower === 'approved') statusCounts.Approved++;
+      else if (statusLower === 'rejected') statusCounts.Rejected++;
+      else if (statusLower === 'needs work') statusCounts['Needs Work']++;
+      else if (statusLower === 'booked' || statusLower === 'meeting booked') statusCounts.Booked++;
+      else statusCounts.Unknown++;
     });
 
     return new Response(
