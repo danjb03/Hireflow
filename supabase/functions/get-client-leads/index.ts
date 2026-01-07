@@ -128,12 +128,15 @@ Deno.serve(async (req) => {
         let clientRecordId: string | null = null;
         let clientName = '';
 
+        console.log('Profile data for user:', JSON.stringify(profile));
+
         if (profile?.airtable_client_id) {
           // Use the stored Airtable client ID from profile
           clientRecordId = profile.airtable_client_id;
           clientName = profile.client_name || '';
-          console.log('Using stored airtable_client_id from profile:', clientRecordId, clientName);
+          console.log('Using stored airtable_client_id from profile:', clientRecordId, 'client_name:', clientName);
         } else {
+          console.log('No airtable_client_id in profile, falling back to email lookup');
           // Fallback: lookup by email in Airtable Clients table
           const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
           const clientsResponse = await fetch(clientsUrl, {
@@ -164,13 +167,41 @@ Deno.serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        // If we don't have client name yet, fetch it from Airtable
+        if (!clientName && clientRecordId) {
+          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${clientRecordId}`;
+          const clientResponse = await fetch(clientUrl, {
+            headers: {
+              'Authorization': `Bearer ${airtableToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (clientResponse.ok) {
+            const clientData = await clientResponse.json();
+            clientName = clientData.fields['Client Name'] || clientData.fields['Name'] || '';
+            console.log('Fetched client name from Airtable:', clientName);
+          }
+        }
+
         console.log('Found client:', clientName, 'with ID:', clientRecordId);
 
+        if (!clientName) {
+          console.log('Could not determine client name for filtering');
+          return new Response(
+            JSON.stringify({ leads: [] }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         // SECURITY: Clients only see leads assigned to them AND with Status = "Approved"
-        const filterFormula = `AND(FIND('${clientRecordId}', ARRAYJOIN({Clients})), {Status} = 'Approved')`;
+        // Note: ARRAYJOIN on linked fields returns names, not record IDs, so we search by name
+        const escapedClientName = clientName.replace(/'/g, "\\'");
+        const filterFormula = `AND(FIND('${escapedClientName}', ARRAYJOIN({Clients})), LOWER({Status}) = 'approved')`;
         const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
-        console.log('Fetching approved leads for client with filter:', filterFormula);
+        console.log('Client name being searched:', clientName);
+        console.log('Filter formula:', filterFormula);
 
         const response = await fetch(airtableUrl, {
           headers: {
