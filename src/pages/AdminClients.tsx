@@ -527,8 +527,8 @@ const AdminClients = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
@@ -545,34 +545,34 @@ const AdminClients = () => {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Airtable Clients</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1">{airtableClientsWithStats.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Total clients</p>
+              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Airtable Clients</CardDescription>
+              <CardTitle className="text-2xl font-bold tabular-nums mb-1">{airtableClientsWithStats.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">Total clients</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-emerald-500/10 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Active Clients</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-emerald-600">
+              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Active Clients</CardDescription>
+              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-emerald-600">
                 {airtableClientsWithStats.filter(c => c.status !== 'Inactive' && c.status !== 'Not Active').length}
               </CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Currently active</p>
+              <p className="text-xs text-muted-foreground mt-auto">Currently active</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-blue-500/10 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Total Leads Delivered</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-blue-600">
+              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Leads Delivered</CardDescription>
+              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-blue-600">
                 {airtableClientsWithStats.reduce((sum, c) => sum + c.leadsDelivered, 0)}
               </CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">Across all clients</p>
+              <p className="text-xs text-muted-foreground mt-auto">Across all clients</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-t from-amber-500/10 to-card shadow-sm aspect-square flex flex-col">
             <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-base mb-2">Platform Users</CardDescription>
-              <CardTitle className="text-3xl font-semibold tabular-nums mb-1 text-amber-600">{clients.length}</CardTitle>
-              <p className="text-base text-muted-foreground mt-auto">{pendingUsers.length} pending</p>
+              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Platform Users</CardDescription>
+              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-amber-600">{clients.length}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-auto">{pendingUsers.length} pending</p>
             </CardContent>
           </Card>
         </div>
@@ -656,16 +656,16 @@ const AdminClients = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Client Name</TableHead>
-                      <TableHead>Signed Up</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client Name</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Signed Up</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pendingUsers.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.email}</TableCell>
+                        <TableCell className="text-sm font-medium">{user.email}</TableCell>
                       <TableCell>
                         {editingClient === user.id ? (
                           <div className="flex items-center gap-2">
@@ -678,9 +678,9 @@ const AdminClients = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {loadingOptions ? (
-                                  <div className="p-2 text-base text-muted-foreground">Loading...</div>
+                                  <div className="p-2 text-sm text-muted-foreground">Loading...</div>
                                 ) : airtableClients.length === 0 ? (
-                                  <div className="p-2 text-base text-muted-foreground">No clients in Airtable</div>
+                                  <div className="p-2 text-sm text-muted-foreground">No clients in Airtable</div>
                                 ) : (
                                   airtableClients.map((client) => (
                                     <SelectItem key={client.id} value={client.id}>
@@ -711,10 +711,10 @@ const AdminClients = () => {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-base text-muted-foreground">Not assigned</span>
+                          <span className="text-sm text-muted-foreground">Not assigned</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-base text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground">
                         {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
                       </TableCell>
                       <TableCell className="text-right">
@@ -772,11 +772,11 @@ const AdminClients = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>Days Remaining</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Progress</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Days Remaining</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                 <TableBody>
@@ -791,10 +791,10 @@ const AdminClients = () => {
                     
                     return (
                       <TableRow key={client.id} className="bg-destructive/5">
-                        <TableCell className="font-medium">
+                        <TableCell className="text-sm font-medium">
                           <div>
                             <div>{client.client_name}</div>
-                            <div className="text-base text-muted-foreground">{client.email}</div>
+                            <div className="text-xs text-muted-foreground">{client.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -805,23 +805,23 @@ const AdminClients = () => {
                         </TableCell>
                         <TableCell>
                           {client.leads_purchased ? (
-                            <div className="text-base">
+                            <div className="text-sm">
                               <div className="font-medium">{completion}%</div>
-                              <div className="text-base text-muted-foreground">
+                              <div className="text-xs text-muted-foreground">
                                 {client.leads_fulfilled || 0} / {client.leads_purchased}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-base text-muted-foreground">N/A</span>
+                            <span className="text-sm text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
                         <TableCell>
                           {daysRemaining !== null ? (
-                            <span className={daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : ""}>
+                            <span className={`text-sm ${daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : ""}`}>
                               {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                             </span>
                           ) : (
-                            <span className="text-base text-muted-foreground">N/A</span>
+                            <span className="text-sm text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -892,17 +892,17 @@ const AdminClients = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Client Name</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Attached User</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Ordered</TableHead>
-                      <TableHead className="text-center">Delivered</TableHead>
-                      <TableHead className="text-center">Remaining</TableHead>
-                      <TableHead className="text-center">Start Date</TableHead>
-                      <TableHead className="text-center">End Date</TableHead>
-                      <TableHead className="text-center">Lead Stats</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client Name</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Attached User</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Ordered</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Delivered</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Remaining</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Start Date</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">End Date</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Lead Stats</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

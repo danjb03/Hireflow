@@ -379,8 +379,8 @@ const AdminAllLeads = () => {
           {/* Header Section */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">All Leads</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="text-2xl font-bold tracking-tight">All Leads</h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 {filteredLeads.length} leads {allLeads.length !== filteredLeads.length && `(${allLeads.length} total)`} {totalPages > 1 && `• Page ${currentPage} of ${totalPages}`}
               </p>
             </div>
@@ -609,7 +609,7 @@ const AdminAllLeads = () => {
               >
                 Previous
               </Button>
-              <span className="text-base text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </span>
               <Button

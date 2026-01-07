@@ -147,8 +147,8 @@ const ClientLeads = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Your Leads</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl font-bold tracking-tight">Your Leads</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               {filteredLeads.length} of {leads.length} leads
             </p>
           </div>
@@ -215,12 +215,12 @@ const ClientLeads = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Company</TableHead>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Contact</TableHead>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Status</TableHead>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Location</TableHead>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Date Added</TableHead>
-                  <TableHead className="text-base font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Company</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Contact</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Status</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Location</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Date Added</TableHead>
+                  <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -232,25 +232,25 @@ const ClientLeads = () => {
                   >
                     <TableCell className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-foreground">{lead.companyName}</p>
+                        <p className="text-sm font-medium text-foreground">{lead.companyName}</p>
                         {lead.industry && (
-                          <p className="text-base text-muted-foreground">{lead.industry}</p>
+                          <p className="text-xs text-muted-foreground">{lead.industry}</p>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-foreground">{lead.contactName || 'N/A'}</p>
+                        <p className="text-sm font-medium text-foreground">{lead.contactName || 'N/A'}</p>
                         {lead.email && (
-                          <p className="text-base text-muted-foreground">{lead.email}</p>
+                          <p className="text-xs text-muted-foreground">{lead.email}</p>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       <StatusBadge status={lead.status} size="sm" />
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-base text-foreground">{lead.location || 'N/A'}</TableCell>
-                    <TableCell className="px-4 py-3 text-base text-foreground">
+                    <TableCell className="px-4 py-3 text-sm text-foreground">{lead.location || 'N/A'}</TableCell>
+                    <TableCell className="px-4 py-3 text-sm text-foreground">
                       {new Date(lead.dateAdded).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-right">

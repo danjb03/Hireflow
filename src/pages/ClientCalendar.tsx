@@ -156,8 +156,8 @@ const ClientCalendar = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-            <p className="text-muted-foreground mt-1">View your scheduled bookings</p>
+            <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
+            <p className="text-sm text-muted-foreground mt-1">View your scheduled bookings</p>
           </div>
           <Button onClick={goToToday} className="bg-primary hover:bg-primary/90">Today</Button>
         </div>
@@ -166,7 +166,7 @@ const ClientCalendar = () => {
           {/* Calendar */}
           <div className="bg-card border rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">{monthName}</h2>
+              <h2 className="text-lg font-semibold">{monthName}</h2>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={previousMonth}>
                   <ChevronLeft className="h-4 w-4" />
@@ -231,8 +231,8 @@ const ClientCalendar = () => {
 
           {/* Selected Day Details */}
           <div className="bg-card border rounded-xl p-6 shadow-sm">
-            <h3 className="text-xl font-semibold flex items-center gap-2 mb-4">
-              <CalendarIcon className="h-5 w-5" />
+            <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+              <CalendarIcon className="h-4 w-4" />
               {selectedDate ? selectedDate.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
@@ -248,17 +248,17 @@ const ClientCalendar = () => {
                     onClick={() => navigate(`/client/leads/${lead.id}`)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium text-foreground">{lead.companyName}</p>
+                      <p className="text-sm font-medium text-foreground">{lead.companyName}</p>
                       <Badge className={getStatusColor(lead.status)}>
                         {lead.status}
                       </Badge>
                     </div>
                     {lead.contactName && (
-                      <p className="text-sm text-muted-foreground mb-2">{lead.contactName}</p>
+                      <p className="text-xs text-muted-foreground mb-2">{lead.contactName}</p>
                     )}
                     {lead.callback1 && (
                       <p className="text-sm font-medium text-emerald-600 flex items-center gap-2 mb-1">
-                        <Clock className="h-4 w-4" />
+                        <Clock className="h-3 w-3" />
                         Callback: {formatCallbackTime(lead.callback1)}
                       </p>
                     )}
@@ -272,13 +272,13 @@ const ClientCalendar = () => {
               </div>
             ) : selectedDate ? (
               <div className="text-center py-8">
-                <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground">No bookings scheduled for this day</p>
+                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No bookings scheduled for this day</p>
               </div>
             ) : (
               <div className="text-center py-8">
-                <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground">Select a date to view bookings</p>
+                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">Select a date to view bookings</p>
               </div>
             )}
           </div>

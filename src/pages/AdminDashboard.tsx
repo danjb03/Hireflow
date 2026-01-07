@@ -302,7 +302,7 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
             <p className="text-sm text-muted-foreground">System overview and quick actions</p>
           </div>
           <Button 
@@ -448,11 +448,11 @@ const AdminDashboard = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-xs font-semibold">Client</TableHead>
-                            <TableHead className="text-xs font-semibold">Progress</TableHead>
-                            <TableHead className="text-xs font-semibold">Leads/Day</TableHead>
-                            <TableHead className="text-xs font-semibold">Days Remaining</TableHead>
-                            <TableHead className="text-xs font-semibold">Status</TableHead>
+                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client</TableHead>
+                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Progress</TableHead>
+                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Leads/Day</TableHead>
+                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Days Remaining</TableHead>
+                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
