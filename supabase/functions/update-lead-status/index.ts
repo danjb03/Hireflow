@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const { leadId, status } = await req.json();
     if (!leadId || !status) throw new Error('Lead ID and status required');
 
-    const validStatuses = ['New', 'Approved', 'Rejected', 'Needs work'];
+    const validStatuses = ['New', 'NEW', 'Lead', 'Approved', 'Rejected', 'Needs Work'];
     if (!validStatuses.includes(status)) {
       throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
