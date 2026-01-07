@@ -26,17 +26,26 @@ Deno.serve(async (req) => {
     const { email } = await req.json();
     if (!email) throw new Error('Email is required');
 
+    // Check service role key exists
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!serviceRoleKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY missing');
+
     // First, check if user is already linked to an Airtable client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      serviceRoleKey
     );
 
-    const { data: existingProfile } = await supabaseAdmin
+    const { data: existingProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('airtable_client_id, client_name')
       .eq('id', user.id)
       .single();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      throw new Error(`Profile fetch failed: ${profileError.message}`);
+    }
 
     // If already linked, just mark onboarding as complete and return
     if (existingProfile?.airtable_client_id) {
@@ -49,7 +58,7 @@ Deno.serve(async (req) => {
 
       if (updateError) {
         console.error('Profile update error:', updateError);
-        throw new Error('Failed to update profile');
+        throw new Error(`Failed to update profile: ${updateError.message}`);
       }
 
       return new Response(
@@ -60,13 +69,14 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
-    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
+    if (!airtableToken) throw new Error('AIRTABLE_API_TOKEN missing');
+    if (!airtableBaseId) throw new Error('AIRTABLE_BASE_ID missing');
 
     console.log('Searching for client with email:', email);
 
     // Search for client in Airtable by email
     const filterFormula = `{Email} = '${email.replace(/'/g, "\\'")}'`;
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1&sort%5B0%5D%5Bfield%5D=Created&sort%5B0%5D%5Bdirection%5D=desc`;
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(filterFormula)}&maxRecords=1`;
 
     const response = await fetch(airtableUrl, {
       headers: {
@@ -112,7 +122,7 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('Profile update error:', updateError);
-      throw new Error('Failed to update profile');
+      throw new Error(`Failed to update profile: ${updateError.message}`);
     }
 
     console.log('Successfully completed onboarding for user:', user.id);

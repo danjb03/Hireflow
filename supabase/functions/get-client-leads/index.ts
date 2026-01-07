@@ -118,31 +118,52 @@ Deno.serve(async (req) => {
         // User is not a Rep - check if they're a Client
         console.log('Not a rep, checking if user is a client:', user.email);
 
-        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
-        const clientsResponse = await fetch(clientsUrl, {
-          headers: {
-            'Authorization': `Bearer ${airtableToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // First, check if user has airtable_client_id stored in profile (set during invite)
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('airtable_client_id, client_name')
+          .eq('id', user.id)
+          .single();
 
-        if (!clientsResponse.ok) {
-          throw new Error(`Airtable API error fetching client: ${clientsResponse.status}`);
+        let clientRecordId: string | null = null;
+        let clientName = '';
+
+        if (profile?.airtable_client_id) {
+          // Use the stored Airtable client ID from profile
+          clientRecordId = profile.airtable_client_id;
+          clientName = profile.client_name || '';
+          console.log('Using stored airtable_client_id from profile:', clientRecordId, clientName);
+        } else {
+          // Fallback: lookup by email in Airtable Clients table
+          const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+          const clientsResponse = await fetch(clientsUrl, {
+            headers: {
+              'Authorization': `Bearer ${airtableToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!clientsResponse.ok) {
+            throw new Error(`Airtable API error fetching client: ${clientsResponse.status}`);
+          }
+
+          const clientsData = await clientsResponse.json();
+          const clientRecords = clientsData.records || [];
+
+          if (clientRecords.length > 0) {
+            clientRecordId = clientRecords[0].id;
+            clientName = clientRecords[0].fields?.Name || '';
+            console.log('Found client by email lookup:', clientRecordId, clientName);
+          }
         }
 
-        const clientsData = await clientsResponse.json();
-        const clientRecords = clientsData.records || [];
-
-        if (clientRecords.length === 0) {
-          console.log('No client found for email:', user.email);
+        if (!clientRecordId) {
+          console.log('No client found for user:', user.email);
           return new Response(
             JSON.stringify({ leads: [] }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-
-        const clientRecordId = clientRecords[0].id;
-        const clientName = clientRecords[0].fields?.Name || '';
         console.log('Found client:', clientName, 'with ID:', clientRecordId);
 
         // SECURITY: Clients only see leads assigned to them AND with Status = "Approved"

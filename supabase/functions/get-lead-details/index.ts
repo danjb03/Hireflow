@@ -72,18 +72,35 @@ Deno.serve(async (req) => {
         }
       } else {
         // User is a client - check if lead is assigned to them AND is Approved
-        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
-        const clientsResponse = await fetch(clientsUrl, {
-          headers: { 'Authorization': `Bearer ${airtableToken}` }
-        });
-        const clientsData = await clientsResponse.json();
-        const clientRecords = clientsData.records || [];
+        // First check if user has airtable_client_id stored in profile
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('airtable_client_id')
+          .eq('id', user.id)
+          .single();
 
-        if (clientRecords.length === 0) {
+        let clientRecordId: string | null = null;
+
+        if (profile?.airtable_client_id) {
+          clientRecordId = profile.airtable_client_id;
+        } else {
+          // Fallback: lookup by email
+          const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+          const clientsResponse = await fetch(clientsUrl, {
+            headers: { 'Authorization': `Bearer ${airtableToken}` }
+          });
+          const clientsData = await clientsResponse.json();
+          const clientRecords = clientsData.records || [];
+
+          if (clientRecords.length > 0) {
+            clientRecordId = clientRecords[0].id;
+          }
+        }
+
+        if (!clientRecordId) {
           throw new Error('Access denied: User not found');
         }
 
-        const clientRecordId = clientRecords[0].id;
         const leadClientIds = fields['Clients'] || [];
         const leadStatus = fields['Status'] || '';
 
