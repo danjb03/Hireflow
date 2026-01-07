@@ -74,6 +74,8 @@ interface AirtableClientWithStats {
   leadsPurchased: number;
   leadsDelivered: number;
   leadsRemaining: number;
+  campaignStartDate?: string | null;
+  targetEndDate?: string | null;
   leadStats: {
     total: number;
     new: number;
@@ -105,6 +107,9 @@ const AdminClients = () => {
   const [sentimentData, setSentimentData] = useState<Record<string, LeadStats>>({});
   const [loadingSentiment, setLoadingSentiment] = useState(false);
   const [attachedUsers, setAttachedUsers] = useState<Record<string, string>>({});
+  const [editingCell, setEditingCell] = useState<{ clientId: string; field: string } | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+  const [savingClient, setSavingClient] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAndLoadClients();
@@ -420,6 +425,74 @@ const AdminClients = () => {
       loadClients();
     } catch (error: any) {
       toast.error("Failed to reset password: " + error.message);
+    }
+  };
+
+  const startEditing = (clientId: string, field: string, currentValue: string | number | null | undefined) => {
+    setEditingCell({ clientId, field });
+    setEditValue(currentValue?.toString() || "");
+  };
+
+  const cancelEditing = () => {
+    setEditingCell(null);
+    setEditValue("");
+  };
+
+  const saveAirtableField = async (clientId: string, field: string, value: string) => {
+    setSavingClient(clientId);
+    try {
+      const fields: Record<string, any> = {};
+
+      if (field === 'leadsPurchased') {
+        fields.leadsPurchased = parseInt(value) || 0;
+      } else if (field === 'campaignStartDate') {
+        fields.campaignStartDate = value || null;
+      } else if (field === 'targetEndDate') {
+        fields.targetEndDate = value || null;
+      }
+
+      const { data, error } = await supabase.functions.invoke("update-airtable-client", {
+        body: { clientId, fields }
+      });
+
+      if (error) throw error;
+
+      toast.success("Updated successfully");
+
+      // Update local state
+      setAirtableClientsWithStats(prev => prev.map(client => {
+        if (client.id === clientId) {
+          if (field === 'leadsPurchased') {
+            const newPurchased = parseInt(value) || 0;
+            return {
+              ...client,
+              leadsPurchased: newPurchased,
+              leadsRemaining: Math.max(0, newPurchased - client.leadsDelivered)
+            };
+          } else if (field === 'campaignStartDate') {
+            return { ...client, campaignStartDate: value || null };
+          } else if (field === 'targetEndDate') {
+            return { ...client, targetEndDate: value || null };
+          }
+        }
+        return client;
+      }));
+
+      setEditingCell(null);
+      setEditValue("");
+    } catch (error: any) {
+      console.error("Error saving to Airtable:", error);
+      toast.error("Failed to save: " + error.message);
+    } finally {
+      setSavingClient(null);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, clientId: string, field: string) => {
+    if (e.key === 'Enter') {
+      saveAirtableField(clientId, field, editValue);
+    } else if (e.key === 'Escape') {
+      cancelEditing();
     }
   };
 
@@ -826,6 +899,8 @@ const AdminClients = () => {
                       <TableHead className="text-center">Ordered</TableHead>
                       <TableHead className="text-center">Delivered</TableHead>
                       <TableHead className="text-center">Remaining</TableHead>
+                      <TableHead className="text-center">Start Date</TableHead>
+                      <TableHead className="text-center">End Date</TableHead>
                       <TableHead className="text-center">Lead Stats</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -889,8 +964,27 @@ const AdminClients = () => {
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center font-medium">
-                              {client.leadsPurchased || 0}
+                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                              {editingCell?.clientId === client.id && editingCell?.field === 'leadsPurchased' ? (
+                                <Input
+                                  type="number"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={() => saveAirtableField(client.id, 'leadsPurchased', editValue)}
+                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'leadsPurchased')}
+                                  className="w-20 h-8 text-center mx-auto"
+                                  autoFocus
+                                  disabled={savingClient === client.id}
+                                />
+                              ) : (
+                                <button
+                                  onClick={() => startEditing(client.id, 'leadsPurchased', client.leadsPurchased)}
+                                  className="font-medium hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors"
+                                  title="Click to edit"
+                                >
+                                  {client.leadsPurchased || 0}
+                                </button>
+                              )}
                             </TableCell>
                             <TableCell className="text-center">
                               <div className="font-medium text-blue-600">{client.leadsDelivered}</div>
@@ -902,6 +996,54 @@ const AdminClients = () => {
                               <span className={client.leadsRemaining > 0 ? "font-medium text-amber-600" : "text-muted-foreground"}>
                                 {client.leadsRemaining}
                               </span>
+                            </TableCell>
+                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                              {editingCell?.clientId === client.id && editingCell?.field === 'campaignStartDate' ? (
+                                <Input
+                                  type="date"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={() => saveAirtableField(client.id, 'campaignStartDate', editValue)}
+                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'campaignStartDate')}
+                                  className="w-32 h-8 text-center mx-auto text-xs"
+                                  autoFocus
+                                  disabled={savingClient === client.id}
+                                />
+                              ) : (
+                                <button
+                                  onClick={() => startEditing(client.id, 'campaignStartDate', client.campaignStartDate?.split('T')[0] || '')}
+                                  className="text-sm hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors min-w-[80px]"
+                                  title="Click to edit"
+                                >
+                                  {client.campaignStartDate
+                                    ? new Date(client.campaignStartDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                                    : <span className="text-muted-foreground">—</span>}
+                                </button>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                              {editingCell?.clientId === client.id && editingCell?.field === 'targetEndDate' ? (
+                                <Input
+                                  type="date"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={() => saveAirtableField(client.id, 'targetEndDate', editValue)}
+                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'targetEndDate')}
+                                  className="w-32 h-8 text-center mx-auto text-xs"
+                                  autoFocus
+                                  disabled={savingClient === client.id}
+                                />
+                              ) : (
+                                <button
+                                  onClick={() => startEditing(client.id, 'targetEndDate', client.targetEndDate?.split('T')[0] || '')}
+                                  className="text-sm hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors min-w-[80px]"
+                                  title="Click to edit"
+                                >
+                                  {client.targetEndDate
+                                    ? new Date(client.targetEndDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                                    : <span className="text-muted-foreground">—</span>}
+                                </button>
+                              )}
                             </TableCell>
                             <TableCell>
                               {stats && stats.total > 0 ? (
