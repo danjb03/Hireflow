@@ -25,6 +25,18 @@ interface Client {
   leads_per_day?: number | null;
   leads_fulfilled?: number | null;
   client_status?: ClientStatus | null;
+  airtable_client_id?: string | null;
+  // Enhanced with Airtable data
+  airtable_leads_purchased?: number;
+  airtable_leads_delivered?: number;
+}
+
+interface AirtableClientStats {
+  id: string;
+  name: string;
+  leadsPurchased: number;
+  leadsDelivered: number;
+  leadsRemaining: number;
 }
 
 interface Stats {
@@ -109,16 +121,43 @@ const AdminDashboard = () => {
 
   const loadClients = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .not("client_name", "is", null)
-        .neq("client_name", "")
-        .order("created_at", { ascending: false });
+      // Load both Supabase profiles and Airtable stats in parallel
+      const [profilesResult, airtableResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .not("client_name", "is", null)
+          .neq("client_name", "")
+          .order("created_at", { ascending: false }),
+        supabase.functions.invoke("get-airtable-clients", {
+          body: { includeStats: true }
+        })
+      ]);
 
-      if (error) throw error;
+      if (profilesResult.error) throw profilesResult.error;
 
-      setClients(data || []);
+      // Build a map of Airtable client ID -> stats
+      const airtableStatsMap: Record<string, AirtableClientStats> = {};
+      if (airtableResult.data?.clients) {
+        for (const client of airtableResult.data.clients) {
+          airtableStatsMap[client.id] = client;
+        }
+      }
+
+      // Enhance profile data with Airtable stats
+      const enhancedClients = (profilesResult.data || []).map((client: Client) => {
+        if (client.airtable_client_id && airtableStatsMap[client.airtable_client_id]) {
+          const airtableStats = airtableStatsMap[client.airtable_client_id];
+          return {
+            ...client,
+            airtable_leads_purchased: airtableStats.leadsPurchased,
+            airtable_leads_delivered: airtableStats.leadsDelivered,
+          };
+        }
+        return client;
+      });
+
+      setClients(enhancedClients);
     } catch (error: any) {
       console.error("Error loading clients:", error);
       toast.error("Failed to load clients");
@@ -399,16 +438,33 @@ const AdminDashboard = () => {
                         </TableHeader>
                         <TableBody>
                           {statusClients.map((client) => {
-                            const completion = getCompletionPercentage(
-                              client.leads_fulfilled || 0,
-                              client.leads_purchased || 0
-                            );
-                            const daysRemaining = client.target_delivery_date 
-                              ? getDaysRemaining(new Date(client.target_delivery_date))
-                              : null;
-                            
+                            // Use Airtable data if available, otherwise fallback to manual values
+                            const leadsDelivered = client.airtable_leads_delivered ?? client.leads_fulfilled ?? 0;
+                            const leadsPurchased = client.airtable_leads_purchased ?? client.leads_purchased ?? 0;
+                            const completion = getCompletionPercentage(leadsDelivered, leadsPurchased);
+
+                            // Calculate leads per day based on actual delivery
+                            let calculatedLeadsPerDay: number | null = null;
+                            if (client.onboarding_date && leadsDelivered > 0) {
+                              const daysSinceStart = Math.max(1, Math.ceil(
+                                (Date.now() - new Date(client.onboarding_date).getTime()) / (1000 * 60 * 60 * 24)
+                              ));
+                              calculatedLeadsPerDay = Math.round((leadsDelivered / daysSinceStart) * 10) / 10;
+                            }
+                            const displayLeadsPerDay = client.leads_per_day ?? calculatedLeadsPerDay;
+
+                            // Calculate days remaining
+                            let daysRemaining: number | null = null;
+                            if (client.target_delivery_date) {
+                              daysRemaining = getDaysRemaining(new Date(client.target_delivery_date));
+                            } else if (displayLeadsPerDay && displayLeadsPerDay > 0 && leadsPurchased > leadsDelivered) {
+                              // Estimate based on current rate
+                              const remaining = leadsPurchased - leadsDelivered;
+                              daysRemaining = Math.ceil(remaining / displayLeadsPerDay);
+                            }
+
                             return (
-                              <TableRow 
+                              <TableRow
                                 key={client.id}
                                 className={status === 'urgent' ? "bg-destructive/5" : ""}
                               >
@@ -419,11 +475,11 @@ const AdminDashboard = () => {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  {client.leads_purchased ? (
+                                  {leadsPurchased > 0 ? (
                                     <div>
                                       <div className="text-sm font-medium text-foreground">{completion}%</div>
                                       <div className="text-xs text-muted-foreground">
-                                        {client.leads_fulfilled || 0} / {client.leads_purchased}
+                                        {leadsDelivered} / {leadsPurchased}
                                       </div>
                                     </div>
                                   ) : (
@@ -431,8 +487,8 @@ const AdminDashboard = () => {
                                   )}
                                 </TableCell>
                                 <TableCell>
-                                  {client.leads_per_day ? (
-                                    <span className="text-sm font-medium text-foreground">{client.leads_per_day}</span>
+                                  {displayLeadsPerDay ? (
+                                    <span className="text-sm font-medium text-foreground">{displayLeadsPerDay}</span>
                                   ) : (
                                     <span className="text-sm text-muted-foreground">N/A</span>
                                   )}

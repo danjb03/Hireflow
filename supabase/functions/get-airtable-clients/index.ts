@@ -131,7 +131,6 @@ Deno.serve(async (req) => {
       for (const lead of allLeads) {
         const clientIds = lead.fields['Clients'] || [];
         const status = lead.fields['Status'] || 'New';
-        const feedback = lead.fields['Client Feedback'] || '';
 
         for (const clientId of clientIds) {
           if (!clientLeadStats[clientId]) {
@@ -147,19 +146,19 @@ Deno.serve(async (req) => {
 
           clientLeadStats[clientId].total++;
 
-          // Categorize by status/feedback
-          const statusLower = status.toLowerCase();
-          const feedbackLower = feedback.toLowerCase();
+          // Categorize by Status field (primary)
+          const statusLower = status.toLowerCase().trim();
 
           if (statusLower === 'booked' || statusLower === 'meeting booked') {
             clientLeadStats[clientId].booked++;
-          } else if (feedbackLower.includes('approved') || feedbackLower.includes('good')) {
+          } else if (statusLower === 'approved') {
             clientLeadStats[clientId].approved++;
-          } else if (feedbackLower.includes('rejected') || feedbackLower.includes('not interested')) {
+          } else if (statusLower === 'rejected') {
             clientLeadStats[clientId].rejected++;
-          } else if (feedbackLower.includes('needs work') || feedbackLower.includes('improve')) {
+          } else if (statusLower === 'needs work') {
             clientLeadStats[clientId].needsWork++;
           } else {
+            // New, Lead, or any other status = new
             clientLeadStats[clientId].new++;
           }
         }

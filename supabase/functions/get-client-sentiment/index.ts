@@ -40,23 +40,36 @@ Deno.serve(async (req) => {
     const { data: isAdmin } = await supabaseClient.rpc("is_admin", { _user_id: user.id });
     if (!isAdmin) throw new Error('Admin access required');
 
-    // Get all clients from profiles
-    const { data: clients, error: clientsError } = await supabaseClient
-      .from('profiles')
-      .select('client_name')
-      .not('client_name', 'is', null);
+    // Get Airtable credentials
+    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
+    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    if (clientsError) throw clientsError;
+    // First, fetch all clients from Airtable to build ID -> Name map
+    const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Clients')}`;
+    let clientOffset: string | undefined;
+    const clientIdToName: Record<string, string> = {};
 
-    // Build a set of client names for fast lookup
-    const clientNames = new Set<string>();
-    for (const client of clients || []) {
-      if (client.client_name) clientNames.add(client.client_name);
-    }
+    do {
+      const url = clientOffset ? `${clientsUrl}?offset=${clientOffset}` : clientsUrl;
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${airtableToken}` }
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch clients: ${response.status}`);
+      const data = await response.json();
+
+      for (const record of data.records || []) {
+        const name = record.fields['Client Name'] || record.fields['Name'] || 'Unknown';
+        clientIdToName[record.id] = name;
+      }
+
+      clientOffset = data.offset;
+    } while (clientOffset);
 
     // Initialize stats for all clients
     const sentimentByClient: Record<string, LeadStats> = {};
-    for (const name of clientNames) {
+    for (const name of Object.values(clientIdToName)) {
       sentimentByClient[name] = {
         total: 0,
         new: 0,
@@ -69,11 +82,6 @@ Deno.serve(async (req) => {
         recentFeedback: null,
       };
     }
-
-    // Get Airtable credentials
-    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
-    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
-    if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
     // Fetch leads from Airtable - ONLY the fields we need for speed
     const fields = ['Status', 'Clients', 'Feedback'].map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
@@ -98,30 +106,29 @@ Deno.serve(async (req) => {
 
       // Process each record immediately
       for (const record of data.records) {
-        const recordClients = record.fields['Clients'];
-        const status = (record.fields['Status'] || '').toLowerCase();
+        const recordClients = record.fields['Clients'] || [];
+        const status = (record.fields['Status'] || '').toLowerCase().trim();
         const feedback = record.fields['Feedback'];
 
-        // Find which client(s) this lead belongs to
-        const matchingClients: string[] = [];
-        if (typeof recordClients === 'string' && clientNames.has(recordClients)) {
-          matchingClients.push(recordClients);
-        } else if (Array.isArray(recordClients)) {
-          for (const c of recordClients) {
-            if (clientNames.has(c)) matchingClients.push(c);
-          }
-        }
+        // Clients field contains Airtable record IDs - convert to names
+        const clientIds = Array.isArray(recordClients) ? recordClients : [recordClients];
 
-        // Update stats for each matching client
-        for (const clientName of matchingClients) {
+        // Update stats for each client this lead belongs to
+        for (const clientId of clientIds) {
+          const clientName = clientIdToName[clientId];
+          if (!clientName) continue;
+
           const stats = sentimentByClient[clientName];
+          if (!stats) continue;
+
           stats.total++;
 
           if (status === 'new' || status === 'lead') stats.new++;
           else if (status === 'approved') stats.approved++;
           else if (status === 'needs work') stats.needsWork++;
           else if (status === 'rejected') stats.rejected++;
-          else if (status === 'booked') stats.booked++;
+          else if (status === 'booked' || status === 'meeting booked') stats.booked++;
+          else stats.new++; // Default to new
 
           if (feedback) {
             stats.feedbackCount++;
