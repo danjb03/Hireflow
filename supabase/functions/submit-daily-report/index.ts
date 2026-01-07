@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -5,6 +7,7 @@ const corsHeaders = {
 
 interface DailyReportInput {
   repId: string;
+  repName?: string;
   reportDate: string;
   timeOnDialerMinutes: number;
   callsMade: number;
@@ -13,7 +16,6 @@ interface DailyReportInput {
   aiExtractedTimeMinutes?: number;
   aiExtractedCalls?: number;
   aiConfidenceScore?: number;
-  screenshotPath?: string;
   screenshotUrl?: string;
   notes?: string;
 }
@@ -36,92 +38,49 @@ Deno.serve(async (req) => {
       throw new Error('Calls made is required and must be non-negative');
     }
 
-    const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
-    const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    // Create Supabase client with service role for database access
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    if (!airtableToken || !airtableBaseId) {
-      throw new Error('Airtable configuration missing');
+    console.log('Submitting report for rep:', body.repId, 'date:', body.reportDate);
+
+    // Upsert the report (insert or update if exists for same rep+date)
+    const { data, error } = await supabaseClient
+      .from('daily_reports')
+      .upsert({
+        rep_id: body.repId,
+        rep_name: body.repName || null,
+        report_date: body.reportDate,
+        time_on_dialer_minutes: body.timeOnDialerMinutes,
+        calls_made: body.callsMade,
+        bookings_made: body.bookingsMade || 0,
+        pipeline_value: body.pipelineValue || 0,
+        notes: body.notes || null,
+        screenshot_url: body.screenshotUrl || null,
+        status: 'Pending',
+        ai_extracted_time_minutes: body.aiExtractedTimeMinutes || null,
+        ai_extracted_calls: body.aiExtractedCalls || null,
+        ai_confidence_score: body.aiConfidenceScore || null,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'rep_id,report_date'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message);
     }
 
-    // Build Airtable fields
-    const airtableFields: Record<string, any> = {
-      'Rep': [body.repId],
-      'Report Date': body.reportDate,
-      'Time on Dialer': body.timeOnDialerMinutes,
-      'Calls Made': body.callsMade,
-      'Bookings Made': body.bookingsMade || 0,
-      'Pipeline Value': body.pipelineValue || 0,
-      'Status': 'Pending',
-    };
-
-    if (body.notes) airtableFields['Notes'] = body.notes;
-    if (body.screenshotUrl) airtableFields['Screenshot URL'] = body.screenshotUrl;
-    if (body.aiExtractedTimeMinutes) airtableFields['AI Extracted Time'] = body.aiExtractedTimeMinutes;
-    if (body.aiExtractedCalls) airtableFields['AI Extracted Calls'] = body.aiExtractedCalls;
-    if (body.aiConfidenceScore) airtableFields['AI Confidence'] = body.aiConfidenceScore;
-
-    console.log('Creating report with fields:', Object.keys(airtableFields).join(', '));
-
-    // Check if report already exists for this rep + date
-    const checkUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?filterByFormula=AND({Rep}='${body.repId}',{Report Date}='${body.reportDate}')`;
-
-    const checkResponse = await fetch(checkUrl, {
-      headers: {
-        'Authorization': `Bearer ${airtableToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const checkData = await checkResponse.json();
-    const existingRecord = checkData.records?.[0];
-
-    let result;
-    if (existingRecord) {
-      // Update existing record
-      const updateUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}/${existingRecord.id}`;
-      const updateResponse = await fetch(updateUrl, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ fields: airtableFields })
-      });
-
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
-        console.error('Airtable update error:', updateResponse.status, errorText);
-        throw new Error(`Airtable error: ${updateResponse.status}`);
-      }
-
-      result = await updateResponse.json();
-      console.log('Updated existing report:', result.id);
-    } else {
-      // Create new record
-      const createUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}`;
-      const createResponse = await fetch(createUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ fields: airtableFields })
-      });
-
-      if (!createResponse.ok) {
-        const errorText = await createResponse.text();
-        console.error('Airtable create error:', createResponse.status, errorText);
-        throw new Error(`Airtable error: ${createResponse.status} - ${errorText}`);
-      }
-
-      result = await createResponse.json();
-      console.log('Created new report:', result.id);
-    }
+    console.log('Report saved:', data.id);
 
     return new Response(
       JSON.stringify({
         success: true,
-        report: result,
+        report: data,
         message: 'Report submitted successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
