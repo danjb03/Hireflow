@@ -196,9 +196,13 @@ const AdminAllLeads = () => {
   // Client-side filtering - instant!
   const filteredLeads = useMemo(() => {
     return allLeads.filter(lead => {
-      // Status filter
-      if (statusFilter && lead.status !== statusFilter) {
-        return false;
+      // Status filter (case-insensitive)
+      if (statusFilter) {
+        const filterLower = statusFilter.toLowerCase();
+        const statusLower = (lead.status || '').toLowerCase();
+        if (statusLower !== filterLower) {
+          return false;
+        }
       }
 
       // Client filter

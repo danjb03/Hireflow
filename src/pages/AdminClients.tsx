@@ -104,17 +104,44 @@ const AdminClients = () => {
   const [loadingAirtableData, setLoadingAirtableData] = useState<Set<string>>(new Set());
   const [sentimentData, setSentimentData] = useState<Record<string, LeadStats>>({});
   const [loadingSentiment, setLoadingSentiment] = useState(false);
+  const [attachedUsers, setAttachedUsers] = useState<Record<string, string>>({});
 
   useEffect(() => {
     checkAdminAndLoadClients();
     loadAirtableClients();
     loadAirtableClientsWithStats();
+    loadAttachedUsers();
     const getUserEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) setUserEmail(user.email);
     };
     getUserEmail();
   }, []);
+
+  const loadAttachedUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email, airtable_client_id')
+        .not('airtable_client_id', 'is', null);
+
+      if (error) {
+        console.error("Error loading attached users:", error);
+        return;
+      }
+
+      // Build a map of airtable_client_id -> user email
+      const usersMap: Record<string, string> = {};
+      for (const profile of data || []) {
+        if (profile.airtable_client_id && profile.email) {
+          usersMap[profile.airtable_client_id] = profile.email;
+        }
+      }
+      setAttachedUsers(usersMap);
+    } catch (error) {
+      console.error("Error loading attached users:", error);
+    }
+  };
 
   const loadAirtableClientsWithStats = async () => {
     setLoadingAirtableClientsWithStats(true);
@@ -794,6 +821,7 @@ const AdminClients = () => {
                     <TableRow>
                       <TableHead>Client Name</TableHead>
                       <TableHead>Contact</TableHead>
+                      <TableHead>Attached User</TableHead>
                       <TableHead className="text-center">Status</TableHead>
                       <TableHead className="text-center">Ordered</TableHead>
                       <TableHead className="text-center">Delivered</TableHead>
@@ -840,6 +868,15 @@ const AdminClients = () => {
                                   <div className="text-muted-foreground">{client.contactPerson}</div>
                                 )}
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              {attachedUsers[client.id] ? (
+                                <div className="text-sm text-muted-foreground">
+                                  {attachedUsers[client.id]}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground/50">No user</span>
+                              )}
                             </TableCell>
                             <TableCell className="text-center">
                               {client.status === 'Inactive' || client.status === 'Not Active' ? (
