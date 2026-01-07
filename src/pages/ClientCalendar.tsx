@@ -196,24 +196,31 @@ const ClientCalendar = () => {
                 const leads = getLeadsForDate(date);
                 const isToday = new Date().toDateString() === date.toDateString();
                 const isSelected = selectedDate?.toDateString() === date.toDateString();
-                
+
                 return (
                   <button
                     key={day}
                     onClick={() => setSelectedDate(date)}
                     className={`
-                      rounded-lg hover:bg-muted/50 transition-colors p-2 min-h-[80px] text-left border
-                      ${isToday ? 'bg-primary text-primary-foreground border-primary' : ''}
-                      ${isSelected && !isToday ? 'ring-2 ring-primary' : ''}
+                      rounded-lg hover:bg-muted/50 transition-colors p-2 min-h-[90px] text-left border
+                      ${isToday ? 'bg-primary/10 border-primary' : ''}
+                      ${isSelected && !isToday ? 'ring-2 ring-primary bg-primary/5' : ''}
+                      ${leads.length > 0 ? 'bg-emerald-50 border-emerald-200' : ''}
                     `}
                   >
-                    <div className="font-medium text-sm mb-1">{day}</div>
+                    <div className={`font-medium text-sm mb-1 ${isToday ? 'text-primary' : ''}`}>{day}</div>
                     <div className="space-y-1">
                       {leads.slice(0, 2).map(lead => (
-                        <div key={lead.id} className={`w-2 h-2 rounded-full ${getStatusColor(lead.status)}`} />
+                        <div
+                          key={lead.id}
+                          className="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded truncate font-medium"
+                          title={`${lead.companyName} - ${formatCallbackTime(lead.callback1!)}`}
+                        >
+                          📞 {formatCallbackTime(lead.callback1!)}
+                        </div>
                       ))}
                       {leads.length > 2 && (
-                        <div className="text-xs text-muted-foreground">+{leads.length - 2}</div>
+                        <div className="text-xs font-medium text-emerald-600">+{leads.length - 2} more</div>
                       )}
                     </div>
                   </button>
