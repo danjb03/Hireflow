@@ -8,14 +8,17 @@ const corsHeaders = {
 // Send welcome email via Resend
 async function sendWelcomeEmail(email: string, clientName: string, tempPassword: string) {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  console.log('RESEND_API_KEY exists:', !!resendApiKey);
+  console.log('Attempting to send email to:', email);
+
   if (!resendApiKey) {
-    console.warn('RESEND_API_KEY not configured, skipping email');
+    console.error('RESEND_API_KEY not configured, skipping email');
     return { success: false, error: 'Email not configured' };
   }
 
-  const loginUrl = 'https://app.hireflow.co.uk/login';
-  const logoUrl = 'https://app.hireflow.co.uk/hireflow-logo.png'; // Host your logo and update this URL
+  const loginUrl = 'https://app.hireflow.uk/login';
 
+  console.log('Sending email via Resend...');
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -23,7 +26,7 @@ async function sendWelcomeEmail(email: string, clientName: string, tempPassword:
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Hireflow <noreply@hireflow.co.uk>',
+      from: 'Hireflow <team@app.hireflow.uk>',
       to: [email],
       subject: `Welcome to Hireflow - Your Account is Ready`,
       html: `
@@ -163,7 +166,7 @@ async function sendWelcomeEmail(email: string, clientName: string, tempPassword:
               </p>
               <p style="margin: 0; color: #64748b; font-size: 12px; line-height: 1.6;">
                 Need help? Contact your account manager or reply to this email.<br>
-                <a href="https://hireflow.co.uk" style="color: #10b981; text-decoration: none;">hireflow.co.uk</a>
+                <a href="https://app.hireflow.uk" style="color: #10b981; text-decoration: none;">app.hireflow.uk</a>
               </p>
             </td>
           </tr>
@@ -178,14 +181,17 @@ async function sendWelcomeEmail(email: string, clientName: string, tempPassword:
     }),
   });
 
+  console.log('Resend response status:', response.status);
+
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error('Resend API error:', errorBody);
+    console.error('Resend API error status:', response.status);
+    console.error('Resend API error body:', errorBody);
     return { success: false, error: errorBody };
   }
 
   const result = await response.json();
-  console.log('Email sent successfully:', result.id);
+  console.log('Email sent successfully! ID:', result.id);
   return { success: true, emailId: result.id };
 }
 

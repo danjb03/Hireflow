@@ -18,7 +18,7 @@ async function sendNewLeadEmail(
     return { success: false, error: 'Email not configured' };
   }
 
-  const dashboardUrl = 'https://app.hireflow.co.uk/client/leads';
+  const dashboardUrl = 'https://app.hireflow.uk/client/leads';
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -27,7 +27,7 @@ async function sendNewLeadEmail(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Hireflow <noreply@hireflow.co.uk>',
+      from: 'Hireflow <team@app.hireflow.uk>',
       to: [clientEmail],
       subject: `New Lead Available: ${companyName}`,
       html: `
@@ -116,7 +116,7 @@ async function sendNewLeadEmail(
               </p>
               <p style="margin: 0; color: #64748b; font-size: 12px; line-height: 1.6;">
                 Premium Lead Generation for Recruitment Agencies<br>
-                <a href="https://hireflow.co.uk" style="color: #10b981; text-decoration: none;">hireflow.co.uk</a>
+                <a href="https://app.hireflow.uk" style="color: #10b981; text-decoration: none;">app.hireflow.uk</a>
               </p>
             </td>
           </tr>
