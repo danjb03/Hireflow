@@ -363,18 +363,22 @@ const AdminAllLeads = () => {
     return clientValue;
   };
 
-  // Color palette for client badges - each client gets a consistent color
+  // Color palette for client badges - solid colors with white text
   const clientColors = [
-    { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200" },
-    { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" },
-    { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-200" },
-    { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" },
-    { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200" },
-    { bg: "bg-cyan-100", text: "text-cyan-700", border: "border-cyan-200" },
-    { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200" },
-    { bg: "bg-pink-100", text: "text-pink-700", border: "border-pink-200" },
-    { bg: "bg-teal-100", text: "text-teal-700", border: "border-teal-200" },
-    { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200" },
+    "bg-violet-500",
+    "bg-blue-500",
+    "bg-emerald-500",
+    "bg-amber-500",
+    "bg-rose-500",
+    "bg-cyan-500",
+    "bg-orange-500",
+    "bg-pink-500",
+    "bg-teal-500",
+    "bg-indigo-500",
+    "bg-purple-500",
+    "bg-sky-500",
+    "bg-lime-500",
+    "bg-fuchsia-500",
   ];
 
   const getClientColor = (clientName: string) => {
@@ -586,9 +590,9 @@ const AdminAllLeads = () => {
                         ) : (
                           (() => {
                             const clientName = getClientDisplayName(lead.assignedClient);
-                            const color = getClientColor(clientName);
+                            const bgColor = getClientColor(clientName);
                             return (
-                              <Badge className={`${color.bg} ${color.text} border ${color.border} rounded-full px-2 py-0.5 text-xs font-medium`}>
+                              <Badge className={`${bgColor} text-white rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap max-w-[120px] truncate`}>
                                 {clientName}
                               </Badge>
                             );
