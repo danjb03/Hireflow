@@ -16,6 +16,17 @@ import RepManagementTable from "@/components/reporting/RepManagementTable";
 import ReportReviewDialog from "@/components/reporting/ReportReviewDialog";
 import { getTodayDate, formatDuration, formatCurrency } from "@/lib/reportingCalculations";
 
+interface PeriodStats {
+  reportsSubmitted: number;
+  avgCalls: number;
+  avgHours: number;
+  avgBookings: number;
+  totalPipeline: number;
+  totalCalls?: number;
+  totalHours?: number;
+  totalBookings?: number;
+}
+
 interface RepDashboard {
   rep: {
     id: string;
@@ -38,13 +49,10 @@ interface RepDashboard {
     screenshotUrl: string | null;
     submittedAt: string | null;
   };
-  weeklyStats: {
-    reportsSubmitted: number;
-    avgCalls: number;
-    avgHours: number;
-    avgBookings: number;
-    totalPipeline: number;
-  };
+  weeklyStats: PeriodStats;
+  stats7Day?: PeriodStats;
+  stats14Day?: PeriodStats;
+  stats30Day?: PeriodStats;
   overallStatus: string;
 }
 
@@ -345,6 +353,9 @@ const AdminReporting = () => {
                         rep={repData.rep}
                         today={repData.today as any}
                         weeklyStats={repData.weeklyStats}
+                        stats7Day={repData.stats7Day}
+                        stats14Day={repData.stats14Day}
+                        stats30Day={repData.stats30Day}
                         overallStatus={repData.overallStatus as any}
                       />
                     ))}

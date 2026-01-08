@@ -76,27 +76,72 @@ Deno.serve(async (req) => {
 
     const reports = todayReports || [];
 
-    // Get last 7 days of reports
-    const sevenDaysAgo = new Date(dateParam);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+    // Get last 30 days of reports (we'll filter for 7/14/30 day periods)
+    const thirtyDaysAgo = new Date(dateParam);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
 
     const { data: recentReportsData, error: recentError } = await serviceClient
       .from('daily_reports')
       .select('*')
-      .gte('report_date', sevenDaysAgoStr)
+      .gte('report_date', thirtyDaysAgoStr)
       .lte('report_date', dateParam);
 
     if (recentError) {
       console.error('Error fetching recent reports:', recentError);
     }
 
-    const recentReports = recentReportsData || [];
+    const allRecentReports = recentReportsData || [];
+
+    // Calculate date boundaries for filtering
+    const sevenDaysAgo = new Date(dateParam);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+
+    const fourteenDaysAgo = new Date(dateParam);
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split('T')[0];
+
+    // Helper function to calculate stats for a time period
+    const calculatePeriodStats = (reports: any[]) => {
+      if (reports.length === 0) {
+        return {
+          reportsSubmitted: 0,
+          avgCalls: 0,
+          avgHours: 0,
+          avgBookings: 0,
+          totalPipeline: 0,
+          totalCalls: 0,
+          totalHours: 0,
+          totalBookings: 0,
+        };
+      }
+      const totalCalls = reports.reduce((sum: number, r: any) => sum + r.calls_made, 0);
+      const totalMinutes = reports.reduce((sum: number, r: any) => sum + r.time_on_dialer_minutes, 0);
+      const totalBookings = reports.reduce((sum: number, r: any) => sum + r.bookings_made, 0);
+      const totalPipeline = reports.reduce((sum: number, r: any) => sum + Number(r.pipeline_value), 0);
+
+      return {
+        reportsSubmitted: reports.length,
+        avgCalls: Math.round(totalCalls / reports.length),
+        avgHours: Math.round((totalMinutes / reports.length / 60) * 10) / 10,
+        avgBookings: Math.round((totalBookings / reports.length) * 10) / 10,
+        totalPipeline,
+        totalCalls,
+        totalHours: Math.round(totalMinutes / 60 * 10) / 10,
+        totalBookings,
+      };
+    };
 
     // Build dashboard data per rep
     const repDashboards = reps.map((rep: any) => {
       const todayReport = reports.find((r: any) => r.rep_id === rep.id);
-      const repReports = recentReports.filter((r: any) => r.rep_id === rep.id);
+
+      // Filter reports by rep for each time period
+      const repAllReports = allRecentReports.filter((r: any) => r.rep_id === rep.id);
+      const rep7DayReports = repAllReports.filter((r: any) => r.report_date >= sevenDaysAgoStr);
+      const rep14DayReports = repAllReports.filter((r: any) => r.report_date >= fourteenDaysAgoStr);
+      const rep30DayReports = repAllReports; // All reports are within 30 days
 
       // Calculate today's performance vs targets
       const todayPerformance = todayReport ? {
@@ -148,17 +193,10 @@ Deno.serve(async (req) => {
         submittedAt: null
       };
 
-      // Calculate 7-day averages
-      const avgCalls = repReports.length > 0
-        ? Math.round(repReports.reduce((sum: number, r: any) => sum + r.calls_made, 0) / repReports.length)
-        : 0;
-      const avgHours = repReports.length > 0
-        ? Math.round((repReports.reduce((sum: number, r: any) => sum + r.time_on_dialer_minutes, 0) / repReports.length / 60) * 10) / 10
-        : 0;
-      const avgBookings = repReports.length > 0
-        ? Math.round((repReports.reduce((sum: number, r: any) => sum + r.bookings_made, 0) / repReports.length) * 10) / 10
-        : 0;
-      const totalPipeline = repReports.reduce((sum: number, r: any) => sum + Number(r.pipeline_value), 0);
+      // Calculate stats for each time period
+      const stats7Day = calculatePeriodStats(rep7DayReports);
+      const stats14Day = calculatePeriodStats(rep14DayReports);
+      const stats30Day = calculatePeriodStats(rep30DayReports);
 
       // Determine overall status
       let overallStatus: 'ahead' | 'on_track' | 'behind' | 'critical' | 'no_report' = 'no_report';
@@ -189,13 +227,18 @@ Deno.serve(async (req) => {
           }
         },
         today: todayPerformance,
+        // Keep weeklyStats for backward compatibility
         weeklyStats: {
-          reportsSubmitted: repReports.length,
-          avgCalls,
-          avgHours,
-          avgBookings,
-          totalPipeline
+          reportsSubmitted: stats7Day.reportsSubmitted,
+          avgCalls: stats7Day.avgCalls,
+          avgHours: stats7Day.avgHours,
+          avgBookings: stats7Day.avgBookings,
+          totalPipeline: stats7Day.totalPipeline
         },
+        // New multi-period stats
+        stats7Day,
+        stats14Day,
+        stats30Day,
         overallStatus
       };
     });

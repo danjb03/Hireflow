@@ -18,6 +18,17 @@ interface RepPerformance {
   status: PerformanceStatus;
 }
 
+interface PeriodStats {
+  reportsSubmitted: number;
+  avgCalls: number;
+  avgHours: number;
+  avgBookings: number;
+  totalPipeline: number;
+  totalCalls?: number;
+  totalHours?: number;
+  totalBookings?: number;
+}
+
 interface RepCardProps {
   rep: {
     id: string;
@@ -34,13 +45,10 @@ interface RepCardProps {
     screenshotUrl?: string | null;
     submittedAt?: string | null;
   };
-  weeklyStats: {
-    reportsSubmitted: number;
-    avgCalls: number;
-    avgHours: number;
-    avgBookings: number;
-    totalPipeline: number;
-  };
+  weeklyStats: PeriodStats;
+  stats7Day?: PeriodStats;
+  stats14Day?: PeriodStats;
+  stats30Day?: PeriodStats;
   overallStatus: PerformanceStatus;
   onViewDetails?: () => void;
 }
@@ -49,9 +57,16 @@ const RepCard = ({
   rep,
   today,
   weeklyStats,
+  stats7Day,
+  stats14Day,
+  stats30Day,
   overallStatus,
   onViewDetails,
 }: RepCardProps) => {
+  // Use new stats if available, fallback to weeklyStats for backward compatibility
+  const period7 = stats7Day || weeklyStats;
+  const period14 = stats14Day;
+  const period30 = stats30Day;
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
@@ -139,28 +154,50 @@ const RepCard = ({
           </div>
         )}
 
-        {/* Weekly Stats */}
+        {/* Period Stats - 7, 14, 30 Days */}
         <div className="border-t pt-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-            Last 7 Days
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+            Performance Summary
           </p>
-          <div className="grid grid-cols-4 gap-2 text-center text-sm">
-            <div>
-              <p className="font-medium">{weeklyStats.reportsSubmitted}</p>
-              <p className="text-xs text-muted-foreground">Reports</p>
-            </div>
-            <div>
-              <p className="font-medium">{weeklyStats.avgCalls}</p>
-              <p className="text-xs text-muted-foreground">Avg Calls</p>
-            </div>
-            <div>
-              <p className="font-medium">{weeklyStats.avgHours}h</p>
-              <p className="text-xs text-muted-foreground">Avg Hours</p>
-            </div>
-            <div>
-              <p className="font-medium">{formatCurrency(weeklyStats.totalPipeline)}</p>
-              <p className="text-xs text-muted-foreground">Pipeline</p>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-muted-foreground">
+                  <th className="text-left font-medium pb-2">Period</th>
+                  <th className="text-center font-medium pb-2">Reports</th>
+                  <th className="text-center font-medium pb-2">Avg Calls</th>
+                  <th className="text-center font-medium pb-2">Avg Hours</th>
+                  <th className="text-right font-medium pb-2">Pipeline</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                <tr>
+                  <td className="py-1.5 font-medium">7 Days</td>
+                  <td className="py-1.5 text-center">{period7.reportsSubmitted}</td>
+                  <td className="py-1.5 text-center">{period7.avgCalls}</td>
+                  <td className="py-1.5 text-center">{period7.avgHours}h</td>
+                  <td className="py-1.5 text-right">{formatCurrency(period7.totalPipeline)}</td>
+                </tr>
+                {period14 && (
+                  <tr>
+                    <td className="py-1.5 font-medium">14 Days</td>
+                    <td className="py-1.5 text-center">{period14.reportsSubmitted}</td>
+                    <td className="py-1.5 text-center">{period14.avgCalls}</td>
+                    <td className="py-1.5 text-center">{period14.avgHours}h</td>
+                    <td className="py-1.5 text-right">{formatCurrency(period14.totalPipeline)}</td>
+                  </tr>
+                )}
+                {period30 && (
+                  <tr>
+                    <td className="py-1.5 font-medium">30 Days</td>
+                    <td className="py-1.5 text-center">{period30.reportsSubmitted}</td>
+                    <td className="py-1.5 text-center">{period30.avgCalls}</td>
+                    <td className="py-1.5 text-center">{period30.avgHours}h</td>
+                    <td className="py-1.5 text-right">{formatCurrency(period30.totalPipeline)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </CardContent>
