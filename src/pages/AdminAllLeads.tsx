@@ -534,11 +534,18 @@ const AdminAllLeads = () => {
                 <SelectContent>
                   <SelectItem value="all">All Clients</SelectItem>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={String(client.id)}>
-                      {String(client.name || 'Unknown')}
-                    </SelectItem>
-                  ))}
+                  {clients.map((client) => {
+                    const clientName = String(client.name || 'Unknown');
+                    const bgColor = getClientColor(clientName);
+                    return (
+                      <SelectItem key={client.id} value={String(client.id)}>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                          {clientName}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -626,11 +633,18 @@ const AdminAllLeads = () => {
                                   <SelectValue placeholder="Assign" />
                                 </SelectTrigger>
                                 <SelectContent className="z-50" onPointerDownOutside={(e) => e.stopPropagation()}>
-                                  {clients.map((client) => (
-                                    <SelectItem key={client.id} value={String(client.id)}>
-                                      {String(client.name || 'Unknown')}
-                                    </SelectItem>
-                                  ))}
+                                  {clients.map((client) => {
+                                    const clientName = String(client.name || 'Unknown');
+                                    const bgColor = getClientColor(clientName);
+                                    return (
+                                      <SelectItem key={client.id} value={String(client.id)}>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                                          {clientName}
+                                        </div>
+                                      </SelectItem>
+                                    );
+                                  })}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -667,11 +681,18 @@ const AdminAllLeads = () => {
                                 <SelectItem value="unassign" className="text-red-600">
                                   ✕ Unassign
                                 </SelectItem>
-                                {clients.map((client) => (
-                                  <SelectItem key={client.id} value={String(client.id)}>
-                                    {String(client.name || 'Unknown')}
-                                  </SelectItem>
-                                ))}
+                                {clients.map((client) => {
+                                  const clientName = String(client.name || 'Unknown');
+                                  const bgColor = getClientColor(clientName);
+                                  return (
+                                    <SelectItem key={client.id} value={String(client.id)}>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                                        {clientName}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                           </div>
