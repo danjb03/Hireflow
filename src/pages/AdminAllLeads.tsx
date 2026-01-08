@@ -376,61 +376,61 @@ const AdminAllLeads = () => {
     return clientValue;
   };
 
-  // Color palette for client badges - 50 distinct colors with white text
+  // Color palette for client badges - hex colors for inline styles (Tailwind purges dynamic classes)
   const clientColors = [
-    "bg-red-500",
-    "bg-orange-500",
-    "bg-amber-500",
-    "bg-yellow-500",
-    "bg-lime-500",
-    "bg-green-500",
-    "bg-emerald-500",
-    "bg-teal-500",
-    "bg-cyan-500",
-    "bg-sky-500",
-    "bg-blue-500",
-    "bg-indigo-500",
-    "bg-violet-500",
-    "bg-purple-500",
-    "bg-fuchsia-500",
-    "bg-pink-500",
-    "bg-rose-500",
-    "bg-red-600",
-    "bg-orange-600",
-    "bg-amber-600",
-    "bg-yellow-600",
-    "bg-lime-600",
-    "bg-green-600",
-    "bg-emerald-600",
-    "bg-teal-600",
-    "bg-cyan-600",
-    "bg-sky-600",
-    "bg-blue-600",
-    "bg-indigo-600",
-    "bg-violet-600",
-    "bg-purple-600",
-    "bg-fuchsia-600",
-    "bg-pink-600",
-    "bg-rose-600",
-    "bg-red-700",
-    "bg-orange-700",
-    "bg-amber-700",
-    "bg-green-700",
-    "bg-emerald-700",
-    "bg-teal-700",
-    "bg-cyan-700",
-    "bg-sky-700",
-    "bg-blue-700",
-    "bg-indigo-700",
-    "bg-violet-700",
-    "bg-purple-700",
-    "bg-fuchsia-700",
-    "bg-pink-700",
-    "bg-rose-700",
-    "bg-slate-600",
+    "#ef4444", // red-500
+    "#f97316", // orange-500
+    "#f59e0b", // amber-500
+    "#eab308", // yellow-500
+    "#84cc16", // lime-500
+    "#22c55e", // green-500
+    "#10b981", // emerald-500
+    "#14b8a6", // teal-500
+    "#06b6d4", // cyan-500
+    "#0ea5e9", // sky-500
+    "#3b82f6", // blue-500
+    "#6366f1", // indigo-500
+    "#8b5cf6", // violet-500
+    "#a855f7", // purple-500
+    "#d946ef", // fuchsia-500
+    "#ec4899", // pink-500
+    "#f43f5e", // rose-500
+    "#dc2626", // red-600
+    "#ea580c", // orange-600
+    "#d97706", // amber-600
+    "#ca8a04", // yellow-600
+    "#65a30d", // lime-600
+    "#16a34a", // green-600
+    "#059669", // emerald-600
+    "#0d9488", // teal-600
+    "#0891b2", // cyan-600
+    "#0284c7", // sky-600
+    "#2563eb", // blue-600
+    "#4f46e5", // indigo-600
+    "#7c3aed", // violet-600
+    "#9333ea", // purple-600
+    "#c026d3", // fuchsia-600
+    "#db2777", // pink-600
+    "#e11d48", // rose-600
+    "#b91c1c", // red-700
+    "#c2410c", // orange-700
+    "#b45309", // amber-700
+    "#15803d", // green-700
+    "#047857", // emerald-700
+    "#0f766e", // teal-700
+    "#0e7490", // cyan-700
+    "#0369a1", // sky-700
+    "#1d4ed8", // blue-700
+    "#4338ca", // indigo-700
+    "#6d28d9", // violet-700
+    "#7e22ce", // purple-700
+    "#a21caf", // fuchsia-700
+    "#be185d", // pink-700
+    "#be123c", // rose-700
+    "#475569", // slate-600
   ];
 
-  const getClientColor = (clientName: string) => {
+  const getClientColor = (clientName: string): string => {
     // Generate a consistent hash from client name using djb2 algorithm
     let hash = 5381;
     for (let i = 0; i < clientName.length; i++) {
@@ -540,7 +540,7 @@ const AdminAllLeads = () => {
                     return (
                       <SelectItem key={client.id} value={String(client.id)}>
                         <div className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: bgColor }}></span>
                           {clientName}
                         </div>
                       </SelectItem>
@@ -639,7 +639,7 @@ const AdminAllLeads = () => {
                                     return (
                                       <SelectItem key={client.id} value={String(client.id)}>
                                         <div className="flex items-center gap-2">
-                                          <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: bgColor }}></span>
                                           {clientName}
                                         </div>
                                       </SelectItem>
@@ -671,7 +671,10 @@ const AdminAllLeads = () => {
                                   const clientName = getClientDisplayName(lead.assignedClient);
                                   const bgColor = getClientColor(clientName);
                                   return (
-                                    <Badge className={`${bgColor} text-white rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap max-w-[120px] truncate`}>
+                                    <Badge
+                                      className="text-white rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap max-w-[120px] truncate border-0"
+                                      style={{ backgroundColor: bgColor }}
+                                    >
                                       {clientName}
                                     </Badge>
                                   );
@@ -687,7 +690,7 @@ const AdminAllLeads = () => {
                                   return (
                                     <SelectItem key={client.id} value={String(client.id)}>
                                       <div className="flex items-center gap-2">
-                                        <span className={`w-3 h-3 rounded-full ${bgColor}`}></span>
+                                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: bgColor }}></span>
                                         {clientName}
                                       </div>
                                     </SelectItem>
