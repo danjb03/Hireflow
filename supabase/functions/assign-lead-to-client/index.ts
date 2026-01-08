@@ -96,15 +96,16 @@ Deno.serve(async (req) => {
     // Now we receive the Airtable client ID directly from the frontend
     const { leadId, airtableClientId } = await req.json();
     if (!leadId) throw new Error('Lead ID is required');
-    if (!airtableClientId) throw new Error('Airtable Client ID is required');
+    // airtableClientId can be empty/null for unassigning
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    console.log('Assigning lead:', leadId, 'to Airtable client:', airtableClientId);
+    const isUnassigning = !airtableClientId;
+    console.log(isUnassigning ? 'Unassigning lead:' : 'Assigning lead:', leadId, isUnassigning ? '' : 'to Airtable client: ' + airtableClientId);
 
-    // Directly update the lead with the Airtable client ID
+    // Directly update the lead with the Airtable client ID (or empty array to unassign)
     const tableName = encodeURIComponent('Qualified Lead Table');
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}/${leadId}`;
 
@@ -115,7 +116,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        fields: { 'Clients': [airtableClientId] }
+        fields: { 'Clients': isUnassigning ? [] : [airtableClientId] }
       })
     });
 
@@ -148,44 +149,47 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log('Successfully assigned lead:', result.id, 'to client:', airtableClientId);
+    console.log(isUnassigning ? 'Successfully unassigned lead:' : 'Successfully assigned lead:', result.id, isUnassigning ? '' : 'to client: ' + airtableClientId);
 
-    // Get lead details for the email (company name)
-    const companyName = result.fields?.['Company Name'] || 'New Lead';
+    // Only send email notification when assigning (not unassigning)
+    if (!isUnassigning) {
+      // Get lead details for the email (company name)
+      const companyName = result.fields?.['Company Name'] || 'New Lead';
 
-    // Look up the client's email from Supabase profiles
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+      // Look up the client's email from Supabase profiles
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
 
-    const { data: clientProfile } = await supabaseAdmin
-      .from('profiles')
-      .select('id, client_name')
-      .eq('airtable_client_id', airtableClientId)
-      .single();
+      const { data: clientProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('id, client_name')
+        .eq('airtable_client_id', airtableClientId)
+        .single();
 
-    if (clientProfile) {
-      // Get the user's email from auth
-      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(clientProfile.id);
+      if (clientProfile) {
+        // Get the user's email from auth
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(clientProfile.id);
 
-      if (userData?.user?.email) {
-        const emailResult = await sendNewLeadEmail(
-          userData.user.email,
-          clientProfile.client_name || 'Client',
-          companyName,
-          leadId
-        );
-        console.log('Email notification result:', emailResult);
+        if (userData?.user?.email) {
+          const emailResult = await sendNewLeadEmail(
+            userData.user.email,
+            clientProfile.client_name || 'Client',
+            companyName,
+            leadId
+          );
+          console.log('Email notification result:', emailResult);
+        } else {
+          console.warn('Could not find email for client profile:', clientProfile.id);
+        }
       } else {
-        console.warn('Could not find email for client profile:', clientProfile.id);
+        console.warn('No Supabase profile found for Airtable client:', airtableClientId);
       }
-    } else {
-      console.warn('No Supabase profile found for Airtable client:', airtableClientId);
     }
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, unassigned: isUnassigning }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

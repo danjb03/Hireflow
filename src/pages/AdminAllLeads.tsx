@@ -287,15 +287,17 @@ const AdminAllLeads = () => {
   };
 
   const handleAssignClient = async (leadId: string, airtableClientId: string) => {
+    const isUnassigning = !airtableClientId;
+
     try {
-      // Now we pass the Airtable client ID directly - no lookup needed
+      // Pass the Airtable client ID directly - empty string means unassign
       const { data, error } = await supabase.functions.invoke("assign-lead-to-client", {
-        body: { leadId, airtableClientId },
+        body: { leadId, airtableClientId: airtableClientId || null },
       });
 
       if (error) {
         console.error("Function error:", error, "Data:", data);
-        let errorMessage = "Failed to assign lead";
+        let errorMessage = isUnassigning ? "Failed to unassign lead" : "Failed to assign lead";
 
         if (data?.error) {
           errorMessage = data.error;
@@ -317,23 +319,34 @@ const AdminAllLeads = () => {
         throw new Error(data.error);
       }
 
-      // Update local state immediately with the Airtable client name
-      const client = clients.find(c => c.id === airtableClientId);
-      if (client) {
+      // Update local state immediately
+      if (isUnassigning) {
         setAllLeads(prev => prev.map(lead =>
           lead.id === leadId
-            ? { ...lead, assignedClient: client.name, assignedClientId: airtableClientId }
+            ? { ...lead, assignedClient: null, assignedClientId: null }
             : lead
         ));
+        toast({
+          title: "Success",
+          description: "Lead unassigned successfully",
+        });
+      } else {
+        const client = clients.find(c => c.id === airtableClientId);
+        if (client) {
+          setAllLeads(prev => prev.map(lead =>
+            lead.id === leadId
+              ? { ...lead, assignedClient: client.name, assignedClientId: airtableClientId }
+              : lead
+          ));
+        }
+        toast({
+          title: "Success",
+          description: "Lead assigned to client successfully",
+        });
       }
-
-      toast({
-        title: "Success",
-        description: "Lead assigned to client successfully",
-      });
     } catch (error: any) {
       console.error("Error assigning lead:", error);
-      const errorMessage = error?.message || "Failed to assign lead. Please try again.";
+      const errorMessage = error?.message || (isUnassigning ? "Failed to unassign lead" : "Failed to assign lead");
       toast({
         title: "Error",
         description: errorMessage,
@@ -625,15 +638,43 @@ const AdminAllLeads = () => {
                             <span className="text-xs text-muted-foreground">No clients</span>
                           )
                         ) : (
-                          (() => {
-                            const clientName = getClientDisplayName(lead.assignedClient);
-                            const bgColor = getClientColor(clientName);
-                            return (
-                              <Badge className={`${bgColor} text-white rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap max-w-[120px] truncate`}>
-                                {clientName}
-                              </Badge>
-                            );
-                          })()
+                          <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                            <Select
+                              value={lead.assignedClientId || "assigned"}
+                              onValueChange={(value) => {
+                                if (value === "unassign") {
+                                  handleAssignClient(lead.id, "");
+                                } else if (value !== "assigned") {
+                                  handleAssignClient(lead.id, value);
+                                }
+                              }}
+                            >
+                              <SelectTrigger
+                                className="w-auto h-7 border-0 p-0 bg-transparent hover:bg-transparent focus:ring-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {(() => {
+                                  const clientName = getClientDisplayName(lead.assignedClient);
+                                  const bgColor = getClientColor(clientName);
+                                  return (
+                                    <Badge className={`${bgColor} text-white rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap max-w-[120px] truncate`}>
+                                      {clientName}
+                                    </Badge>
+                                  );
+                                })()}
+                              </SelectTrigger>
+                              <SelectContent className="z-50" onPointerDownOutside={(e) => e.stopPropagation()}>
+                                <SelectItem value="unassign" className="text-red-600">
+                                  ✕ Unassign
+                                </SelectItem>
+                                {clients.map((client) => (
+                                  <SelectItem key={client.id} value={String(client.id)}>
+                                    {String(client.name || 'Unknown')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         )}
                       </TableCell>
                       <TableCell className="px-4 py-3">
