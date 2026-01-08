@@ -126,15 +126,15 @@ export const StatusBadge = ({
   const config = statusConfig[status.toLowerCase()] || defaultConfig;
 
   const sizeClasses = {
-    sm: "text-[10px] px-2 py-0.5 gap-1",
-    md: "text-xs px-3 py-1 gap-1.5",
-    lg: "text-sm px-4 py-1.5 gap-2",
+    sm: "text-[10px] px-3 py-0.5 gap-1 h-5",
+    md: "text-xs px-3 py-1 gap-1.5 h-6",
+    lg: "text-sm px-4 py-1.5 gap-2 h-7",
   };
 
   return (
     <Badge
       className={cn(
-        "border-0 rounded-full font-semibold inline-flex items-center transition-all duration-200",
+        "border-0 rounded-full font-semibold inline-flex items-center justify-center transition-all duration-200 whitespace-nowrap",
         config.gradient,
         config.glow,
         sizeClasses[size]
