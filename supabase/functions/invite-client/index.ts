@@ -13,7 +13,8 @@ async function sendWelcomeEmail(email: string, clientName: string, tempPassword:
     return { success: false, error: 'Email not configured' };
   }
 
-  const loginUrl = 'https://app.hireflow.co.uk/login'; // Update this to your actual domain
+  const loginUrl = 'https://app.hireflow.co.uk/login';
+  const logoUrl = 'https://app.hireflow.co.uk/hireflow-logo.png'; // Host your logo and update this URL
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -22,32 +23,157 @@ async function sendWelcomeEmail(email: string, clientName: string, tempPassword:
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Hireflow <noreply@hireflow.co.uk>', // Update to your verified domain
+      from: 'Hireflow <noreply@hireflow.co.uk>',
       to: [email],
-      subject: `Welcome to Hireflow, ${clientName}!`,
+      subject: `Welcome to Hireflow - Your Account is Ready`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #10b981;">Welcome to Hireflow!</h1>
-          <p>Hi ${clientName},</p>
-          <p>Your Hireflow account has been created. Here are your login details:</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Hireflow</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse;">
 
-          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${email}</p>
-            <p style="margin: 0;"><strong>Temporary Password:</strong> <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">${tempPassword}</code></p>
-          </div>
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 40px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                Hireflow
+              </h1>
+              <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 500;">
+                Premium Lead Generation
+              </p>
+            </td>
+          </tr>
 
-          <p>Please change your password after your first login.</p>
+          <!-- Main Content -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 40px; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
 
-          <a href="${loginUrl}" style="display: inline-block; background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
-            Login to Hireflow
-          </a>
+              <!-- Welcome Message -->
+              <h2 style="margin: 0 0 8px; color: #1e293b; font-size: 24px; font-weight: 600;">
+                Welcome aboard, ${clientName}!
+              </h2>
+              <p style="margin: 0 0 24px; color: #64748b; font-size: 16px; line-height: 1.6;">
+                Your Hireflow account has been created and is ready to use. You can now access your personalised dashboard to view and manage your leads.
+              </p>
 
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            If you have any questions, please contact your account manager.
-          </p>
+              <!-- Credentials Box -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 24px 0;">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+                    <p style="margin: 0 0 4px; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      Your Login Credentials
+                    </p>
 
-          <p>Best regards,<br>The Hireflow Team</p>
-        </div>
+                    <table role="presentation" style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                      <tr>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                          <span style="color: #64748b; font-size: 14px;">Email</span><br>
+                          <span style="color: #1e293b; font-size: 16px; font-weight: 600;">${email}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px 0;">
+                          <span style="color: #64748b; font-size: 14px;">Temporary Password</span><br>
+                          <code style="display: inline-block; margin-top: 4px; background: #1e293b; color: #10b981; padding: 8px 16px; border-radius: 6px; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;">${tempPassword}</code>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Security Note -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 24px 0;">
+                <tr>
+                  <td style="background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 16px;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.5;">
+                      <strong>Security Reminder:</strong> Please change your password after your first login to keep your account secure.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+                      Access Your Dashboard
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What's Next Section -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0 0;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 16px; color: #1e293b; font-size: 16px; font-weight: 600;">
+                      What happens next?
+                    </p>
+                    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 8px 0; vertical-align: top; width: 28px;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; color: #10b981; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">1</span>
+                        </td>
+                        <td style="padding: 8px 0 8px 12px; color: #475569; font-size: 14px; line-height: 1.5;">
+                          Log in using the credentials above
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; vertical-align: top; width: 28px;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; color: #10b981; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">2</span>
+                        </td>
+                        <td style="padding: 8px 0 8px 12px; color: #475569; font-size: 14px; line-height: 1.5;">
+                          View your qualified leads in your dashboard
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; vertical-align: top; width: 28px;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; color: #10b981; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">3</span>
+                        </td>
+                        <td style="padding: 8px 0 8px 12px; color: #475569; font-size: 14px; line-height: 1.5;">
+                          Start connecting with your prospects
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #1e293b; padding: 32px 40px; border-radius: 0 0 16px 16px; text-align: center;">
+              <p style="margin: 0 0 8px; color: #ffffff; font-size: 18px; font-weight: 600;">
+                Hireflow
+              </p>
+              <p style="margin: 0 0 16px; color: #94a3b8; font-size: 13px;">
+                Premium Lead Generation for Recruitment Agencies
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 12px; line-height: 1.6;">
+                Need help? Contact your account manager or reply to this email.<br>
+                <a href="https://hireflow.co.uk" style="color: #10b981; text-decoration: none;">hireflow.co.uk</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
       `,
     }),
   });
