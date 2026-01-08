@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Mail, Copy, Check, Calculator, Loader2 } from "lucide-react";
+import { Mail, Check, Calculator, Loader2, Send } from "lucide-react";
 import { calculateLeadsPerDay } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -31,8 +31,7 @@ const AdminInvite = () => {
   const [targetDeliveryDate, setTargetDeliveryDate] = useState("");
   const [calculatedLeadsPerDay, setCalculatedLeadsPerDay] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
@@ -124,8 +123,8 @@ const AdminInvite = () => {
 
       if (error) throw error;
 
-      setGeneratedPassword(data.tempPassword);
-      toast.success("Client account created successfully!");
+      setInviteSuccess(true);
+      toast.success("Client invited successfully! Welcome email sent.");
     } catch (error: any) {
       toast.error("Failed to invite client: " + error.message);
     } finally {
@@ -141,15 +140,7 @@ const AdminInvite = () => {
     setOnboardingDate("");
     setTargetDeliveryDate("");
     setCalculatedLeadsPerDay(null);
-    setGeneratedPassword("");
-    setCopied(false);
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedPassword);
-    setCopied(true);
-    toast.success("Password copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
+    setInviteSuccess(false);
   };
 
   return (
@@ -185,7 +176,7 @@ const AdminInvite = () => {
                   <Select
                     value={selectedAirtableClient}
                     onValueChange={handleAirtableClientSelect}
-                    disabled={!!generatedPassword}
+                    disabled={inviteSuccess}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select an Airtable client" />
@@ -218,7 +209,7 @@ const AdminInvite = () => {
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   required
-                  disabled={!!generatedPassword || !!selectedAirtableClient}
+                  disabled={inviteSuccess || !!selectedAirtableClient}
                 />
                 <p className="text-base text-muted-foreground">
                   {selectedAirtableClient ? "Name from Airtable client" : "Select an Airtable client above"}
@@ -234,7 +225,7 @@ const AdminInvite = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={!!generatedPassword}
+                  disabled={inviteSuccess}
                 />
               </div>
 
@@ -256,7 +247,7 @@ const AdminInvite = () => {
                     placeholder="0"
                     value={leadsPurchased || ""}
                     onChange={(e) => setLeadsPurchased(parseInt(e.target.value) || 0)}
-                    disabled={!!generatedPassword}
+                    disabled={inviteSuccess}
                   />
                   <p className="text-base text-muted-foreground">
                     Total number of leads the client has purchased
@@ -271,7 +262,7 @@ const AdminInvite = () => {
                       type="date"
                       value={onboardingDate}
                       onChange={(e) => setOnboardingDate(e.target.value)}
-                      disabled={!!generatedPassword}
+                      disabled={inviteSuccess}
                     />
                   </div>
 
@@ -282,7 +273,7 @@ const AdminInvite = () => {
                       type="date"
                       value={targetDeliveryDate}
                       onChange={(e) => setTargetDeliveryDate(e.target.value)}
-                      disabled={!!generatedPassword}
+                      disabled={inviteSuccess}
                     />
                   </div>
                 </div>
@@ -303,7 +294,7 @@ const AdminInvite = () => {
                 )}
               </div>
 
-              {!generatedPassword && (
+              {!inviteSuccess && (
                 <div className="flex gap-2 pt-2">
                   <Button 
                     type="submit" 
@@ -327,55 +318,36 @@ const AdminInvite = () => {
         </Card>
 
         {/* Success Card */}
-        {generatedPassword && (
-          <Card className="border-emerald-200 shadow-sm border-border">
+        {inviteSuccess && (
+          <Card className="border-emerald-200 bg-emerald-50/50 shadow-sm">
             <CardHeader className="p-6 pb-4">
               <CardTitle className="flex items-center gap-2 text-emerald-700">
                 <Check className="h-5 w-5" />
-                Account Created Successfully
+                Client Invited Successfully
               </CardTitle>
               <CardDescription>
-                Share these credentials with the client securely
+                A welcome email has been sent to the client
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0 space-y-4">
-              <Alert>
-                <Mail className="h-4 w-4" />
+              <Alert className="bg-white border-emerald-200">
+                <Send className="h-4 w-4 text-emerald-600" />
                 <AlertDescription>
                   <div className="space-y-2">
-                    <div>
-                      <strong>Email:</strong> {email}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <strong>Temporary Password:</strong>
-                      <code className="relative rounded bg-muted px-2 py-1 font-mono text-base">
-                        {generatedPassword}
-                      </code>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={copyToClipboard}
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <p>
+                      <strong>Welcome email sent to:</strong> {email}
+                    </p>
+                    <p className="text-muted-foreground">
+                      The email contains their login credentials and a link to access the platform.
+                      They can log in immediately using the credentials in the email.
+                    </p>
                   </div>
                 </AlertDescription>
               </Alert>
 
-              <Alert className="bg-warning/10 border-warning/20">
-                <AlertDescription className="text-base">
-                  <strong>Important:</strong> Make sure to save this password. The client will need to change it on their first login.
-                </AlertDescription>
-              </Alert>
-
               <div className="flex gap-2 pt-2">
-                <Button 
-                  onClick={handleReset} 
+                <Button
+                  onClick={handleReset}
                   className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                 >
                   Invite Another Client
