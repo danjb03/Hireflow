@@ -6,8 +6,6 @@ import TargetProgress from "./TargetProgress";
 import {
   getStatusBgColor,
   getStatusLabel,
-  formatDuration,
-  formatCurrency,
   PerformanceStatus,
 } from "@/lib/reportingCalculations";
 
@@ -108,10 +106,9 @@ const RepCard = ({
               />
               <TargetProgress
                 label="Pipeline"
-                actual={formatCurrency(today.pipeline.actual)}
+                actual={today.pipeline.actual}
                 target={today.pipeline.target}
                 percent={today.pipeline.percent}
-                showTarget={false}
               />
             </div>
 
@@ -176,7 +173,7 @@ const RepCard = ({
                   <td className="py-1.5 text-center">{period7.reportsSubmitted}</td>
                   <td className="py-1.5 text-center">{period7.avgCalls}</td>
                   <td className="py-1.5 text-center">{period7.avgHours}h</td>
-                  <td className="py-1.5 text-right">{formatCurrency(period7.totalPipeline)}</td>
+                  <td className="py-1.5 text-right">{period7.totalPipeline}</td>
                 </tr>
                 {period14 && (
                   <tr>
@@ -184,7 +181,7 @@ const RepCard = ({
                     <td className="py-1.5 text-center">{period14.reportsSubmitted}</td>
                     <td className="py-1.5 text-center">{period14.avgCalls}</td>
                     <td className="py-1.5 text-center">{period14.avgHours}h</td>
-                    <td className="py-1.5 text-right">{formatCurrency(period14.totalPipeline)}</td>
+                    <td className="py-1.5 text-right">{period14.totalPipeline}</td>
                   </tr>
                 )}
                 {period30 && (
@@ -193,7 +190,7 @@ const RepCard = ({
                     <td className="py-1.5 text-center">{period30.reportsSubmitted}</td>
                     <td className="py-1.5 text-center">{period30.avgCalls}</td>
                     <td className="py-1.5 text-center">{period30.avgHours}h</td>
-                    <td className="py-1.5 text-right">{formatCurrency(period30.totalPipeline)}</td>
+                    <td className="py-1.5 text-right">{period30.totalPipeline}</td>
                   </tr>
                 )}
               </tbody>

@@ -510,7 +510,7 @@ const AdminReporting = () => {
                               <div>
                                 <span className="text-muted-foreground">Pipeline:</span>{" "}
                                 <span className="font-medium">
-                                  {formatCurrency(repData.today.pipeline.actual)}
+                                  {repData.today.pipeline.actual}
                                 </span>
                               </div>
                             </div>

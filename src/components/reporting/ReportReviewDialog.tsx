@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Check, X, Pencil, Clock, Phone, Calendar, PoundSterling, ExternalLink } from "lucide-react";
-import { formatDuration, formatCurrency } from "@/lib/reportingCalculations";
+import { Loader2, Check, X, Pencil, Clock, Phone, Calendar, TrendingUp, ExternalLink } from "lucide-react";
+import { formatDuration } from "@/lib/reportingCalculations";
 
 interface Report {
   id: string;
@@ -191,10 +191,10 @@ const ReportReviewDialog = ({ report, open, onOpenChange, onReviewComplete }: Re
 
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <PoundSterling className="h-4 w-4" />
+                  <TrendingUp className="h-4 w-4" />
                   <span className="text-sm">Pipeline</span>
                 </div>
-                <p className="text-2xl font-bold">{formatCurrency(report.pipelineValue)}</p>
+                <p className="text-2xl font-bold">{report.pipelineValue}</p>
               </div>
             </div>
 

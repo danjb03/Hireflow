@@ -8,7 +8,6 @@ import { Pencil, Trash2, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import RepForm from "./RepForm";
-import { formatCurrency } from "@/lib/reportingCalculations";
 
 interface SalesRep {
   id: string;
@@ -166,7 +165,7 @@ const RepManagementTable = ({ reps, loading, onRefresh }: RepManagementTableProp
                   <TableCell className="text-center">{rep.daily_hours_target}h</TableCell>
                   <TableCell className="text-center">{rep.daily_bookings_target}</TableCell>
                   <TableCell className="text-center">
-                    {formatCurrency(rep.daily_pipeline_target)}
+                    {rep.daily_pipeline_target}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">

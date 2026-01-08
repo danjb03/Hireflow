@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Phone, Clock, Calendar, PoundSterling } from "lucide-react";
-import { formatCurrency } from "@/lib/reportingCalculations";
+import { Users, Phone, Clock, Calendar, TrendingUp } from "lucide-react";
 
 interface TeamSummaryProps {
   team: {
@@ -85,11 +84,11 @@ const TeamSummary = ({ team }: TeamSummaryProps) => {
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-              <PoundSterling className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{formatCurrency(team.totalPipeline)}</p>
-              <p className="text-xs text-muted-foreground">Pipeline</p>
+              <p className="text-2xl font-bold">{team.totalPipeline}</p>
+              <p className="text-xs text-muted-foreground">Pipeline (Warm Leads)</p>
             </div>
           </div>
         </CardContent>

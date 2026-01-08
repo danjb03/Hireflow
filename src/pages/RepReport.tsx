@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, Clock, Phone, Calendar as CalendarIcon, PoundSterling, FileText, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload, Clock, Phone, Calendar as CalendarIcon, Users, FileText, Sparkles, CheckCircle2 } from "lucide-react";
 import { formatDuration, getTodayDate } from "@/lib/reportingCalculations";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 
@@ -462,16 +462,18 @@ const RepReport = () => {
                 {/* Pipeline Value */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <PoundSterling className="h-4 w-4" />
-                    Pipeline Generated (£)
+                    <Users className="h-4 w-4" />
+                    Pipeline (Warm Leads)
                   </Label>
                   <Input
                     type="number"
                     min="0"
-                    step="100"
                     value={pipelineValue}
-                    onChange={(e) => setPipelineValue(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setPipelineValue(parseInt(e.target.value) || 0)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Number of interested prospects or callback leads generated
+                  </p>
                 </div>
               </div>
             </CardContent>
