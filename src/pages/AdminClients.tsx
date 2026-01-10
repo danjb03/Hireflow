@@ -600,7 +600,7 @@ const AdminClients = () => {
                   }),
                   { total: 0, new: 0, approved: 0, needsWork: 0, rejected: 0, feedbackCount: 0 }
                 );
-                const processed = totals.approved + totals.rejected;
+                const processed = totals.approved + totals.needsWork + totals.rejected;
                 const overallApprovalRate = processed > 0 ? Math.round((totals.approved / processed) * 100) : 0;
 
                 return (

@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       .from('orders')
       .select(`
         *,
-        clients:client_id (
+        profiles:client_id (
           id,
           client_name,
           email
@@ -60,16 +60,8 @@ Deno.serve(async (req) => {
     if (!orderData) throw new Error('Order not found');
 
     // Check access: admins can see all, clients can only see their own
-    if (!isAdmin) {
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('client_name')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.client_name !== orderData.clients?.client_name) {
-        throw new Error('Access denied');
-      }
+    if (!isAdmin && orderData.client_id !== user.id) {
+      throw new Error('Access denied');
     }
 
     // Fetch associated leads
@@ -99,7 +91,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         order: {
           ...orderData,
-          client_name: orderData.clients?.client_name || 'Unknown',
+          client_name: orderData.profiles?.client_name || 'Unknown',
           completion_percentage: completionPercentage,
           days_remaining: daysRemaining,
         },

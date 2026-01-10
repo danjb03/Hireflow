@@ -328,6 +328,59 @@ export type Database = {
           }
         ]
       }
+      orders: {
+        Row: {
+          id: string
+          client_id: string
+          order_number: string
+          leads_purchased: number
+          leads_delivered: number
+          start_date: string | null
+          target_delivery_date: string | null
+          status: string
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          order_number: string
+          leads_purchased?: number
+          leads_delivered?: number
+          start_date?: string | null
+          target_delivery_date?: string | null
+          status?: string
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          order_number?: string
+          leads_purchased?: number
+          leads_delivered?: number
+          start_date?: string | null
+          target_delivery_date?: string | null
+          status?: string
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, TrendingUp, Users, Calendar, Target, ArrowRight, FileText } from "lucide-react";
+import { Loader2, TrendingUp, Users, Calendar, Target, ArrowRight, FileText, Package } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SkeletonStats, SkeletonTable } from "@/components/Skeleton";
@@ -23,6 +24,17 @@ interface RecentLead {
   dateAdded: string;
 }
 
+interface Order {
+  id: string;
+  order_number: string;
+  leads_purchased: number;
+  leads_delivered: number;
+  target_delivery_date: string | null;
+  status: string;
+  completion_percentage: number;
+  days_remaining: number | null;
+}
+
 const ClientDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
@@ -35,6 +47,8 @@ const ClientDashboard = () => {
     conversionRate: 0,
   });
   const [recentLeads, setRecentLeads] = useState<RecentLead[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
     checkOnboarding();
@@ -50,14 +64,15 @@ const ClientDashboard = () => {
 
     setUser(session.user);
 
-    // Fetch profile and leads data in parallel
-    const [profileResult, leadsResult] = await Promise.all([
+    // Fetch profile, leads data, and orders in parallel
+    const [profileResult, leadsResult, ordersResult] = await Promise.all([
       supabase
         .from('profiles')
         .select('onboarding_completed')
         .eq('id', session.user.id)
         .single(),
       supabase.functions.invoke("get-client-leads"),
+      supabase.functions.invoke("get-orders"),
     ]);
 
     // Check onboarding status
@@ -67,6 +82,12 @@ const ClientDashboard = () => {
     }
 
     setCheckingOnboarding(false);
+
+    // Process orders data
+    if (!ordersResult.error && ordersResult.data?.orders) {
+      setOrders(ordersResult.data.orders);
+    }
+    setLoadingOrders(false);
 
     // Process leads data
     if (leadsResult.error) {
@@ -117,6 +138,12 @@ const ClientDashboard = () => {
     }
   };
 
+  // Calculate order totals
+  const orderTotals = orders.reduce((acc, order) => ({
+    totalPurchased: acc.totalPurchased + order.leads_purchased,
+    totalDelivered: acc.totalDelivered + order.leads_delivered
+  }), { totalPurchased: 0, totalDelivered: 0 });
+
   if (checkingOnboarding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -149,11 +176,11 @@ const ClientDashboard = () => {
             Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
           </h1>
           <p className="text-sm text-muted-foreground font-normal">
-            {new Date().toLocaleDateString("en-US", { 
-              weekday: "long", 
-              year: "numeric", 
-              month: "long", 
-              day: "numeric" 
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric"
             })}
           </p>
         </div>
@@ -208,6 +235,87 @@ const ClientDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Orders Summary */}
+        {orders.length > 0 && (
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle className="text-lg font-semibold">Your Orders</CardTitle>
+                </div>
+              </div>
+              <CardDescription>
+                Track your lead purchase orders and delivery progress
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Order Summary Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-muted/30 rounded-lg">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{orderTotals.totalPurchased}</p>
+                  <p className="text-xs text-muted-foreground">Total Purchased</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-emerald-600">{orderTotals.totalDelivered}</p>
+                  <p className="text-xs text-muted-foreground">Delivered</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-amber-600">{orderTotals.totalPurchased - orderTotals.totalDelivered}</p>
+                  <p className="text-xs text-muted-foreground">Remaining</p>
+                </div>
+              </div>
+
+              {/* Individual Orders */}
+              <div className="space-y-3">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="p-4 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{order.order_number}</span>
+                        {order.status === 'completed' ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Completed</Badge>
+                        ) : (
+                          <Badge className="bg-blue-100 text-blue-700 text-xs">Active</Badge>
+                        )}
+                      </div>
+                      {order.target_delivery_date && (
+                        <span className="text-xs text-muted-foreground">
+                          Target: {formatDate(order.target_delivery_date)}
+                          {order.days_remaining !== null && order.days_remaining >= 0 && (
+                            <span className="ml-1">({order.days_remaining}d left)</span>
+                          )}
+                          {order.days_remaining !== null && order.days_remaining < 0 && (
+                            <span className="ml-1 text-red-500">({Math.abs(order.days_remaining)}d overdue)</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                            style={{ width: `${order.completion_percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium w-12 text-right">{order.completion_percentage}%</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                      <span>{order.leads_delivered} of {order.leads_purchased} leads delivered</span>
+                      <span>{order.leads_purchased - order.leads_delivered} remaining</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Activity */}
         <Card className="shadow-sm">

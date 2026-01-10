@@ -207,16 +207,7 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const {
-      email,
-      clientName,
-      airtableClientId,
-      leadsPurchased,
-      onboardingDate,
-      targetDeliveryDate,
-      leadsPerDay,
-      clientStatus
-    } = await req.json();
+    const { email, clientName, airtableClientId } = await req.json();
 
     if (!email || !clientName) throw new Error('Email and client name are required');
     if (!airtableClientId) throw new Error('Airtable client selection is required');
@@ -232,26 +223,16 @@ Deno.serve(async (req) => {
     if (signUpError) throw signUpError;
 
     if (authData.user) {
-      // Prepare profile update with onboarding data
-      const profileUpdate: any = {
-        id: authData.user.id,
-        client_name: clientName,
-        airtable_client_id: airtableClientId,
-        onboarding_completed: true, // Mark as completed since we're linking to Airtable
-        initial_password: tempPassword
-      };
-
-      // Add onboarding fields if provided
-      if (leadsPurchased !== undefined) profileUpdate.leads_purchased = leadsPurchased;
-      if (onboardingDate) profileUpdate.onboarding_date = onboardingDate;
-      if (targetDeliveryDate) profileUpdate.target_delivery_date = targetDeliveryDate;
-      if (leadsPerDay !== null && leadsPerDay !== undefined) profileUpdate.leads_per_day = leadsPerDay;
-      if (clientStatus) profileUpdate.client_status = clientStatus;
-
-      // Use upsert to ensure profile is created/updated with client_name
+      // Create profile linked to Airtable client
       await supabaseAdmin
         .from("profiles")
-        .upsert(profileUpdate, { onConflict: 'id' });
+        .upsert({
+          id: authData.user.id,
+          client_name: clientName,
+          airtable_client_id: airtableClientId,
+          client_status: 'on_track',
+          initial_password: tempPassword
+        }, { onConflict: 'id' });
 
       await supabaseAdmin
         .from("user_roles")

@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Mail, Check, Calculator, Loader2, Send } from "lucide-react";
-import { calculateLeadsPerDay } from "@/lib/clientOnboarding";
+import { Check, Loader2, Send } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 interface AirtableClient {
@@ -26,10 +25,6 @@ const AdminInvite = () => {
   const [loadingClients, setLoadingClients] = useState(true);
   const [clientName, setClientName] = useState("");
   const [email, setEmail] = useState("");
-  const [leadsPurchased, setLeadsPurchased] = useState<number>(0);
-  const [onboardingDate, setOnboardingDate] = useState("");
-  const [targetDeliveryDate, setTargetDeliveryDate] = useState("");
-  const [calculatedLeadsPerDay, setCalculatedLeadsPerDay] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -75,18 +70,6 @@ const AdminInvite = () => {
     }
   };
 
-  // Calculate leads per day when relevant fields change
-  useEffect(() => {
-    if (leadsPurchased > 0 && onboardingDate && targetDeliveryDate) {
-      const onboarding = new Date(onboardingDate);
-      const target = new Date(targetDeliveryDate);
-      const leadsPerDay = calculateLeadsPerDay(leadsPurchased, onboarding, target);
-      setCalculatedLeadsPerDay(leadsPerDay);
-    } else {
-      setCalculatedLeadsPerDay(null);
-    }
-  }, [leadsPurchased, onboardingDate, targetDeliveryDate]);
-
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -105,20 +88,12 @@ const AdminInvite = () => {
     setIsLoading(true);
 
     try {
-      // Prepare onboarding data
-      const onboardingData: any = {
-        email,
-        clientName: clientName.trim(),
-        airtableClientId: selectedAirtableClient || null,
-        leadsPurchased: leadsPurchased || 0,
-        onboardingDate: onboardingDate || null,
-        targetDeliveryDate: targetDeliveryDate || null,
-        leadsPerDay: calculatedLeadsPerDay,
-        clientStatus: 'on_track' // Default status for new clients
-      };
-
       const { data, error } = await supabase.functions.invoke("invite-client", {
-        body: onboardingData
+        body: {
+          email,
+          clientName: clientName.trim(),
+          airtableClientId: selectedAirtableClient,
+        }
       });
 
       if (error) throw error;
@@ -136,10 +111,6 @@ const AdminInvite = () => {
     setSelectedAirtableClient("");
     setClientName("");
     setEmail("");
-    setLeadsPurchased(0);
-    setOnboardingDate("");
-    setTargetDeliveryDate("");
-    setCalculatedLeadsPerDay(null);
     setInviteSuccess(false);
   };
 
@@ -148,25 +119,25 @@ const AdminInvite = () => {
       <div className="max-w-2xl space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold">Invite Client</h1>
+          <h1 className="text-2xl font-semibold">Invite Client User</h1>
           <p className="text-base text-muted-foreground mt-1">
-            Create a new client account and generate credentials
+            Add a new user to an existing client account
           </p>
         </div>
 
         {/* Form Card */}
         <Card className="shadow-sm border-border">
           <CardHeader className="p-6 pb-4">
-            <CardTitle>Client Information</CardTitle>
+            <CardTitle>User Information</CardTitle>
             <CardDescription>
-              Enter the client's email and name to create their account
+              Select the client company and enter the user's email address
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <form onSubmit={handleInvite} className="space-y-4">
               {/* Airtable Client Selection */}
               <div className="space-y-2">
-                <Label htmlFor="airtableClient">Link to Airtable Client *</Label>
+                <Label htmlFor="airtableClient">Client Company *</Label>
                 {loadingClients ? (
                   <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -179,7 +150,7 @@ const AdminInvite = () => {
                     disabled={inviteSuccess}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an Airtable client" />
+                      <SelectValue placeholder="Select a client company" />
                     </SelectTrigger>
                     <SelectContent>
                       {airtableClients.map((client) => (
@@ -196,8 +167,8 @@ const AdminInvite = () => {
                     </AlertDescription>
                   </Alert>
                 )}
-                <p className="text-base text-muted-foreground">
-                  Select the Airtable client record to link this user to
+                <p className="text-sm text-muted-foreground">
+                  Select which client company this user belongs to
                 </p>
               </div>
 
@@ -205,103 +176,41 @@ const AdminInvite = () => {
                 <Label htmlFor="clientName">Client Name</Label>
                 <Input
                   id="clientName"
-                  placeholder="Auto-filled from Airtable selection"
+                  placeholder="Auto-filled from selection"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   required
                   disabled={inviteSuccess || !!selectedAirtableClient}
                 />
-                <p className="text-base text-muted-foreground">
-                  {selectedAirtableClient ? "Name from Airtable client" : "Select an Airtable client above"}
+                <p className="text-sm text-muted-foreground">
+                  {selectedAirtableClient ? "Name from selected client" : "Select a client above"}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">User Email Address *</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="client@example.com"
+                  placeholder="user@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={inviteSuccess}
                 />
-              </div>
-
-              {/* Onboarding Information */}
-              <div className="pt-4 border-t space-y-4">
-                <div>
-                  <h3 className="text-base font-medium mb-3">Onboarding Information</h3>
-                  <p className="text-base text-muted-foreground mb-4">
-                    Set up the client's campaign details and delivery targets
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="leadsPurchased">Leads Purchased</Label>
-                  <Input
-                    id="leadsPurchased"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={leadsPurchased || ""}
-                    onChange={(e) => setLeadsPurchased(parseInt(e.target.value) || 0)}
-                    disabled={inviteSuccess}
-                  />
-                  <p className="text-base text-muted-foreground">
-                    Total number of leads the client has purchased
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="onboardingDate">Onboarding Date</Label>
-                    <Input
-                      id="onboardingDate"
-                      type="date"
-                      value={onboardingDate}
-                      onChange={(e) => setOnboardingDate(e.target.value)}
-                      disabled={inviteSuccess}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="targetDeliveryDate">Target Delivery Date</Label>
-                    <Input
-                      id="targetDeliveryDate"
-                      type="date"
-                      value={targetDeliveryDate}
-                      onChange={(e) => setTargetDeliveryDate(e.target.value)}
-                      disabled={inviteSuccess}
-                    />
-                  </div>
-                </div>
-
-                {calculatedLeadsPerDay !== null && (
-                  <Alert className="bg-info/10 border-info/20">
-                    <Calculator className="h-4 w-4" />
-                    <AlertDescription>
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">Leads Per Day Required:</span>
-                        <span className="text-lg font-bold">{calculatedLeadsPerDay}</span>
-                      </div>
-                      <p className="text-base mt-1 text-muted-foreground">
-                        Based on work days between onboarding and target delivery date
-                      </p>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  This user will receive login credentials via email
+                </p>
               </div>
 
               {!inviteSuccess && (
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading} 
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
                     className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                   >
-                    {isLoading ? "Creating Account..." : "Create Client Account"}
+                    {isLoading ? "Creating Account..." : "Send Invite"}
                   </Button>
                   <Button
                     type="button"
@@ -323,10 +232,10 @@ const AdminInvite = () => {
             <CardHeader className="p-6 pb-4">
               <CardTitle className="flex items-center gap-2 text-emerald-700">
                 <Check className="h-5 w-5" />
-                Client Invited Successfully
+                User Invited Successfully
               </CardTitle>
               <CardDescription>
-                A welcome email has been sent to the client
+                A welcome email has been sent to the user
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0 space-y-4">
@@ -350,7 +259,7 @@ const AdminInvite = () => {
                   onClick={handleReset}
                   className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
                 >
-                  Invite Another Client
+                  Invite Another User
                 </Button>
                 <Button
                   variant="outline"

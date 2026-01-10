@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       .from('orders')
       .select(`
         *,
-        clients:client_id (
+        profiles:client_id (
           id,
           client_name,
           email
@@ -62,35 +62,9 @@ Deno.serve(async (req) => {
       query = query.eq('status', status);
     }
 
-    // If not admin, filter by client
+    // If not admin, filter by client (user can only see their own orders)
     if (!isAdmin) {
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('client_name')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.client_name) {
-        const { data: client } = await supabaseAdmin
-          .from('clients')
-          .select('id')
-          .eq('client_name', profile.client_name)
-          .single();
-
-        if (client) {
-          query = query.eq('client_id', client.id);
-        } else {
-          return new Response(
-            JSON.stringify({ orders: [] }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      } else {
-        return new Response(
-          JSON.stringify({ orders: [] }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      query = query.eq('client_id', user.id);
     }
 
     const { data: orders, error } = await query;
@@ -118,7 +92,7 @@ Deno.serve(async (req) => {
         ...order,
         completion_percentage: completionPercentage,
         days_remaining: daysRemaining,
-        client_name: order.clients?.client_name || 'Unknown',
+        client_name: order.profiles?.client_name || 'Unknown',
       };
     });
 
