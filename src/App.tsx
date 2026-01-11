@@ -32,6 +32,14 @@ const AdminReporting = lazyRetry(() => import("./pages/AdminReporting"), "AdminR
 const RepReport = lazyRetry(() => import("./pages/RepReport"), "RepReport");
 const NotFound = lazyRetry(() => import("./pages/NotFound"), "NotFound");
 
+// Rep portal pages
+const RepDashboard = lazyRetry(() => import("./pages/RepDashboard"), "RepDashboard");
+const RepLeads = lazyRetry(() => import("./pages/RepLeads"), "RepLeads");
+const RepReports = lazyRetry(() => import("./pages/RepReports"), "RepReports");
+const RepSubmitLead = lazyRetry(() => import("./pages/RepSubmitLead"), "RepSubmitLead");
+const RepSettings = lazyRetry(() => import("./pages/RepSettings"), "RepSettings");
+const AdminInviteRep = lazyRetry(() => import("./pages/AdminInviteRep"), "AdminInviteRep");
+
 const App = () => (
   <TooltipProvider>
     <Toaster />
@@ -68,6 +76,13 @@ const App = () => (
           <Route path="/admin/sentiment" element={<AdminSentiment />} />
           <Route path="/admin/pnl" element={<AdminPnL />} />
           <Route path="/admin/reporting" element={<AdminReporting />} />
+          <Route path="/admin/invite-rep" element={<AdminInviteRep />} />
+          {/* Rep portal routes */}
+          <Route path="/rep/dashboard" element={<RepDashboard />} />
+          <Route path="/rep/leads" element={<RepLeads />} />
+          <Route path="/rep/reports" element={<RepReports />} />
+          <Route path="/rep/submit-lead" element={<RepSubmitLead />} />
+          <Route path="/rep/settings" element={<RepSettings />} />
           {/* Public routes */}
           <Route path="/rep-report" element={<RepReport />} />
           {/* Authenticated routes */}

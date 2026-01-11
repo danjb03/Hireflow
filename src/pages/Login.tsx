@@ -43,16 +43,24 @@ const Login = () => {
 
         if (error) throw error;
 
-        // Check if user is admin
+        // Check user role
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", data.user.id);
 
         const isAdmin = roles?.some(r => r.role === "admin") || false;
+        const isRep = roles?.some(r => r.role === "rep") || false;
 
         toast.success("Logged in successfully!");
-        navigate(isAdmin ? "/admin" : "/client/dashboard");
+
+        if (isAdmin) {
+          navigate("/admin");
+        } else if (isRep) {
+          navigate("/rep/dashboard");
+        } else {
+          navigate("/client/dashboard");
+        }
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");

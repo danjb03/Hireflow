@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          airtable_rep_id: string | null
           client_name: string | null
           client_status: string | null
           created_at: string
@@ -30,6 +31,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          airtable_rep_id?: string | null
           client_name?: string | null
           client_status?: string | null
           created_at?: string
@@ -44,6 +46,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          airtable_rep_id?: string | null
           client_name?: string | null
           client_status?: string | null
           created_at?: string
@@ -381,6 +384,41 @@ export type Database = {
           }
         ]
       }
+      rep_client_allocations: {
+        Row: {
+          id: string
+          rep_id: string
+          client_airtable_id: string
+          client_name: string | null
+          allocated_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          rep_id: string
+          client_airtable_id: string
+          client_name?: string | null
+          allocated_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          rep_id?: string
+          client_airtable_id?: string
+          client_name?: string | null
+          allocated_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rep_client_allocations_rep_id_fkey"
+            columns: ["rep_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -396,7 +434,7 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "client"
+      app_role: "admin" | "client" | "rep"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -524,7 +562,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "client"],
+      app_role: ["admin", "client", "rep"],
     },
   },
 } as const
