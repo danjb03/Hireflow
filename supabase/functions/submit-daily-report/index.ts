@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       .from('daily_reports')
       .upsert({
         rep_id: body.repId,
+        rep_name: body.repName || null,
         report_date: body.reportDate,
         time_on_dialer_minutes: body.timeOnDialerMinutes,
         calls_made: body.callsMade,
