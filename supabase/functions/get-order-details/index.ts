@@ -23,8 +23,14 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     if (authError || !user) throw new Error('Unauthorized');
 
-    // Check if user is admin
-    const { data: roles } = await supabaseClient
+    // Use service role for database operations (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Check if user is admin using admin client
+    const { data: roles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
@@ -35,12 +41,6 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const orderId = url.searchParams.get('id');
     if (!orderId) throw new Error('Order ID required');
-
-    // Use service role for admin operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     // Fetch order with client info
     const { data: orderData, error: orderError } = await supabaseAdmin

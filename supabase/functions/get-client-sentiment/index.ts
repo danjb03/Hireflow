@@ -15,6 +15,8 @@ interface LeadStats {
   approvalRate: number;
   feedbackCount: number;
   recentFeedback: string | null;
+  recentFeedbackLeadId: string | null;
+  clientAirtableId: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -69,7 +71,10 @@ Deno.serve(async (req) => {
 
     // Initialize stats for all clients
     const sentimentByClient: Record<string, LeadStats> = {};
-    for (const name of Object.values(clientIdToName)) {
+    // Also create a map of client name -> airtable ID
+    const clientNameToId: Record<string, string> = {};
+    for (const [id, name] of Object.entries(clientIdToName)) {
+      clientNameToId[name] = id;
       sentimentByClient[name] = {
         total: 0,
         new: 0,
@@ -80,6 +85,8 @@ Deno.serve(async (req) => {
         approvalRate: 0,
         feedbackCount: 0,
         recentFeedback: null,
+        recentFeedbackLeadId: null,
+        clientAirtableId: id,
       };
     }
 
@@ -136,6 +143,7 @@ Deno.serve(async (req) => {
             if (!latestFeedbackDates[clientName] || createdTime > latestFeedbackDates[clientName]) {
               latestFeedbackDates[clientName] = createdTime;
               stats.recentFeedback = feedback.length > 100 ? feedback.substring(0, 100) + '...' : feedback;
+              stats.recentFeedbackLeadId = record.id;
             }
           }
         }

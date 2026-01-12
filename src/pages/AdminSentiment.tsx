@@ -37,6 +37,8 @@ interface LeadStats {
   approvalRate: number;
   feedbackCount: number;
   recentFeedback: string | null;
+  recentFeedbackLeadId: string | null;
+  clientAirtableId: string | null;
 }
 
 interface ClientWithSentiment {
@@ -527,7 +529,15 @@ const AdminSentiment = () => {
                   <div
                     key={client.clientName}
                     className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
-                    onClick={() => navigate("/admin/clients")}
+                    onClick={() => {
+                      if (client.stats.recentFeedbackLeadId) {
+                        navigate(`/admin/leads/${client.stats.recentFeedbackLeadId}`);
+                      } else if (client.stats.clientAirtableId) {
+                        navigate(`/admin/clients/${client.stats.clientAirtableId}`);
+                      } else {
+                        navigate("/admin/clients");
+                      }
+                    }}
                   >
                     <div className="flex items-center gap-4">
                       <Badge className={`${getSentimentColor(client.sentiment)} border`}>
@@ -575,7 +585,13 @@ const AdminSentiment = () => {
                   <div
                     key={client.clientName}
                     className="p-4 rounded-lg border hover:bg-accent/30 cursor-pointer transition-colors"
-                    onClick={() => navigate("/admin/clients")}
+                    onClick={() => {
+                      if (client.stats.clientAirtableId) {
+                        navigate(`/admin/clients/${client.stats.clientAirtableId}`);
+                      } else {
+                        navigate("/admin/clients");
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
