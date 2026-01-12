@@ -16,7 +16,7 @@ async function sendWelcomeEmail(email: string, repName: string, tempPassword: st
     return { success: false, error: 'Email not configured' };
   }
 
-  const loginUrl = 'https://app.hireflow.uk/login';
+  const loginUrl = 'https://hireflow.uk';
 
   console.log('Sending email via Resend...');
   const response = await fetch('https://api.resend.com/emails', {
