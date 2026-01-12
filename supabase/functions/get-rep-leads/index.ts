@@ -166,22 +166,49 @@ Deno.serve(async (req) => {
         contactTitle: fields['Contact Title'] || null,
         email: fields['Email'] || '',
         phone: fields['Phone'] ? String(fields['Phone']) : '',
+        contactLinkedIn: fields['Contact LinkedIn'] || null,
 
         // Company Info
         companyWebsite: fields['Company Website'] || '',
+        companyLinkedIn: fields['Company LinkedIn'] || null,
+        companyDescription: fields['Company Description'] || null,
+        address: Array.isArray(fields['Address']) ? fields['Address'].join(', ') : (fields['Address'] || null),
+        country: fields['Country'] || null,
         industry: fields['Industry'] || null,
         employeeCount: fields['Employee Count'] || null,
+        companySize: fields['Company Size'] || null,
 
         // Job Info
         jobTitle: fields['Job Title'] || null,
         jobDescription: fields['Job Description'] || null,
+        jobUrl: fields['Job URL'] || null,
+        jobType: fields['Job Type'] || null,
+        jobLevel: fields['Job Level'] || null,
 
-        // Dates
+        // Notes
+        internalNotes: fields['Internal Notes'] || null,
+        clientNotes: (() => {
+          const notes = fields['Client Notes'];
+          if (!notes) return null;
+          if (typeof notes === 'string') return notes;
+          if (typeof notes === 'object' && notes.value) return String(notes.value);
+          return null;
+        })(),
+
+        // Dates & Activity
         dateAdded: fields['Date Created'] || record.createdTime,
         lastContactDate: fields['Last Contact Date'] || null,
+        booking: fields['Booking'] || null,
+        availability: fields['Availability'] || null,
+        nextAction: fields['Next Action'] || null,
 
-        // Feedback
-        feedback: fields['Admin Notes'] || null,
+        // Callback slots
+        callback1: fields['Callback 1'] || null,
+        callback2: fields['Callback 2'] || null,
+        callback3: fields['Callback 3'] || null,
+
+        // Client Feedback (from the client about lead quality)
+        feedback: fields['Feedback'] || null,
       };
     });
 
