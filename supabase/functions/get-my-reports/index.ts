@@ -49,7 +49,12 @@ Deno.serve(async (req) => {
     }
 
     const airtableRepId = profile.airtable_rep_id;
-    console.log(`Fetching reports for rep: ${profile.client_name} (Airtable ID: ${airtableRepId})`);
+    const repName = profile.client_name;
+    console.log(`Fetching reports for rep: ${repName} (Airtable ID: ${airtableRepId})`);
+
+    if (!repName) {
+      throw new Error('Rep name not configured in profile');
+    }
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
@@ -81,8 +86,9 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Fetch reports for this rep
-    const filterFormula = `FIND('${airtableRepId}', ARRAYJOIN({Rep}))`;
+    // Fetch reports for this rep (filter by name since ARRAYJOIN returns names)
+    const escapedRepName = repName.replace(/'/g, "\\'").trim();
+    const filterFormula = `FIND('${escapedRepName}', ARRAYJOIN({Rep}))`;
     const reportsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Reports')}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Report Date&sort[0][direction]=desc`;
 
     const reportsResponse = await fetch(reportsUrl, {
