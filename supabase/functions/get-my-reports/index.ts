@@ -23,20 +23,20 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     if (authError || !user) throw new Error('Unauthorized');
 
-    // Verify user has rep role
-    const { data: roles } = await supabaseClient
+    // Use admin client for database queries (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Verify user has rep role using admin client
+    const { data: roles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
 
     const isRep = roles?.some(r => r.role === 'rep');
     if (!isRep) throw new Error('Rep access required');
-
-    // Get rep's airtable_rep_id from profile
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')

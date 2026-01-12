@@ -28,8 +28,14 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Verify user has rep role
-    const { data: roles } = await supabaseClient
+    // Use admin client for database queries (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Verify user has rep role using admin client
+    const { data: roles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
@@ -38,12 +44,6 @@ Deno.serve(async (req) => {
     if (!isRep) {
       throw new Error('Rep access required');
     }
-
-    // Get rep's airtable_rep_id from profile
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -57,7 +57,12 @@ Deno.serve(async (req) => {
     }
 
     const airtableRepId = profile.airtable_rep_id;
-    console.log(`Fetching leads for rep: ${profile.client_name} (Airtable ID: ${airtableRepId})`);
+    const repName = profile.client_name;
+    console.log(`Fetching leads for rep: ${repName} (Airtable ID: ${airtableRepId})`);
+
+    if (!repName) {
+      throw new Error('Rep name not configured in profile');
+    }
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
@@ -66,9 +71,10 @@ Deno.serve(async (req) => {
       throw new Error('Airtable configuration missing');
     }
 
-    // Build filter: Rep field matches this rep's Airtable ID
-    // Simple filter - just show all leads for this rep
-    const filterFormula = `AND(FIND('${airtableRepId}', ARRAYJOIN({Rep})) > 0, {Status} != 'Not Qualified')`;
+    // Build filter: Rep field matches this rep's NAME (ARRAYJOIN returns names, not IDs)
+    // Escape single quotes in rep name for Airtable formula
+    const escapedRepName = repName.replace(/'/g, "\\'").trim();
+    const filterFormula = `AND(FIND('${escapedRepName}', ARRAYJOIN({Rep})) > 0, {Status} != 'Not Qualified')`;
     const tableName = 'Qualified Lead Table';
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Date%20Created&sort[0][direction]=desc`;
 
