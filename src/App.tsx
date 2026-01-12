@@ -38,6 +38,7 @@ const RepLeads = lazyRetry(() => import("./pages/RepLeads"), "RepLeads");
 const RepReports = lazyRetry(() => import("./pages/RepReports"), "RepReports");
 const RepSubmitLead = lazyRetry(() => import("./pages/RepSubmitLead"), "RepSubmitLead");
 const RepSettings = lazyRetry(() => import("./pages/RepSettings"), "RepSettings");
+const RepLeadDetail = lazyRetry(() => import("./pages/RepLeadDetail"), "RepLeadDetail");
 const AdminInviteRep = lazyRetry(() => import("./pages/AdminInviteRep"), "AdminInviteRep");
 
 const App = () => (
@@ -80,6 +81,7 @@ const App = () => (
           {/* Rep portal routes */}
           <Route path="/rep/dashboard" element={<RepDashboard />} />
           <Route path="/rep/leads" element={<RepLeads />} />
+          <Route path="/rep/leads/:id" element={<RepLeadDetail />} />
           <Route path="/rep/reports" element={<RepReports />} />
           <Route path="/rep/submit-lead" element={<RepSubmitLead />} />
           <Route path="/rep/settings" element={<RepSettings />} />
