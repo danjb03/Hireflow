@@ -39,7 +39,6 @@ Deno.serve(async (req) => {
 
     // Contact Info
     if (leadData.contactName) airtableFields['Contact Name'] = leadData.contactName;
-    if (leadData.contactTitle) airtableFields['Contact Title'] = leadData.contactTitle;
     if (leadData.email) airtableFields['Email'] = leadData.email;
     if (leadData.phone) {
       airtableFields['Phone'] = String(leadData.phone);

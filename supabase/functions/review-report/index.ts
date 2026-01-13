@@ -34,8 +34,19 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     if (authError || !user) throw new Error("Unauthorized");
 
-    // Check admin role
-    const { data: isAdmin } = await supabaseClient.rpc("is_admin", { _user_id: user.id });
+    // Use admin client for database operations (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Check admin role using admin client
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+
+    const isAdmin = roles?.some((r: any) => r.role === "admin");
     if (!isAdmin) throw new Error("Admin access required");
 
     const body: ReviewRequest = await req.json();
@@ -44,11 +55,6 @@ Deno.serve(async (req) => {
     if (!reportId || !action) {
       throw new Error("Missing reportId or action");
     }
-
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     // Get the current report to store original values if editing
     const { data: currentReport, error: fetchError } = await supabaseAdmin

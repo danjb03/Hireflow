@@ -59,7 +59,6 @@ Deno.serve(async (req) => {
         pipeline_value: body.pipelineValue || 0,
         notes: body.notes || null,
         screenshot_url: body.screenshotUrl || null,
-        status: 'Pending',
         ai_extracted_time_minutes: body.aiExtractedTimeMinutes || null,
         ai_extracted_calls: body.aiExtractedCalls || null,
         ai_confidence_score: body.aiConfidenceScore || null,
