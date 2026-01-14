@@ -67,6 +67,13 @@ interface LeadData {
     task6: boolean;
     task7: boolean;
   };
+
+  // AI Categorization fields
+  aiSuggestedStatus: string | null;
+  aiReasoning: string | null;
+  aiConfidence: number | null;
+  aiAnalyzedAt: string | null;
+  closeLeadId: string | null;
 }
 
 interface AirtableClient {
@@ -518,13 +525,53 @@ const AdminLeadDetail = () => {
                     <SelectItem value="Rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button 
+                <Button
                   onClick={handleUpdateStatus}
                   className="bg-primary hover:bg-primary/90"
                 >
                   Update
                 </Button>
               </div>
+
+              {/* AI Recommendation */}
+              {lead.aiSuggestedStatus && (
+                <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm font-medium text-purple-700">AI Recommendation</span>
+                    {lead.aiConfidence !== null && (
+                      <Badge variant="outline" className="text-xs border-purple-300 text-purple-600">
+                        {lead.aiConfidence}% confidence
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className={
+                      lead.aiSuggestedStatus === 'Approved' ? 'bg-emerald-500' :
+                      lead.aiSuggestedStatus === 'Rejected' ? 'bg-red-500' :
+                      'bg-yellow-500'
+                    }>
+                      {lead.aiSuggestedStatus}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-7 border-purple-300 text-purple-600 hover:bg-purple-100"
+                      onClick={() => setSelectedStatus(lead.aiSuggestedStatus || '')}
+                    >
+                      Apply Suggestion
+                    </Button>
+                  </div>
+                  {lead.aiReasoning && (
+                    <p className="text-xs text-purple-700 leading-relaxed">{lead.aiReasoning}</p>
+                  )}
+                  {lead.aiAnalyzedAt && (
+                    <p className="text-xs text-purple-500 mt-1">
+                      Analyzed: {new Date(lead.aiAnalyzedAt).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

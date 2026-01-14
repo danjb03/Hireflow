@@ -197,6 +197,13 @@ Deno.serve(async (req) => {
         task6: fields['Task 6 Complete'] || false,
         task7: fields['Task 7 Complete'] || false,
       },
+
+      // AI Categorization fields
+      aiSuggestedStatus: fields['AI Suggested Status'] || null,
+      aiReasoning: fields['AI Reasoning'] || null,
+      aiConfidence: fields['AI Confidence'] || null,
+      aiAnalyzedAt: fields['AI Analyzed At'] || null,
+      closeLeadId: fields['Close Lead ID'] || null,
     };
 
     return new Response(

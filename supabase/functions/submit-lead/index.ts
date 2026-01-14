@@ -90,6 +90,24 @@ Deno.serve(async (req) => {
     const createdRecord = await response.json();
     console.log('Created lead:', createdRecord.id);
 
+    // Trigger AI categorization if Close Link URL is provided (fire-and-forget)
+    if (leadData.closeLinkUrl) {
+      console.log('Triggering AI categorization for lead:', createdRecord.id);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+
+      fetch(`${supabaseUrl}/functions/v1/categorize-lead-ai`, {
+        method: 'POST',
+        headers: {
+          'Authorization': req.headers.get('Authorization') || '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          leadId: createdRecord.id,
+          closeLinkUrl: leadData.closeLinkUrl,
+        }),
+      }).catch(err => console.error('AI categorization trigger failed:', err));
+    }
+
     return new Response(
       JSON.stringify({ success: true, lead: createdRecord }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
