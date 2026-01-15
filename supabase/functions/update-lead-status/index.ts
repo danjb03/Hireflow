@@ -269,44 +269,67 @@ Deno.serve(async (req) => {
 
       if (clientIds.length > 0) {
         const airtableClientId = clientIds[0];
-        console.log('Lead approved, sending email to client:', airtableClientId);
+        console.log('Lead approved, sending emails to client users:', airtableClientId);
 
-        // Look up the client's email from Supabase profiles
+        // Look up ALL profiles for this client
         const supabaseAdmin = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        const { data: clientProfile } = await supabaseAdmin
+        const { data: clientProfiles } = await supabaseAdmin
           .from('profiles')
           .select('id, client_name')
-          .eq('airtable_client_id', airtableClientId)
-          .single();
+          .eq('airtable_client_id', airtableClientId);
 
-        if (clientProfile) {
-          // Get the user's email from auth
-          const { data: userData } = await supabaseAdmin.auth.admin.getUserById(clientProfile.id);
+        if (clientProfiles && clientProfiles.length > 0) {
+          // Get notification preferences for these users
+          const userIds = clientProfiles.map(p => p.id);
+          const { data: preferences } = await supabaseAdmin
+            .from('notification_preferences')
+            .select('user_id, lead_notifications_enabled')
+            .in('user_id', userIds);
 
-          if (userData?.user?.email) {
-            const emailResult = await sendApprovalEmail(
-              userData.user.email,
-              clientProfile.client_name || 'Client',
-              {
-                companyName: fields['Company Name'] || 'New Lead',
-                contactName: fields['Contact Name'] || null,
-                jobTitle: fields['Job Title'] || null,
-                callback1: fields['Callback 1'] || null,
-                callback2: fields['Callback 2'] || null,
-                callback3: fields['Callback 3'] || null,
-              },
-              leadId
-            );
-            console.log('Email notification result:', emailResult);
-          } else {
-            console.warn('Could not find email for client profile:', clientProfile.id);
+          // Create a map for quick lookup
+          const prefsMap = new Map<string, boolean>();
+          for (const pref of preferences || []) {
+            prefsMap.set(pref.user_id, pref.lead_notifications_enabled);
+          }
+
+          // Send email to each user who has notifications enabled
+          for (const profile of clientProfiles) {
+            // Default to true if no preference record exists
+            const notificationsEnabled = prefsMap.get(profile.id) ?? true;
+
+            if (!notificationsEnabled) {
+              console.log(`Skipping email for user ${profile.id} - notifications disabled`);
+              continue;
+            }
+
+            // Get user email
+            const { data: userData } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+
+            if (userData?.user?.email) {
+              const emailResult = await sendApprovalEmail(
+                userData.user.email,
+                profile.client_name || 'Client',
+                {
+                  companyName: fields['Company Name'] || 'New Lead',
+                  contactName: fields['Contact Name'] || null,
+                  jobTitle: fields['Job Title'] || null,
+                  callback1: fields['Callback 1'] || null,
+                  callback2: fields['Callback 2'] || null,
+                  callback3: fields['Callback 3'] || null,
+                },
+                leadId
+              );
+              console.log(`Email sent to ${userData.user.email}:`, emailResult);
+            } else {
+              console.warn('Could not find email for client profile:', profile.id);
+            }
           }
         } else {
-          console.warn('No Supabase profile found for Airtable client:', airtableClientId);
+          console.warn('No Supabase profiles found for Airtable client:', airtableClientId);
         }
       } else {
         console.log('Lead approved but no client assigned, skipping email');

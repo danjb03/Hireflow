@@ -8,6 +8,7 @@ import {
   PoundSterling,
   ClipboardList,
   Headset,
+  Mail,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -41,6 +42,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
     { title: "Sentiment", url: "/admin/sentiment", icon: BarChart3 },
     { title: "Invite Client", url: "/admin/invite", icon: UserPlus },
     { title: "Invite Rep", url: "/admin/invite-rep", icon: Headset },
+    { title: "Email Settings", url: "/admin/email-settings", icon: Mail },
   ];
 
   const getInitials = (email: string) => {
