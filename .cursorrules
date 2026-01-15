@@ -1,0 +1,382 @@
+# Hireflow Project Rules
+
+You are an expert in TypeScript, React 18, Vite, Tailwind CSS, shadcn/ui, Supabase, and Deno edge functions.
+
+## Tech Stack
+
+- **Framework:** React 18.3.1 with Vite 7.2.7
+- **Language:** TypeScript 5.8.3
+- **Styling:** Tailwind CSS 3.4.17 with tailwindcss-animate
+- **UI Components:** shadcn/ui (Radix UI primitives)
+- **Icons:** lucide-react 0.462.0 (ONLY use this for icons)
+- **Routing:** React Router DOM 6.30.1
+- **Backend:** Supabase (Postgres + Edge Functions)
+- **Forms:** react-hook-form 7.61.1 + zod 3.25.76
+- **Notifications:** sonner 1.7.4
+- **Charts:** recharts 2.15.4
+- **Date handling:** date-fns 3.6.0
+
+## File Structure
+
+```
+src/
+├── pages/              # Page components (PascalCase.tsx)
+├── components/
+│   ├── ui/             # shadcn/ui components (lowercase.tsx)
+│   ├── admin/          # Admin-specific components
+│   ├── landing/        # Landing page components
+│   ├── reporting/      # Reporting feature components
+│   └── pnl/            # P&L feature components
+├── hooks/              # Custom React hooks (use-*.ts)
+├── lib/                # Utility functions
+└── integrations/
+    └── supabase/       # Supabase client and types
+
+supabase/
+├── functions/          # Edge functions (kebab-case/)
+│   └── function-name/
+│       └── index.ts
+└── migrations/         # SQL migrations
+```
+
+## Code Style
+
+### Imports Order
+```typescript
+// 1. React hooks and router
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+// 2. Supabase client
+import { supabase } from "@/integrations/supabase/client";
+
+// 3. shadcn/ui components (grouped)
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// 4. Notifications
+import { toast } from "sonner";
+
+// 5. Icons
+import { Users, FileText, Loader2 } from "lucide-react";
+
+// 6. Local utilities and types
+import { cn } from "@/lib/utils";
+
+// 7. Layout and custom components
+import AdminLayout from "@/components/AdminLayout";
+```
+
+### Component Structure
+```typescript
+const PageName = () => {
+  const navigate = useNavigate();
+
+  // State declarations
+  const [data, setData] = useState<DataType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  // Data loading effect
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Async functions
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      // ... fetch logic
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast.error("Failed to load data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Memoized values
+  const filteredData = useMemo(() => {
+    return data.filter(/* ... */);
+  }, [data, filterValue]);
+
+  // Event handlers
+  const handleAction = async () => {
+    // ...
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <AdminLayout userEmail={userEmail}>
+        <div className="space-y-6">
+          {/* Skeleton components */}
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Main render
+  return (
+    <AdminLayout userEmail={userEmail}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Page Title</h1>
+          <p className="text-sm text-muted-foreground mt-1">Description</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {/* Cards */}
+        </div>
+
+        {/* Main Content */}
+        {/* ... */}
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default PageName;
+```
+
+### Authentication Pattern
+```typescript
+// In pages - check auth on mount
+useEffect(() => {
+  checkAuth();
+}, []);
+
+const checkAuth = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    navigate("/login");
+    return;
+  }
+
+  setUserEmail(session.user.email || "");
+
+  // Check role if needed
+  const { data: roles } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", session.user.id);
+
+  const isAdmin = roles?.some(r => r.role === "admin");
+  if (!isAdmin) {
+    toast.error("Access denied");
+    navigate("/");
+    return;
+  }
+
+  // Load page data
+  await loadData();
+};
+```
+
+### Supabase Function Calls
+```typescript
+// Invoke edge function
+const { data, error } = await supabase.functions.invoke("function-name", {
+  body: { param1: value1, param2: value2 }
+});
+
+if (error) throw error;
+
+// Direct database query
+const { data, error } = await supabase
+  .from("table_name")
+  .select("*")
+  .eq("column", value)
+  .order("created_at", { ascending: false });
+```
+
+### Error Handling
+```typescript
+try {
+  // operation
+} catch (error: any) {
+  console.error("Descriptive error message:", error);
+  toast.error("User-friendly error message");
+}
+```
+
+## Edge Functions (Deno)
+
+### Standard Template
+```typescript
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Auth check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error('Missing authorization header');
+
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) throw new Error('Unauthorized');
+
+    // For admin operations, use service role client (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Check admin role
+    const { data: roles } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const isAdmin = roles?.some((r: { role: string }) => r.role === 'admin');
+    if (!isAdmin) throw new Error('Admin access required');
+
+    // Parse request body
+    const { param1, param2 } = await req.json();
+
+    // Business logic here...
+
+    return new Response(
+      JSON.stringify({ success: true, data: result }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+```
+
+## Styling Conventions
+
+### Tailwind Classes
+```typescript
+// Page container
+className="space-y-6"
+
+// Card with gradient
+className="bg-gradient-to-t from-primary/5 to-card shadow-sm"
+
+// Stats card
+<Card className="shadow-sm">
+  <CardContent className="p-6">
+    <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+      Label
+    </CardDescription>
+    <CardTitle className="text-2xl font-bold tabular-nums">
+      {value}
+    </CardTitle>
+  </CardContent>
+</Card>
+
+// Status badges
+className="bg-emerald-100 text-emerald-700"  // Success
+className="bg-blue-100 text-blue-700"        // Info
+className="bg-amber-100 text-amber-700"      // Warning
+className="bg-red-100 text-red-700"          // Error
+className="bg-slate-100 text-slate-600"      // Neutral
+
+// Responsive grid
+className="grid grid-cols-2 gap-4 md:grid-cols-4"
+
+// Text styles
+className="text-2xl font-bold tracking-tight"      // Page title
+className="text-sm text-muted-foreground mt-1"     // Subtitle
+className="text-xs font-medium uppercase tracking-wide"  // Label
+```
+
+### Use cn() for conditional classes
+```typescript
+import { cn } from "@/lib/utils";
+
+className={cn(
+  "base-classes",
+  condition && "conditional-classes",
+  variant === "active" && "active-classes"
+)}
+```
+
+## Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Pages | PascalCase | `AdminDashboard.tsx` |
+| Components | PascalCase | `StatusBadge.tsx` |
+| shadcn/ui | lowercase | `button.tsx` |
+| Hooks | use-kebab-case | `use-mobile.tsx` |
+| Utils | camelCase | `pnlCalculations.ts` |
+| Edge functions | kebab-case | `get-client-users/` |
+| Types/Interfaces | PascalCase | `interface LeadData {}` |
+
+## Layout Components
+
+- **AdminLayout** - For all `/admin/*` pages
+- **ClientLayout** - For all `/client/*` pages
+- **RepLayout** - For all `/rep/*` pages
+
+Pass `userEmail` prop to all layouts:
+```typescript
+<AdminLayout userEmail={userEmail}>
+```
+
+## Key Files to Reference
+
+- **Page pattern:** `src/pages/AdminDashboard.tsx`
+- **Layout pattern:** `src/components/AdminLayout.tsx`
+- **Edge function pattern:** `supabase/functions/get-client-users/index.ts`
+- **Supabase client:** `src/integrations/supabase/client.ts`
+- **Utility functions:** `src/lib/utils.ts`
+
+## DON'Ts
+
+- DON'T use class components - only functional components with hooks
+- DON'T use any icon library except lucide-react
+- DON'T use CSS modules or styled-components - only Tailwind
+- DON'T use axios or fetch directly in pages - use Supabase client
+- DON'T store sensitive data in localStorage except auth tokens
+- DON'T use `any` type without justification
+- DON'T create new UI primitives - use existing shadcn/ui components
+- DON'T use alert() or confirm() - use toast notifications or Dialog
+- DON'T bypass RLS without service role key in edge functions
+- DON'T use relative imports - always use `@/` alias
+- DON'T add emojis to files unless explicitly requested
+
+## External APIs
+
+- **Airtable:** Used for lead/client data storage
+- **Resend:** Used for transactional emails (from: team@app.hireflow.uk)
+- **Close.com:** Used for call transcripts and CRM data
+
+## Database Tables (Supabase)
+
+Key tables:
+- `profiles` - User profiles linked to auth.users
+- `user_roles` - Role assignments (admin, client, rep)
+- `notification_preferences` - Email notification settings
+- `orders` - Client lead orders
+- `daily_reports` - Rep daily reports
+- `deals` - P&L tracking
+
+Always check RLS policies when querying. Use service role key for admin operations that need to bypass RLS.
