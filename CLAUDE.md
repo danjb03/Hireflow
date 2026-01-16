@@ -11,6 +11,7 @@ Hireflow is a B2B lead management platform for distributing qualified leads to r
 ```bash
 npm run dev          # Start development server (Vite)
 npm run build        # Production build
+npm run build:dev    # Development build
 npm run lint         # ESLint
 npm run preview      # Preview production build
 ```
@@ -36,6 +37,10 @@ npm run preview      # Preview production build
 ### Key Database Tables
 - `profiles`: Links to auth.users, stores `client_name` and `airtable_client_id` for lead filtering
 - `user_roles`: Role assignments (`admin`, `client`, `rep`)
+- `orders`: Client lead orders
+- `notification_preferences`: Email notification settings
+- `daily_reports`: Rep daily reports
+- `deals`: P&L tracking
 
 ## Code Patterns
 
@@ -96,6 +101,25 @@ Deno.serve(async (req) => {
 - **Resend**: Transactional emails (from: team@app.hireflow.uk)
 - **Close.com**: Call transcripts for AI lead categorization
 
+## Forms
+
+Use `react-hook-form` with `zod` for validation:
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+```
+
+## Status Badge Colors
+
+```typescript
+"bg-emerald-100 text-emerald-700"  // Approved/Success
+"bg-blue-100 text-blue-700"        // New/Info
+"bg-amber-100 text-amber-700"      // Needs Work/Warning
+"bg-red-100 text-red-700"          // Rejected/Error
+"bg-slate-100 text-slate-600"      // Neutral
+```
+
 ## Constraints
 
 - Only use `lucide-react` for icons
@@ -103,3 +127,10 @@ Deno.serve(async (req) => {
 - Always use `@/` import alias
 - Use `supabase.functions.invoke()` for API calls (not raw fetch)
 - Edge functions require service role key to bypass RLS for admin operations
+
+## Key Reference Files
+
+- **Page pattern**: `src/pages/AdminDashboard.tsx`
+- **Layout pattern**: `src/components/AdminLayout.tsx`
+- **Edge function pattern**: `supabase/functions/get-client-leads/index.ts`
+- **Supabase client**: `src/integrations/supabase/client.ts`
