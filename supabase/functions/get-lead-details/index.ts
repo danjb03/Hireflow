@@ -108,14 +108,15 @@ Deno.serve(async (req) => {
         }
 
         const leadClientIds = fields['Clients'] || [];
-        const leadStatus = fields['Status'] || '';
+        const leadStatus = (fields['Status'] || '').toLowerCase();
 
         if (!leadClientIds.includes(clientRecordId)) {
           throw new Error('Access denied: This lead is not assigned to you');
         }
 
-        if (leadStatus !== 'Approved') {
-          throw new Error('Access denied: This lead is not yet approved');
+        // Clients can only view leads with "Approved" status
+        if (leadStatus !== 'approved') {
+          throw new Error('Access denied: This lead is not available');
         }
       }
     }
