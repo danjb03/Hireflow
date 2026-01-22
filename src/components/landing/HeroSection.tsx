@@ -1,124 +1,150 @@
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import hireflowLogo from "@/assets/hireflow-logo.svg";
+
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+
+import hireflowLightLogo from "@/assets/hireflow-light.svg";
+import hireflowWhiteLogo from "@/assets/hireflowwhite.png";
+
+const highlights = [
+  "7-14 day launch",
+  "Performance-based model",
+  "Results guarantee",
+];
+
+const stats = [
+  { value: "3000+", label: "Leads generated" },
+  { value: "100s", label: "Terms signed" },
+  { value: "24hr", label: "Avg response time" },
+];
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+    <section className="relative overflow-hidden bg-[#F7F7F7]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(52,177,146,0.12),transparent_60%)]" />
 
-      {/* Animated mesh gradient overlay */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[128px] animate-pulse" />
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-emerald-500/20 rounded-full blur-[128px] animate-pulse delay-1000" />
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-slate-600/20 rounded-full blur-[128px] animate-pulse delay-500" />
-      </div>
-
-      {/* Grid pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
-        }}
-      />
-
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 w-full">
-        <div className="mx-4 mt-4">
-          <div className="max-w-7xl mx-auto px-6 py-4 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_-8px_rgb(0_0_0/0.3)]">
-            <div className="flex items-center justify-between">
-              <Link to="/" className="flex items-center group">
-                <img src={hireflowLogo} alt="Hireflow" className="h-8 md:h-10 transition-transform group-hover:scale-105" />
-              </Link>
-              <Link to="/login">
-                <Button
-                  variant="glass"
-                  className="text-white border-white/20 hover:bg-white/20"
+      <header className="relative z-10">
+        <div className="container mx-auto px-4 pt-8">
+          <div className="flex items-center justify-between rounded-full border border-[#222121]/[0.08] bg-white px-5 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <Link to="/" className="flex items-center">
+              <img src={hireflowLightLogo} alt="Hireflow" className="h-8" />
+            </Link>
+            <div className="flex items-center gap-3">
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 rounded-full border-[#222121]/10 bg-white px-6 text-sm font-semibold text-[#222121] transition-all hover:border-[#222121]/20 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+              >
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
+              >
+                <a
+                  href="https://calendly.com/jordan-m-hireflow"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Login
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+                  Book a call
+                </a>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-20 relative z-10 flex-1 flex items-center">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
-          {/* Announcement badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-white/80 text-sm mb-8">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span>Trusted by the UK's fastest-growing recruitment agencies</span>
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-            We Book You Qualified Calls With <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Companies</span> That Need <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Recruiters</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Focus on what makes you money, placing candidates. Let us generate the new clients you need so you can scale.
-          </p>
-
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6 py-8">
-            {[
-              "7-14 Day Launch",
-              "Performance-Based Model",
-              "Results Guarantee"
-            ].map((text, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
-              >
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <CheckCircle2 className="h-3 w-3 text-white" />
-                </div>
-                <span className="font-medium text-white">{text}</span>
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 pb-20 pt-16 md:pt-20">
+          <div className="mx-auto max-w-4xl space-y-10 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+                <span className="size-2 rounded-full bg-[#34B192]" />
+                Trusted by recruitment teams across the UK
               </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="pt-6 space-y-4">
-            <a href="https://calendly.com/billy-tnwmarketing/rec-opportunities" target="_blank" rel="noopener noreferrer">
-              <Button
-                size="xl"
-                variant="gradient"
-                className="group"
-              >
-                Book Your Strategy Call
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </a>
-            <p className="text-white/50 text-sm">
-              No commitment required &bull; 30-minute call
-            </p>
-          </div>
-
-          {/* Stats row */}
-          <div className="pt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-            {[
-              { value: "500+", label: "Leads Generated" },
-              { value: "98%", label: "Client Satisfaction" },
-              { value: "14", label: "Day Average Launch" }
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-white/50 mt-1">{stat.label}</div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2">
+                <span className="size-2 rounded-full bg-[#34B192] animate-pulse" />
+                <span className="text-sm font-medium text-[#34B192]">3 slots left</span>
+                <span className="text-sm text-[#222121]/60">Launch in 2-3 weeks</span>
               </div>
-            ))}
+            </div>
+
+            <div className="space-y-5">
+              <h1 className="text-5xl font-semibold text-[#222121] md:text-6xl">
+                <span className="text-[#222121]">Scale</span>{" "}
+                <span className="text-[#222121]">your</span>{" "}
+                <span className="text-[#222121]">recruitment</span>{" "}
+                <span className="text-[#222121]">Pipeline</span>{" "}
+                <span className="text-[#222121]">with</span>{" "}
+                <span className="text-[#222121]">Qualified Calls</span>
+              </h1>
+              <p className="text-base text-[#222121]/70 md:text-lg">
+                We deliver consistent, qualified client meetings through AI-led outreach and strategic calling. Focus on placements while we grow your pipeline.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-4">
+              <a
+                href="https://calendly.com/jordan-m-hireflow"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 rounded-2xl bg-[#34B192] px-6 py-4 text-left text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:scale-[1.02] hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
+              >
+                <div className="size-12 overflow-hidden rounded-xl border-2 border-white/20 bg-white">
+                  <img
+                    src={hireflowWhiteLogo}
+                    alt="Hireflow"
+                    className="size-full object-contain p-0.5"
+                  />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">Book an intro call</div>
+                  <div className="text-sm text-white/80">
+                    Let's talk about your pipeline
+                  </div>
+                </div>
+                <ArrowRight className="ml-2 size-4 text-white/90" />
+              </a>
+              <p className="flex items-center gap-2 text-sm text-[#222121]/50">
+                <span className="size-1.5 rounded-full bg-[#34B192]" />
+                Be quick! Spots are almost gone for January.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              {highlights.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-3 py-2 text-sm text-[#222121]/70"
+                >
+                  <span className="flex size-6 items-center justify-center rounded-full bg-[#34B192]/10">
+                    <CheckCircle2 className="size-4 text-[#34B192]" />
+                  </span>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <div className="mx-auto max-w-4xl rounded-2xl border-y border-[#222121]/[0.08] bg-white px-6 py-10 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+              <div className="grid gap-8 md:grid-cols-3">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <div className="text-4xl font-semibold text-[#222121]">
+                      {stat.value}
+                    </div>
+                    <div className="mt-2 text-sm text-[#222121]/50">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 };

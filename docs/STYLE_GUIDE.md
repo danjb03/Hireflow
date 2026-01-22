@@ -1,118 +1,98 @@
-# Hireflow Style Guide
+# Hireflow Style Guide v2.0
 
-This document defines all styling conventions used in the Hireflow codebase. Reference this when building new components or pages.
-
----
-
-## Design System: Glassmorphism
-
-Hireflow uses a modern **glassmorphism design system** with:
-- Frosted glass effects (backdrop-blur)
-- Vibrant gradients
-- Smooth animations
-- Subtle shadows with glow effects
+A modern, minimal design system inspired by premium SaaS landing pages. Ultra-clean aesthetics with subtle depth, professional typography, and confident green accents.
 
 ---
 
-## Colors
+## Brand Overview
 
-### CSS Variables (defined in `src/index.css`)
+**Hireflow** is a recruitment lead generation agency under TNW Holdings UK Ltd. We produce high-quality leads for recruitment companies looking to scale their client acquisition, specialising in Energy, Packaging, and Manufacturing sectors.
 
-All colors use HSL format via CSS variables:
+---
+
+## Design Philosophy
+
+1. **Ultra-Minimal**: Light gray page backgrounds, white cards, no visual clutter
+2. **Subtle Depth**: Soft shadows and borders create hierarchy without heaviness
+3. **Green-Forward**: Primary actions use brand green - confident and growth-oriented
+4. **Large Typography**: Bold headlines with faded accent text for visual interest
+5. **Whitespace-Rich**: Generous padding and margins for breathing room
+6. **Social Proof Built-In**: CTAs with avatars, urgency indicators, trust signals
+
+---
+
+## Brand Colors
+
+### Primary Palette
+
+| Color Name | Hex Code | RGB | Usage |
+|------------|----------|-----|-------|
+| **Primary Green** | `#34B192` | `52, 177, 146` | Primary buttons, links, key actions, featured cards |
+| **Accent Green** | `#66E088` | `102, 224, 136` | Highlights, gradients, success states |
+| **Dark** | `#222121` | `34, 33, 33` | Headlines, primary text |
+| **White** | `#FFFFFF` | `255, 255, 255` | Cards, light text |
+| **Page Background** | `#F7F7F7` | `247, 247, 247` | Page backgrounds |
+| **Card Background** | `#FFFFFF` | `255, 255, 255` | Card backgrounds |
+
+### Extended Palette
+
+| Token | Value | Tailwind Class | Usage |
+|-------|-------|----------------|-------|
+| Primary | `#34B192` | `bg-[#34B192]` | Buttons, featured elements |
+| Primary Hover | `#2D9A7E` | `hover:bg-[#2D9A7E]` | Button hover states |
+| Primary Light | `rgba(52,177,146,0.1)` | `bg-[#34B192]/10` | Subtle backgrounds |
+| Primary Ultra-Light | `rgba(52,177,146,0.05)` | `bg-[#34B192]/5` | Hover states |
+| Accent | `#66E088` | `bg-[#66E088]` | Gradients, highlights |
+| Text Primary | `#222121` | `text-[#222121]` | Headlines |
+| Text Secondary | `rgba(34,33,33,0.7)` | `text-[#222121]/70` | Body text |
+| Text Muted | `rgba(34,33,33,0.5)` | `text-[#222121]/50` | Captions, labels |
+| Text Faint | `rgba(34,33,33,0.15)` | `text-[#222121]/15` | Watermark text |
+| Border | `rgba(34,33,33,0.08)` | `border-[#222121]/8` | Card borders |
+| Shadow | `rgba(0,0,0,0.04)` | `shadow-[0_2px_8px_rgba(0,0,0,0.04)]` | Card shadows |
+
+### CSS Custom Properties
 
 ```css
-/* Primary - Hireflow Green */
---primary: 145 70% 55%;
---primary-foreground: 0 0% 100%;
+:root {
+  --hireflow-primary: #34B192;
+  --hireflow-primary-hover: #2D9A7E;
+  --hireflow-accent: #66E088;
+  --hireflow-dark: #222121;
+  --hireflow-white: #FFFFFF;
+  --hireflow-page-bg: #F7F7F7;
+  --hireflow-card-bg: #FFFFFF;
 
-/* Secondary - Navy Blue */
---secondary: 215 50% 23%;
---secondary-foreground: 0 0% 100%;
-
-/* Semantic Colors */
---success: 142 76% 36%;        /* Green */
---warning: 38 92% 50%;         /* Amber */
---info: 217 91% 60%;           /* Blue */
---destructive: 0 84% 60%;      /* Red */
-
-/* Neutrals */
---background: 220 25% 97%;
---foreground: 224 71% 4%;
---muted: 220 14% 96%;
---muted-foreground: 220 9% 46%;
---accent: 215 25% 40%;
-
-/* Component Colors */
---card: 0 0% 100% / 0.7;       /* Glass effect */
---border: 220 13% 91%;
---input: 220 13% 91%;
---ring: var(--primary);
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-button: 0 4px 12px rgba(52, 177, 146, 0.25);
+}
 ```
 
-### Tailwind Usage
+### Tailwind Config
 
-```tsx
-// Primary actions
-className="bg-primary text-primary-foreground"
-className="text-primary"
-className="border-primary"
-
-// Semantic feedback
-className="bg-success text-success-foreground"
-className="bg-destructive text-destructive-foreground"
-className="bg-warning text-warning-foreground"
-className="bg-info text-info-foreground"
-
-// Neutrals
-className="bg-background"
-className="text-foreground"
-className="text-muted-foreground"
-className="bg-muted"
-className="border-border"
-```
-
-### Status Badge Colors
-
-```tsx
-// Client status badges
-const statusColors = {
-  happy: "bg-success/10 text-success border-success/20",
-  unhappy: "bg-destructive/10 text-destructive border-destructive/20",
-  urgent: "bg-destructive/20 text-destructive border-destructive/40 font-bold",
-  at_risk: "bg-warning/10 text-warning border-warning/20",
-  on_track: "bg-info/10 text-info border-info/20"
-};
-
-// Lead status badges
-const leadStatusColors = {
-  New: "bg-blue-100 text-blue-700",
-  Lead: "bg-purple-100 text-purple-700",
-  Approved: "bg-emerald-100 text-emerald-700",
-  'Needs Work': "bg-yellow-100 text-yellow-700",
-  Rejected: "bg-red-100 text-red-700"
-};
-
-// Notification badges
-className="bg-emerald-100 text-emerald-700"  // On/Enabled
-className="bg-slate-100 text-slate-600"      // Off/Disabled
-```
-
-### Gradient Patterns
-
-```tsx
-// Primary gradient (buttons, headers)
-className="bg-gradient-to-r from-primary to-primary/90"
-
-// Card accent gradients
-className="bg-gradient-to-t from-primary/5 to-card"
-className="bg-gradient-to-t from-blue-500/10 to-card"
-className="bg-gradient-to-t from-emerald-500/10 to-card"
-
-// Hero/landing gradients
-className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
-
-// Text gradients
-className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent"
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        hireflow: {
+          primary: '#34B192',
+          'primary-hover': '#2D9A7E',
+          accent: '#66E088',
+          dark: '#222121',
+        },
+        page: '#F7F7F7',
+      },
+      boxShadow: {
+        'card': '0 2px 8px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 8px 24px rgba(0, 0, 0, 0.08)',
+        'button': '0 4px 12px rgba(52, 177, 146, 0.25)',
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -121,187 +101,548 @@ className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transp
 
 ### Font Family
 
-Primary font: **Inter** (imported from Google Fonts)
+- **Primary:** Cal Sans (SemiBold) for headlines
+- **Body:** Inter or system-ui for body text
+- **Mono:** JetBrains Mono for code
 
-### Heading Sizes
+### Font Installation
 
-```tsx
-// Page title
-className="text-2xl font-bold tracking-tight"
+```css
+@font-face {
+  font-family: 'Cal Sans';
+  src: url('/fonts/CalSans-SemiBold.woff2') format('woff2'),
+       url('/fonts/CalSans-SemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
-// Large hero (landing)
-className="text-4xl md:text-6xl lg:text-7xl font-bold"
+:root {
+  --font-heading: 'Cal Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
 
-// Card title
-className="text-xl font-semibold leading-none tracking-tight"
-className="text-lg font-semibold"
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
 
-// Section title
-className="text-base font-semibold"
+body {
+  font-family: var(--font-body);
+}
 ```
 
-### Body Text
+### Type Scale
+
+| Element | Size | Weight | Class |
+|---------|------|--------|-------|
+| Hero Headline | 56-64px | 600 | `text-6xl font-semibold` |
+| Section Headline | 40-48px | 600 | `text-5xl font-semibold` |
+| Card Title | 24-28px | 600 | `text-2xl font-semibold` |
+| Subheading | 18-20px | 500 | `text-lg font-medium` |
+| Body Large | 18px | 400 | `text-lg` |
+| Body | 16px | 400 | `text-base` |
+| Body Small | 14px | 400 | `text-sm` |
+| Caption | 12px | 500 | `text-xs font-medium` |
+| Watermark | 200-300px | 600 | `text-[200px] font-semibold` |
+
+### Headline Styling Pattern
+
+Headlines often have mixed opacity for visual interest:
 
 ```tsx
-// Default body
-className="text-sm"
+// Faded words with bold emphasis
+<h2 className="text-5xl font-semibold text-center">
+  <span className="text-[#222121]/40">Partner with a team that</span>{' '}
+  <span className="text-[#222121]">delivers results.</span>
+</h2>
 
-// Description/subtitle
-className="text-sm text-muted-foreground"
-className="text-sm text-muted-foreground mt-1"
-
-// Caption
-className="text-xs text-muted-foreground"
+// Or alternating pattern
+<h2 className="text-5xl font-semibold text-center">
+  <span className="text-[#222121]/40">Scale your</span>{' '}
+  <span className="text-[#222121]">recruitment pipeline.</span>
+</h2>
 ```
 
-### Labels
+---
+
+## Page Layout
+
+### Background Pattern
 
 ```tsx
-// Uppercase labels (cards, stats)
-className="text-xs font-medium text-muted-foreground uppercase tracking-wide"
-
-// Form labels
-className="text-sm font-medium"
+// Page wrapper with light gray background
+<div className="min-h-screen bg-[#F7F7F7]">
+  {/* Content */}
+</div>
 ```
 
-### Numbers & Stats
+### Large Watermark Text (Footer/Background)
 
 ```tsx
-// Large stat numbers
-className="text-3xl md:text-4xl font-bold tabular-nums"
-className="text-2xl font-bold tabular-nums"
+// Giant faded brand name in background
+<div className="relative overflow-hidden">
+  <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pointer-events-none select-none">
+    <span className="text-[200px] md:text-[280px] font-semibold text-[#222121]/[0.03] leading-none tracking-tight">
+      hireflow
+    </span>
+  </div>
+  {/* Foreground content */}
+</div>
+```
+
+### Section Spacing
+
+```tsx
+// Standard section
+<section className="py-20 md:py-28">
+  <div className="max-w-6xl mx-auto px-6">
+    {/* Content */}
+  </div>
+</section>
 ```
 
 ---
 
 ## Components
 
-### Buttons (`src/components/ui/button.tsx`)
+### Section Pills (with dot indicator)
 
-**Variants:**
-- `default` - Green gradient (primary actions)
-- `secondary` - Navy gradient
-- `outline` - Border + glass effect
-- `ghost` - Minimal hover
-- `destructive` - Red gradient
-- `glass` - Glassmorphic
-- `success` - Green
-
-**Sizes:**
-- `sm` - h-9 px-3.5 text-xs
-- `default` - h-11 px-5 py-2.5
-- `lg` - h-12 px-8 text-base
-- `xl` - h-14 px-10 text-lg
-- `icon` - h-10 w-10 (square)
-
-### Cards (`src/components/ui/card.tsx`)
-
-**Variants:**
-- `default` - Glass effect
-- `glass` - Lighter glass
-- `solid` - Standard opaque
-- `elevated` - Stronger shadow
-
-**Hover:**
-- `none`, `lift`, `glow`, `scale`
-
-**Stats card pattern:**
 ```tsx
-<Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm">
-  <CardContent className="p-6">
-    <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-      Label
-    </CardDescription>
-    <CardTitle className="text-2xl font-bold tabular-nums">
-      {value}
-    </CardTitle>
-  </CardContent>
-</Card>
+// Section label pill
+<div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+  <span className="size-2 rounded-full bg-[#34B192]" />
+  Our Services
+</div>
+
+// Urgency pill variant
+<div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2">
+  <span className="size-2 rounded-full bg-[#34B192] animate-pulse" />
+  <span className="text-sm font-medium text-[#34B192]">3 slots left</span>
+  <span className="text-sm text-[#222121]/60">Launch in 2-3 weeks</span>
+</div>
 ```
 
-### Badges (`src/components/ui/badge.tsx`)
+### Primary CTA Button (with avatar)
 
-**Variants:** `default`, `secondary`, `success`, `warning`, `destructive`, `info`, `outline`, `glass`
+```tsx
+// CTA with embedded avatar - signature style
+<button className="group relative inline-flex items-center gap-3 rounded-2xl bg-[#34B192] px-6 py-4 text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)] hover:scale-[1.02]">
+  <div className="size-10 overflow-hidden rounded-xl border-2 border-white/20">
+    <img src="/avatar.jpg" alt="" className="size-full object-cover" />
+  </div>
+  <div className="text-left">
+    <div className="font-semibold">Book an Intro Call</div>
+    <div className="text-sm text-white/80">Let's talk about your pipeline</div>
+  </div>
+</button>
 
-**Sizes:** `sm`, `default`, `lg`
+// Urgency text below CTA
+<p className="mt-3 flex items-center justify-center gap-2 text-sm text-[#222121]/50">
+  <span className="size-1.5 rounded-full bg-[#34B192]" />
+  Be quick! Spots are almost gone for January
+</p>
+```
+
+### Standard Buttons
+
+```tsx
+// Primary button (green, rounded-full)
+<button className="h-12 rounded-full bg-[#34B192] px-8 text-sm font-semibold text-white shadow-button transition-all hover:bg-[#2D9A7E] hover:shadow-lg">
+  Get Started
+</button>
+
+// Secondary button (white with border)
+<button className="h-12 rounded-full border border-[#222121]/10 bg-white px-8 text-sm font-semibold text-[#222121] transition-all hover:border-[#222121]/20 hover:shadow-card">
+  Learn More
+</button>
+
+// Ghost button with icon
+<button className="inline-flex items-center gap-2 text-sm font-medium text-[#222121]/60 transition-colors hover:text-[#34B192]">
+  <MailIcon className="size-4" />
+  Reach out via email
+</button>
+```
+
+### Cards - Standard
+
+```tsx
+// Basic card
+<div className="rounded-2xl border border-[#222121]/8 bg-white p-6 shadow-card transition-all hover:shadow-card-hover">
+  {/* Content */}
+</div>
+
+// Card with top badge
+<div className="rounded-2xl border border-[#222121]/8 bg-white p-6 shadow-card">
+  <span className="inline-block rounded-full bg-[#34B192]/10 px-3 py-1 text-xs font-semibold text-[#34B192]">
+    Popular
+  </span>
+  <h3 className="mt-4 text-xl font-semibold text-[#222121]">Card Title</h3>
+  <p className="mt-2 text-[#222121]/60">Card description goes here.</p>
+</div>
+```
+
+### Pricing Cards (3-column with featured)
+
+```tsx
+// Standard pricing card
+<div className="rounded-2xl border border-[#222121]/8 bg-white p-8 shadow-card">
+  <span className="inline-block rounded-full bg-[#34B192]/10 px-3 py-1 text-xs font-semibold text-[#34B192]">
+    Starter
+  </span>
+  <h3 className="mt-6 text-2xl font-semibold text-[#222121]">Lead Sprint</h3>
+  <p className="mt-2 text-[#222121]/60">
+    Quick-start lead generation for recruitment firms ready to grow.
+  </p>
+
+  <div className="mt-8">
+    <p className="text-sm font-medium text-[#222121]/50">What's included:</p>
+    <ul className="mt-4 space-y-3">
+      <li className="flex items-start gap-3">
+        <CheckIcon className="mt-0.5 size-5 text-[#34B192]" />
+        <span className="text-sm text-[#222121]/70">50 qualified leads per month</span>
+      </li>
+      {/* More items */}
+    </ul>
+  </div>
+
+  <button className="mt-8 w-full h-12 rounded-full bg-[#34B192] text-sm font-semibold text-white transition-all hover:bg-[#2D9A7E]">
+    Launch in 7 Days
+  </button>
+</div>
+
+// Featured pricing card (full green background)
+<div className="rounded-2xl bg-[#34B192] p-8 shadow-[0_8px_32px_rgba(52,177,146,0.3)]">
+  <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white">
+    Most Popular
+  </span>
+  <h3 className="mt-6 text-2xl font-semibold text-white">Pipeline Pro</h3>
+  <p className="mt-2 text-white/80">
+    Full-service lead generation with dedicated support.
+  </p>
+
+  <button className="mt-6 w-full h-12 rounded-full bg-white text-sm font-semibold text-[#34B192] transition-all hover:bg-white/90">
+    Scale Your Pipeline
+  </button>
+
+  <div className="mt-8">
+    <p className="text-sm font-medium text-white/70">What's included:</p>
+    <ul className="mt-4 space-y-3">
+      <li className="flex items-start gap-3">
+        <CheckIcon className="mt-0.5 size-5 text-white" />
+        <span className="text-sm text-white/90">150 qualified leads per month</span>
+      </li>
+      {/* More items */}
+    </ul>
+  </div>
+</div>
+```
+
+### Process Steps (numbered cards)
+
+```tsx
+<div className="grid md:grid-cols-3 gap-6">
+  {/* Step 1 */}
+  <div className="rounded-2xl border border-[#222121]/8 bg-white p-8 shadow-card">
+    <span className="text-sm font-semibold text-[#34B192]">1-2 DAYS</span>
+
+    {/* Visual/illustration area */}
+    <div className="mt-6 aspect-[4/3] rounded-xl bg-[#F7F7F7] flex items-center justify-center">
+      {/* Image or illustration */}
+    </div>
+
+    {/* Large step number */}
+    <div className="mt-6 text-5xl font-semibold text-[#34B192]/20">1.</div>
+
+    <h3 className="mt-2 text-xl font-semibold text-[#222121]">Discovery Call</h3>
+    <p className="mt-2 text-[#222121]/60">
+      We understand your ideal clients, sectors, and what success looks like.
+    </p>
+  </div>
+
+  {/* Step 2, 3... */}
+</div>
+```
+
+### Before/After Comparison
+
+```tsx
+<div className="grid md:grid-cols-2 gap-8 items-start">
+  {/* Before */}
+  <div className="relative">
+    <span className="absolute -top-3 left-4 z-10 rounded-md border border-[#222121]/10 bg-white px-3 py-1 text-xs font-semibold text-[#222121]/60">
+      Before
+    </span>
+    <div className="rounded-2xl border border-[#222121]/10 bg-white p-2 shadow-card">
+      <img src="/before.jpg" className="rounded-xl" />
+    </div>
+  </div>
+
+  {/* Arrow between */}
+  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+    <svg className="size-12 text-[#34B192]" /* curved arrow */ />
+  </div>
+
+  {/* After */}
+  <div className="relative">
+    <span className="absolute -top-3 right-4 z-10 rounded-md bg-[#34B192] px-3 py-1 text-xs font-semibold text-white">
+      After
+    </span>
+    <div className="rounded-2xl border-2 border-[#34B192]/30 bg-white p-2 shadow-card-hover">
+      <img src="/after.jpg" className="rounded-xl" />
+    </div>
+  </div>
+</div>
+```
+
+### FAQ Accordion
+
+```tsx
+<div className="space-y-3">
+  {faqs.map((faq) => (
+    <div
+      key={faq.id}
+      className="rounded-2xl border border-[#222121]/8 bg-white px-6 py-4 shadow-card transition-all hover:shadow-card-hover"
+    >
+      <button className="flex w-full items-center justify-between text-left">
+        <span className="text-base font-medium text-[#222121]">{faq.question}</span>
+        <ChevronDownIcon className="size-5 text-[#222121]/40 transition-transform ui-open:rotate-180" />
+      </button>
+      {/* Expanded content */}
+      <div className="mt-4 text-[#222121]/60">
+        {faq.answer}
+      </div>
+    </div>
+  ))}
+</div>
+```
+
+### Contact Card (sidebar style)
+
+```tsx
+<div className="rounded-2xl border border-[#222121]/8 bg-white p-6 shadow-card">
+  <div className="flex items-center gap-3">
+    <div className="size-12 overflow-hidden rounded-xl">
+      <img src="/avatar.jpg" className="size-full object-cover" />
+    </div>
+    <div>
+      <p className="font-medium text-[#222121]">Didn't find the answer?</p>
+      <p className="text-sm text-[#222121]/60">Book a free discovery call!</p>
+    </div>
+  </div>
+
+  <div className="mt-6 space-y-3">
+    <button className="w-full h-11 rounded-full bg-[#34B192] text-sm font-semibold text-white transition-all hover:bg-[#2D9A7E]">
+      Book an Intro Call
+    </button>
+    <button className="w-full h-11 rounded-full border border-[#222121]/10 bg-white text-sm font-medium text-[#222121] transition-all hover:border-[#222121]/20 flex items-center justify-center gap-2">
+      <MailIcon className="size-4" />
+      Reach out via email
+    </button>
+  </div>
+</div>
+```
+
+### Feature Checklist
+
+```tsx
+<ul className="space-y-3">
+  <li className="flex items-start gap-3">
+    <div className="mt-0.5 flex size-5 items-center justify-center rounded bg-[#34B192]/10">
+      <CheckIcon className="size-3.5 text-[#34B192]" />
+    </div>
+    <span className="text-sm text-[#222121]/70">Qualified recruitment company leads</span>
+  </li>
+  <li className="flex items-start gap-3">
+    <div className="mt-0.5 flex size-5 items-center justify-center rounded bg-[#34B192]/10">
+      <CheckIcon className="size-3.5 text-[#34B192]" />
+    </div>
+    <span className="text-sm text-[#222121]/70">Direct contact with decision makers</span>
+  </li>
+  {/* More items */}
+</ul>
+
+// White checkmarks on green cards
+<ul className="space-y-3">
+  <li className="flex items-start gap-3">
+    <div className="mt-0.5 flex size-5 items-center justify-center rounded bg-white/20">
+      <CheckIcon className="size-3.5 text-white" />
+    </div>
+    <span className="text-sm text-white/90">Qualified recruitment company leads</span>
+  </li>
+</ul>
+```
+
+### Stats/Metrics Display
+
+```tsx
+<div className="grid grid-cols-3 gap-8 py-12 border-y border-[#222121]/8">
+  <div className="text-center">
+    <div className="text-4xl font-semibold text-[#34B192]">500+</div>
+    <div className="mt-1 text-sm text-[#222121]/50">Leads Generated</div>
+  </div>
+  <div className="text-center">
+    <div className="text-4xl font-semibold text-[#222121]">47%</div>
+    <div className="mt-1 text-sm text-[#222121]/50">Conversion Rate</div>
+  </div>
+  <div className="text-center">
+    <div className="text-4xl font-semibold text-[#222121]">24hr</div>
+    <div className="mt-1 text-sm text-[#222121]/50">Avg Response Time</div>
+  </div>
+</div>
+```
 
 ---
 
-## Spacing
+## Logo Usage
 
-### Page Layout
+### Logo Variants
+
+| Variant | Usage |
+|---------|-------|
+| `Hireflow_-_Light_BG.svg` | White/light gray backgrounds |
+| `Hireflow_-_Dark_BG.png` | Dark backgrounds, green backgrounds |
+| `Hireflow_-_LogoMark.jpg` | Favicons, app icons, social avatars |
+
+### Watermark Implementation
+
 ```tsx
-className="space-y-6"      // Page sections
-className="p-4 md:p-6"     // Page padding
-```
-
-### Grid Patterns
-```tsx
-// Stats cards
-className="grid grid-cols-2 gap-4 md:grid-cols-4"
-
-// Feature grid
-className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-```
-
-### Card Content
-```tsx
-className="p-6"   // Standard
-className="p-5"   // Compact
+// Large background watermark
+<span className="text-[200px] md:text-[280px] font-semibold text-[#222121]/[0.03] leading-none tracking-tight lowercase">
+  hireflow
+</span>
 ```
 
 ---
 
-## Effects
+## Spacing & Layout
 
-### Glass Effects
-```tsx
-className="bg-white/70 backdrop-blur-xl border border-white/20"
-```
+| Context | Value | Class |
+|---------|-------|-------|
+| Section padding | 80-112px | `py-20 md:py-28` |
+| Card padding | 24-32px | `p-6` or `p-8` |
+| Card gap | 24px | `gap-6` |
+| Component gap | 16-24px | `gap-4` or `gap-6` |
+| Max content width | 1152px | `max-w-6xl` |
+| Border radius (cards) | 16px | `rounded-2xl` |
+| Border radius (buttons) | 9999px | `rounded-full` |
+| Border radius (badges) | 9999px | `rounded-full` |
 
-### Shadows
-```tsx
-className="shadow-sm"   // Cards
-className="shadow-[0_4px_14px_-3px_hsl(var(--primary)/0.4)]"  // Button glow
-```
+---
 
-### Border Radius
-```tsx
-className="rounded-xl"   // DEFAULT (most components)
-className="rounded-2xl"  // Large cards
-className="rounded-full" // Badges, avatars
+## Animation & Transitions
+
+```css
+/* Standard transition */
+transition: all 0.2s ease;
+
+/* Tailwind classes */
+.transition-all
+.duration-200
+.ease-out
+
+/* Hover scale for CTAs */
+hover:scale-[1.02]
+
+/* Shadow transitions */
+shadow-card -> hover:shadow-card-hover
 ```
 
 ---
 
-## Icons
+## Do's and Don'ts
 
-**Library:** `lucide-react` (ONLY)
+### Do
 
-```tsx
-import { Icon } from "lucide-react";
+- Use light gray (`#F7F7F7`) for page backgrounds
+- Use white cards with subtle shadows
+- Use large watermark text for brand reinforcement
+- Include avatars in primary CTAs for trust
+- Add urgency indicators ("3 slots left", "Almost gone")
+- Use section pills with dot indicators
+- Make featured cards full green background
+- Use generous whitespace
+- Keep borders very subtle (8% opacity)
+- Mix faded and bold text in headlines
 
-<Icon className="h-4 w-4" />           // Standard
-<Icon className="h-4 w-4 mr-2" />      // In buttons
-<Icon className="h-5 w-5 text-primary" /> // Colored
+### Don't
+
+- Use pure white page backgrounds (too harsh)
+- Add heavy shadows or borders
+- Use multiple accent colors
+- Overcrowd sections with content
+- Skip the section pill indicators
+- Use small, timid buttons
+- Forget the watermark brand element
+- Use dark backgrounds for main sections
+- Add unnecessary decorative elements
+
+---
+
+## Quick Reference
+
+### Essential Classes
+
+```
+// Page
+bg-[#F7F7F7]                    - Page background
+
+// Cards
+bg-white rounded-2xl border border-[#222121]/8 shadow-card
+
+// Featured Card
+bg-[#34B192] rounded-2xl shadow-[0_8px_32px_rgba(52,177,146,0.3)]
+
+// Primary Button
+h-12 rounded-full bg-[#34B192] text-white font-semibold hover:bg-[#2D9A7E]
+
+// Section Pill
+inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2
+
+// Headlines
+text-5xl font-semibold text-[#222121]
+
+// Faded headline text
+text-[#222121]/40
+
+// Body text
+text-[#222121]/60 or text-[#222121]/70
+
+// Watermark
+text-[200px] font-semibold text-[#222121]/[0.03]
+
+// Checkmark icon bg
+bg-[#34B192]/10 text-[#34B192]
 ```
 
 ---
 
-## What's NOT Used
+## File Structure for Implementation
 
-- CSS Modules
-- Styled Components
-- Custom CSS files (except index.css)
-- Icon libraries other than lucide-react
-- Custom fonts beyond Inter
-- Inline styles
+```
+/public
+  /fonts
+    CalSans-SemiBold.woff2
+    CalSans-SemiBold.woff
+  /images
+    hireflow-logo-light.svg
+    hireflow-logo-dark.png
+    hireflow-logomark.jpg
+    avatar.jpg (for CTAs)
+
+/src
+  /styles
+    globals.css (fonts, custom properties)
+  /components
+    /ui
+      Button.tsx
+      Card.tsx
+      SectionPill.tsx
+      PricingCard.tsx
+      FAQAccordion.tsx
+      ProcessStep.tsx
+```
 
 ---
 
-## Reference Files
-
-- **Tailwind config:** `tailwind.config.ts`
-- **CSS variables:** `src/index.css`
-- **Example page:** `src/pages/AdminDashboard.tsx`
-- **Landing styles:** `src/components/landing/HeroSection.tsx`
+*Hireflow Style Guide v2.0*
+*Updated: January 2026*

@@ -1,77 +1,83 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Phone, Settings, Rocket, Briefcase } from "lucide-react";
+import { Briefcase, Phone, Rocket, Settings } from "lucide-react";
+
+const steps = [
+  {
+    icon: Phone,
+    number: "1-2 days",
+    title: "Discovery call",
+    description:
+      "We align on your ideal client profile, sectors, and what success looks like.",
+  },
+  {
+    icon: Settings,
+    number: "7-14 days",
+    title: "Campaign setup",
+    description:
+      "Target lists, messaging, and infrastructure are built and approved for launch.",
+  },
+  {
+    icon: Rocket,
+    number: "Week 3",
+    title: "Launch and optimize",
+    description:
+      "Campaigns go live with daily monitoring, testing, and iteration for response lift.",
+  },
+  {
+    icon: Briefcase,
+    number: "Ongoing",
+    title: "Qualified leads delivered",
+    description:
+      "You receive booked meetings while we keep refining output and reporting.",
+  },
+];
 
 export const HowItWorksSection = () => {
-  const steps = [
-    {
-      icon: Phone,
-      number: "01",
-      title: "Discovery & Strategy Call",
-      description: "We'll hop on a call to understand your ideal client profile, your service offerings, and your goals. We'll formulate an initial campaign strategy tailored to your agency."
-    },
-    {
-      icon: Settings,
-      number: "02",
-      title: "Campaign Setup (7-14 Days)",
-      description: "We build your target lists, craft personalized messaging, and set up all the tech infrastructure. You'll review and approve everything before we launch."
-    },
-    {
-      icon: Rocket,
-      number: "03",
-      title: "Launch & Optimize",
-      description: "Your campaigns go live. We monitor performance daily, test different approaches, and continuously optimize for better results. You start receiving qualified leads."
-    },
-    {
-      icon: Briefcase,
-      number: "04",
-      title: "Fill Your Pipeline & Close More Business",
-      description: "Enjoy a consistent flow of qualified recruitment clients coming to you. Focus on what you do best - making placements - while we handle lead generation."
-    }
-  ];
-
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How Does The Process Work?
+    <section
+      id="how-it-works"
+      className="relative overflow-hidden bg-[#F7F7F7] py-20 md:py-28"
+    >
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_bottom_right,rgba(52,177,146,0.06),transparent_60%),radial-gradient(circle_at_top_left,rgba(52,177,146,0.04),transparent_65%),radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_70%)]" />
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              How it works
+            </div>
+            <h2 className="mt-6 text-4xl font-semibold text-[#222121] md:text-5xl">
+              <span className="text-[#222121]/40">A process that keeps your</span>{" "}
+              <span className="text-[#222121]">pipeline moving.</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
-              From first call to closed clients - here's how we fill your pipeline
+            <p className="mt-5 text-base text-[#222121]/70">
+              From first call to qualified meetings, we prioritize speed, clarity, and measurable impact.
             </p>
           </div>
 
-          {/* Steps */}
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {steps.map((step, index) => (
-              <Card key={index} className="border-border hover:shadow-lg transition-all relative overflow-hidden">
-                {/* Gradient accent */}
-                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#64df88] to-[#35b192]" />
-                
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-[#64df88] to-[#35b192] flex items-center justify-center flex-shrink-0">
-                      <step.icon className="h-7 w-7 text-white" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1">
-                      <div className="text-sm font-bold text-[#64df88] mb-2">
-                        STEP {step.number}
-                      </div>
-                      <h3 className="text-xl font-bold text-foreground mb-3">
-                        {step.title}
-                      </h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
+              <div
+                key={step.title}
+                className="rounded-2xl border border-[#222121]/[0.08] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+              >
+                <span className="text-xs font-semibold text-[#34B192]">
+                  {step.number}
+                </span>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                    <step.icon className="size-5 text-[#34B192]" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="text-5xl font-semibold text-[#34B192]/20">
+                    {index + 1}.
+                  </div>
+                </div>
+                <h3 className="mt-4 text-2xl font-semibold text-[#222121]">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm text-[#222121]/60">
+                  {step.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>

@@ -1,55 +1,62 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, TrendingDown, Zap } from "lucide-react";
 
-export const WhyChooseSection = () => {
-  const benefits = [
-    {
-      icon: Brain,
-      title: "AI-Powered Personalization",
-      description: "Every email is hyper-personalized using AI. We don't send spam - we send messages that speak directly to your ideal client's pain points, resulting in response rates that traditional BD teams can't match."
-    },
-    {
-      icon: TrendingDown,
-      title: "Cost-Effective Scaling",
-      description: "Significantly less expensive than hiring in-house BD reps. No salaries, no training time, no management overhead. Get more leads for less investment while maintaining complete control of your pipeline."
-    },
-    {
-      icon: Zap,
-      title: "Fast & Seamless Setup",
-      description: "We can have your lead generation campaign live in 7-14 days. A fraction of the time it would take to hire, train, and ramp up an internal team."
-    }
-  ];
+const benefits = [
+  {
+    icon: Brain,
+    title: "AI-powered personalization",
+    description:
+      "Every email is tailored to your ideal client, driving responses and booked calls.",
+  },
+  {
+    icon: TrendingDown,
+    title: "Cost-effective scaling",
+    description:
+      "Replace in-house BD overhead with a dedicated outreach engine that scales with you.",
+  },
+  {
+    icon: Zap,
+    title: "Fast, focused setup",
+    description:
+      "Launch in 7-14 days with clear positioning, approved lists, and reporting baked in.",
+  },
+];
 
+export const WhyChooseSection = () => {
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Why Hireflow?
+    <section className="relative overflow-hidden bg-[#F7F7F7] py-20 md:py-28">
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_left,rgba(52,177,146,0.06),transparent_60%),radial-gradient(circle_at_bottom_right,rgba(52,177,146,0.04),transparent_65%),radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_70%)]" />
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Why Hireflow
+            </div>
+            <h2 className="mt-6 text-4xl font-semibold text-[#222121] md:text-5xl">
+              <span className="text-[#222121]/40">Partner with a team that</span>{" "}
+              <span className="text-[#222121]">delivers results.</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              What is Hireflow? Hireflow is your dedicated lead generation partner, specialized in bringing high-quality recruitment clients straight to your pipeline. We use AI-powered cold email and strategic cold calling to connect you with companies actively looking to hire.
+            <p className="mx-auto mt-5 max-w-3xl text-base text-[#222121]/70">
+              Hireflow combines AI-driven outbound with strategic calling to bring qualified recruitment clients straight into your pipeline.
             </p>
           </div>
 
-          {/* Benefits Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="border-border hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#64df88] to-[#35b192] flex items-center justify-center mb-4">
-                    <benefit.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <CardTitle className="text-xl">{benefit.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {benefit.description}
-                  </p>
-                </CardContent>
-              </Card>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {benefits.map((benefit) => (
+              <div
+                key={benefit.title}
+                className="rounded-2xl border border-[#222121]/[0.08] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+              >
+                <div className="flex size-12 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <benefit.icon className="size-5 text-[#34B192]" />
+                </div>
+                <h3 className="mt-4 text-2xl font-semibold text-[#222121]">
+                  {benefit.title}
+                </h3>
+                <p className="mt-3 text-sm text-[#222121]/60">
+                  {benefit.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
