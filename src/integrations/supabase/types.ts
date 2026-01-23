@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          airtable_client_id: string | null
           airtable_rep_id: string | null
           client_name: string | null
           client_status: string | null
@@ -26,11 +27,13 @@ export type Database = {
           leads_fulfilled: number | null
           leads_per_day: number | null
           leads_purchased: number | null
+          onboarding_completed: boolean | null
           onboarding_date: string | null
           target_delivery_date: string | null
           updated_at: string
         }
         Insert: {
+          airtable_client_id?: string | null
           airtable_rep_id?: string | null
           client_name?: string | null
           client_status?: string | null
@@ -41,11 +44,13 @@ export type Database = {
           leads_fulfilled?: number | null
           leads_per_day?: number | null
           leads_purchased?: number | null
+          onboarding_completed?: boolean | null
           onboarding_date?: string | null
           target_delivery_date?: string | null
           updated_at?: string
         }
         Update: {
+          airtable_client_id?: string | null
           airtable_rep_id?: string | null
           client_name?: string | null
           client_status?: string | null
@@ -56,6 +61,7 @@ export type Database = {
           leads_fulfilled?: number | null
           leads_per_day?: number | null
           leads_purchased?: number | null
+          onboarding_completed?: boolean | null
           onboarding_date?: string | null
           target_delivery_date?: string | null
           updated_at?: string
@@ -82,342 +88,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      deals: {
-        Row: {
-          id: string
-          company_name: string
-          revenue_inc_vat: number
-          revenue_net: number
-          operating_expense: number
-          leads_sold: number
-          lead_sale_price: number
-          setter_commission_percent: number
-          sales_rep_commission_percent: number
-          setter_cost: number
-          sales_rep_cost: number
-          lead_fulfillment_cost: number
-          close_date: string
-          notes: string | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          company_name: string
-          revenue_inc_vat: number
-          revenue_net: number
-          operating_expense: number
-          leads_sold?: number
-          lead_sale_price: number
-          setter_commission_percent?: number
-          sales_rep_commission_percent?: number
-          setter_cost: number
-          sales_rep_cost: number
-          lead_fulfillment_cost: number
-          close_date: string
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          company_name?: string
-          revenue_inc_vat?: number
-          revenue_net?: number
-          operating_expense?: number
-          leads_sold?: number
-          lead_sale_price?: number
-          setter_commission_percent?: number
-          sales_rep_commission_percent?: number
-          setter_cost?: number
-          sales_rep_cost?: number
-          lead_fulfillment_cost?: number
-          close_date?: string
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      business_costs: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          amount: number
-          cost_type: "recurring" | "one_time"
-          frequency: "monthly" | "quarterly" | "yearly" | null
-          category: string
-          effective_date: string
-          end_date: string | null
-          is_active: boolean
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          amount: number
-          cost_type: "recurring" | "one_time"
-          frequency?: "monthly" | "quarterly" | "yearly" | null
-          category: string
-          effective_date: string
-          end_date?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          amount?: number
-          cost_type?: "recurring" | "one_time"
-          frequency?: "monthly" | "quarterly" | "yearly" | null
-          category?: string
-          effective_date?: string
-          end_date?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      cost_categories: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          icon: string | null
-          color: string | null
-          sort_order: number | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          icon?: string | null
-          color?: string | null
-          sort_order?: number | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          icon?: string | null
-          color?: string | null
-          sort_order?: number | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      sales_reps: {
-        Row: {
-          id: string
-          name: string
-          email: string | null
-          is_active: boolean
-          daily_calls_target: number
-          daily_hours_target: number
-          daily_bookings_target: number
-          daily_pipeline_target: number
-          weekly_bookings_target: number | null
-          weekly_pipeline_target: number | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          email?: string | null
-          is_active?: boolean
-          daily_calls_target?: number
-          daily_hours_target?: number
-          daily_bookings_target?: number
-          daily_pipeline_target?: number
-          weekly_bookings_target?: number | null
-          weekly_pipeline_target?: number | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          email?: string | null
-          is_active?: boolean
-          daily_calls_target?: number
-          daily_hours_target?: number
-          daily_bookings_target?: number
-          daily_pipeline_target?: number
-          weekly_bookings_target?: number | null
-          weekly_pipeline_target?: number | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      daily_reports: {
-        Row: {
-          id: string
-          rep_id: string
-          report_date: string
-          time_on_dialer_minutes: number
-          calls_made: number
-          bookings_made: number
-          pipeline_value: number
-          ai_extracted_time_minutes: number | null
-          ai_extracted_calls: number | null
-          ai_confidence_score: number | null
-          screenshot_path: string | null
-          screenshot_url: string | null
-          notes: string | null
-          submitted_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          rep_id: string
-          report_date: string
-          time_on_dialer_minutes: number
-          calls_made: number
-          bookings_made?: number
-          pipeline_value?: number
-          ai_extracted_time_minutes?: number | null
-          ai_extracted_calls?: number | null
-          ai_confidence_score?: number | null
-          screenshot_path?: string | null
-          screenshot_url?: string | null
-          notes?: string | null
-          submitted_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          rep_id?: string
-          report_date?: string
-          time_on_dialer_minutes?: number
-          calls_made?: number
-          bookings_made?: number
-          pipeline_value?: number
-          ai_extracted_time_minutes?: number | null
-          ai_extracted_calls?: number | null
-          ai_confidence_score?: number | null
-          screenshot_path?: string | null
-          screenshot_url?: string | null
-          notes?: string | null
-          submitted_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "daily_reports_rep_id_fkey"
-            columns: ["rep_id"]
-            isOneToOne: false
-            referencedRelation: "sales_reps"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      orders: {
-        Row: {
-          id: string
-          client_id: string
-          order_number: string
-          leads_purchased: number
-          leads_delivered: number
-          start_date: string | null
-          target_delivery_date: string | null
-          status: string
-          notes: string | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          order_number: string
-          leads_purchased?: number
-          leads_delivered?: number
-          start_date?: string | null
-          target_delivery_date?: string | null
-          status?: string
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          order_number?: string
-          leads_purchased?: number
-          leads_delivered?: number
-          start_date?: string | null
-          target_delivery_date?: string | null
-          status?: string
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      rep_client_allocations: {
-        Row: {
-          id: string
-          rep_id: string
-          client_airtable_id: string
-          client_name: string | null
-          allocated_by: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          rep_id: string
-          client_airtable_id: string
-          client_name?: string | null
-          allocated_by?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          rep_id?: string
-          client_airtable_id?: string
-          client_name?: string | null
-          allocated_by?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rep_client_allocations_rep_id_fkey"
-            columns: ["rep_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
       }
     }
     Views: {

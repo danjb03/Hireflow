@@ -368,8 +368,8 @@ const AdminAllLeads = () => {
     // couldn't resolve it - show a fallback. Otherwise, it should be the client name.
     if (clientValue.startsWith('rec')) {
       // Try to find client by matching - this shouldn't happen if backend works correctly
-      const client = clients.find(c => c.client_name === clientValue);
-      return client?.client_name || clientValue;
+      const client = clients.find(c => c.name === clientValue);
+      return client?.name || clientValue;
     }
 
     return clientValue;

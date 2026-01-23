@@ -237,7 +237,7 @@ const AdminClients = () => {
 
       if (error) throw error;
 
-      setClients(data || []);
+      setClients((data || []) as Client[]);
       // Load sentiment data after clients are loaded
       loadSentimentData();
     } catch (error: any) {

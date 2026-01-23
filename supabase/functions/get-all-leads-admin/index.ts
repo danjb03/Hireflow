@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
       const fields = record.fields;
       
       // Resolve client name from Client field
-      let assignedClient = 'Unassigned';
+      let assignedClient: string = 'Unassigned';
       let assignedClientId: string | null = null;
       const clientField = fields['Clients'];
       
@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
           const clientId = clientField[0];
           assignedClientId = clientId;
           // Try to get name from map
-          assignedClient = clientNameMap.get(clientId);
+          assignedClient = clientNameMap.get(clientId) || 'Unassigned';
           
           // If not found, it's a record ID we couldn't resolve
           if (!assignedClient) {
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
           if (clientField.startsWith('rec')) {
             // It's a record ID, look it up
             assignedClientId = clientField;
-            assignedClient = clientNameMap.get(clientField);
+            assignedClient = clientNameMap.get(clientField) || 'Unassigned';
             
             // If not found, show "Unknown Client" instead of the ID
             if (!assignedClient) {
