@@ -150,7 +150,7 @@ const AdminDashboard = () => {
       }
 
       // Enhance profile data with Airtable stats
-      const enhancedClients = (profilesResult.data || []).map((client: Client) => {
+      const enhancedClients = ((profilesResult.data || []) as Client[]).map((client) => {
         if (client.airtable_client_id && airtableStatsMap[client.airtable_client_id]) {
           const airtableStats = airtableStatsMap[client.airtable_client_id];
           return {

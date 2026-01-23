@@ -1,6 +1,20 @@
 import { useEffect } from "react";
 import { Star } from "lucide-react";
 
+// Type declaration for wistia-player custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'wistia-player': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          'media-id'?: string;
+          aspect?: string;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
 import harryPhoto from "@/assets/harry-hyrra.png";
 
 export const TestimonialsSection = () => {

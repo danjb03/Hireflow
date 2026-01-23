@@ -47,8 +47,8 @@ Deno.serve(async (req) => {
 
     // Handle pagination - Airtable returns max 100 records per request
     do {
-      const urlWithOffset = offset ? `${clientsUrl}?offset=${offset}` : clientsUrl;
-      const response = await fetch(urlWithOffset, {
+      const urlWithOffset: string = offset ? `${clientsUrl}?offset=${offset}` : clientsUrl;
+      const response: Response = await fetch(urlWithOffset, {
         headers: {
           'Authorization': `Bearer ${airtableToken}`,
           'Content-Type': 'application/json'
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         throw new Error(`Failed to fetch clients from Airtable: ${response.status} - ${errorBody}`);
       }
 
-      const data = await response.json();
+      const data: { records: any[]; offset?: string } = await response.json();
 
       // Map clients with more fields
       const pageClients = (data.records || []).map((record: any) => ({
@@ -101,11 +101,11 @@ Deno.serve(async (req) => {
       let leadsOffset: string | undefined = undefined;
 
       do {
-        const urlWithOffset = leadsOffset
+        const urlWithOffset: string = leadsOffset
           ? `${leadsUrl}?offset=${leadsOffset}&fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`
           : `${leadsUrl}?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`;
 
-        const response = await fetch(urlWithOffset, {
+        const response: Response = await fetch(urlWithOffset, {
           headers: {
             'Authorization': `Bearer ${airtableToken}`,
             'Content-Type': 'application/json'
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const data: { records: any[]; offset?: string } = await response.json();
           allLeads = allLeads.concat(data.records || []);
           leadsOffset = data.offset;
         } else {
