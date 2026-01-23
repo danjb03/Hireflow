@@ -311,7 +311,10 @@ const AdminClients = () => {
       // Filter out internal users - only show actual clients
       const clientProfiles = (profiles || []).filter(p => !internalUserIds.has(p.id));
 
-      setClients(clientProfiles);
+      setClients(clientProfiles.map(p => ({
+        ...p,
+        client_status: p.client_status as ClientStatus | null
+      })) as Client[]);
       // Load sentiment data after clients are loaded
       loadSentimentData();
     } catch (error: any) {
