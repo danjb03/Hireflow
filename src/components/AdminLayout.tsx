@@ -78,12 +78,12 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-[#222121]/10 bg-white px-4 lg:px-6">
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-4" />
             <div className="flex-1" />
           </header>
-          <main className="px-4 lg:px-6 py-6">
+          <main className="px-4 py-6 lg:px-6">
             {children}
           </main>
         </SidebarInset>

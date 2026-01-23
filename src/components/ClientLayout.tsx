@@ -23,6 +23,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -70,8 +71,8 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
 
   if (checkingOnboarding) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F7F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
       </div>
     );
   }
@@ -115,11 +116,12 @@ const ClientLayout = ({ children, userEmail }: ClientLayoutProps) => {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-6">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-[#222121]/10 bg-white px-4 lg:px-6">
             <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
             <div className="flex-1" />
           </header>
-          <main className="p-6">
+          <main className="px-4 py-6 lg:px-6">
             {children}
           </main>
         </SidebarInset>

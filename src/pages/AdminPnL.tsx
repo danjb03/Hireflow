@@ -195,8 +195,8 @@ const AdminPnL = () => {
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="-mx-4 -my-6 flex min-h-[400px] items-center justify-center bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </AdminLayout>
     );
@@ -204,25 +204,29 @@ const AdminPnL = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <PoundSterling className="h-6 w-6" />
-              Profit & Loss
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Finance overview
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold text-[#222121]">
+              <span className="text-[#222121]/40">Track profit</span>{" "}
+              <span className="text-[#222121]">and cash flow.</span>
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Track deals, costs, and profitability
+            <p className="mt-2 text-sm text-[#222121]/60">
+              Track deals, costs, and profitability.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             {/* Period Selector */}
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-4 w-4 text-[#222121]/50" />
               <Select value={period} onValueChange={(v) => setPeriod(v as PeriodType)}>
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="h-9 w-36 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -237,19 +241,21 @@ const AdminPnL = () => {
             {/* Period Navigation */}
             <div className="flex items-center gap-1">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={handlePreviousPeriod}
                 title="Previous period"
+                className="h-9 w-9 rounded-full border border-[#222121]/10 bg-white text-[#222121] hover:bg-[#34B192]/5"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={handleNextPeriod}
                 disabled={periodOffset === 0}
                 title="Next period"
+                className="h-9 w-9 rounded-full border border-[#222121]/10 bg-white text-[#222121] hover:bg-[#34B192]/5"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -258,7 +264,7 @@ const AdminPnL = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setPeriodOffset(0)}
-                  className="text-xs"
+                  className="h-9 rounded-full border border-[#222121]/10 bg-white px-4 text-xs font-semibold text-[#222121] hover:bg-[#34B192]/5"
                 >
                   Today
                 </Button>
@@ -266,10 +272,11 @@ const AdminPnL = () => {
             </div>
 
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
+              className="h-9 rounded-full border border-[#222121]/10 bg-white px-4 text-xs font-semibold text-[#222121] hover:bg-[#34B192]/5"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
               Refresh
@@ -278,16 +285,22 @@ const AdminPnL = () => {
         </div>
 
         {/* Period Label */}
-        <div className="text-sm text-muted-foreground">
-          Showing data for: <span className="font-medium text-foreground">{periodLabel}</span>
+        <div className="text-sm text-[#222121]/60">
+          Showing data for: <span className="font-medium text-[#222121]">{periodLabel}</span>
         </div>
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="report">Report</TabsTrigger>
-            <TabsTrigger value="deals">Deals</TabsTrigger>
-            <TabsTrigger value="costs">Costs</TabsTrigger>
+          <TabsList className="rounded-full border border-[#222121]/10 bg-white p-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            {["report", "deals", "costs"].map((value) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="rounded-full px-4 py-2 text-xs font-semibold text-[#222121]/60 transition data-[state=active]:bg-[#34B192] data-[state=active]:text-white"
+              >
+                {value === "report" ? "Report" : value === "deals" ? "Deals" : "Costs"}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Report Tab */}
@@ -297,17 +310,20 @@ const AdminPnL = () => {
 
           {/* Deals Tab */}
           <TabsContent value="deals" className="mt-6">
-            <Card>
+            <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Deals</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-[#222121]">Deals</CardTitle>
+                  <CardDescription className="text-[#222121]/60">
                     {report?.deals?.length || 0} deals in this period
                   </CardDescription>
                 </div>
                 <Dialog open={dealDialogOpen} onOpenChange={setDealDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button
+                      variant="ghost"
+                      className="h-10 rounded-full bg-[#34B192] px-4 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] hover:bg-[#2D9A7E]"
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Log Deal
                     </Button>
@@ -335,17 +351,20 @@ const AdminPnL = () => {
 
           {/* Costs Tab */}
           <TabsContent value="costs" className="mt-6">
-            <Card>
+            <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Business Costs</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-[#222121]">Business Costs</CardTitle>
+                  <CardDescription className="text-[#222121]/60">
                     {businessCosts.length} costs logged
                   </CardDescription>
                 </div>
                 <Dialog open={costDialogOpen} onOpenChange={setCostDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button
+                      variant="ghost"
+                      className="h-10 rounded-full bg-[#34B192] px-4 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] hover:bg-[#2D9A7E]"
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Cost
                     </Button>

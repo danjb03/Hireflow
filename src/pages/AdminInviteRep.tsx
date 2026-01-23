@@ -115,32 +115,39 @@ const AdminInviteRep = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="max-w-2xl space-y-6">
+      <div className="-mx-4 -my-6 max-w-2xl space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-semibold">Invite Sales Rep</h1>
-          <p className="text-base text-muted-foreground mt-1">
-            Create a portal account for a sales rep
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Team access
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">
+            <span className="text-[#222121]/40">Invite a</span>{" "}
+            <span className="text-[#222121]">sales rep.</span>
+          </h1>
+          <p className="text-sm text-[#222121]/60">
+            Create a portal account for a sales rep.
           </p>
         </div>
 
         {/* Form Card */}
-        <Card className="shadow-sm border-border">
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader className="p-6 pb-4">
-            <CardTitle>Rep Information</CardTitle>
-            <CardDescription>
-              Select the rep from Airtable and enter their email address
+            <CardTitle className="text-[#222121]">Rep Information</CardTitle>
+            <CardDescription className="text-[#222121]/60">
+              Select the rep from Airtable and enter their email address.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <form onSubmit={handleInvite} className="space-y-4">
               {/* Airtable Rep Selection */}
               <div className="space-y-2">
-                <Label htmlFor="airtableRep">Sales Rep *</Label>
+                <Label htmlFor="airtableRep" className="text-sm text-[#222121]/70">Sales Rep *</Label>
                 {loadingReps ? (
-                  <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-muted-foreground">Loading reps...</span>
+                  <div className="flex h-10 items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-3">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#34B192]" />
+                    <span className="text-[#222121]/50">Loading reps...</span>
                   </div>
                 ) : airtableReps.length > 0 ? (
                   <Select
@@ -148,7 +155,7 @@ const AdminInviteRep = () => {
                     onValueChange={handleAirtableRepSelect}
                     disabled={inviteSuccess}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/10 bg-white text-sm text-[#222121]">
                       <SelectValue placeholder="Select a sales rep" />
                     </SelectTrigger>
                     <SelectContent>
@@ -160,19 +167,19 @@ const AdminInviteRep = () => {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Alert>
-                    <AlertDescription>
+                  <Alert className="border border-[#222121]/10 bg-white">
+                    <AlertDescription className="text-[#222121]/60">
                       No reps found in Airtable. Please create a rep in Airtable first.
                     </AlertDescription>
                   </Alert>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/50">
                   Select which rep to create a portal account for
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="repName">Rep Name</Label>
+                <Label htmlFor="repName" className="text-sm text-[#222121]/70">Rep Name</Label>
                 <Input
                   id="repName"
                   placeholder="Auto-filled from selection"
@@ -180,14 +187,15 @@ const AdminInviteRep = () => {
                   onChange={(e) => setRepName(e.target.value)}
                   required
                   disabled={inviteSuccess || !!selectedAirtableRep}
+                  className="h-11 rounded-full border-[#222121]/10 bg-white text-[#222121] placeholder:text-[#222121]/40"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/50">
                   {selectedAirtableRep ? "Name from selected rep" : "Select a rep above"}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Rep Email Address *</Label>
+                <Label htmlFor="email" className="text-sm text-[#222121]/70">Rep Email Address *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -196,26 +204,28 @@ const AdminInviteRep = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={inviteSuccess}
+                  className="h-11 rounded-full border-[#222121]/10 bg-white text-[#222121] placeholder:text-[#222121]/40"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/50">
                   This rep will receive login credentials via email
                 </p>
               </div>
 
               {!inviteSuccess && (
-                <div className="flex gap-2 pt-4">
+                <div className="flex flex-col gap-2 pt-4 sm:flex-row">
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-200"
+                    variant="ghost"
+                    className="h-11 flex-1 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                   >
                     {isLoading ? "Creating Account..." : "Send Invite"}
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => navigate("/admin/clients")}
-                    className="transition-colors duration-200"
+                    className="h-11 flex-1 rounded-full border border-[#222121]/10 bg-white text-sm font-semibold text-[#222121] transition-all hover:bg-[#34B192]/5 sm:flex-none sm:px-6"
                   >
                     Cancel
                   </Button>
@@ -227,25 +237,25 @@ const AdminInviteRep = () => {
 
         {/* Success Card */}
         {inviteSuccess && (
-          <Card className="border-blue-200 bg-blue-50/50 shadow-sm">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="p-6 pb-4">
-              <CardTitle className="flex items-center gap-2 text-blue-700">
-                <Check className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Check className="h-5 w-5 text-[#34B192]" />
                 Rep Invited Successfully
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 A welcome email has been sent to the rep
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0 space-y-4">
-              <Alert className="bg-white border-blue-200">
-                <Send className="h-4 w-4 text-blue-600" />
+              <Alert className="border border-[#222121]/10 bg-white">
+                <Send className="h-4 w-4 text-[#34B192]" />
                 <AlertDescription>
                   <div className="space-y-2">
                     <p>
                       <strong>Welcome email sent to:</strong> {email}
                     </p>
-                    <p className="text-muted-foreground">
+                    <p className="text-[#222121]/60">
                       The email contains their login credentials and a link to access the rep portal.
                       They can log in immediately using the credentials in the email.
                     </p>
@@ -253,17 +263,18 @@ const AdminInviteRep = () => {
                 </AlertDescription>
               </Alert>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col gap-2 pt-2 sm:flex-row">
                 <Button
                   onClick={handleReset}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-200"
+                  variant="ghost"
+                  className="h-11 flex-1 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                 >
                   Invite Another Rep
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => navigate("/admin/clients")}
-                  className="transition-colors duration-200"
+                  className="h-11 flex-1 rounded-full border border-[#222121]/10 bg-white text-sm font-semibold text-[#222121] transition-all hover:bg-[#34B192]/5 sm:flex-none sm:px-6"
                 >
                   Back to Admin
                 </Button>

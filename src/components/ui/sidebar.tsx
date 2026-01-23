@@ -116,7 +116,10 @@ const SidebarProvider = React.forwardRef<
               ...style,
             } as React.CSSProperties
           }
-          className={cn("group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar", className)}
+        className={cn(
+          "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-[#F7F7F7]",
+          className
+        )}
           ref={ref}
           {...props}
         >
@@ -143,8 +146,8 @@ const Sidebar = React.forwardRef<
       <div
         className={cn(
           "flex h-full w-[--sidebar-width] flex-col text-sidebar-foreground",
-          "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl",
-          "border-r border-white/20 dark:border-white/10",
+          "bg-white",
+          "border-r border-[#222121]/10",
           className
         )}
         ref={ref}
@@ -161,7 +164,7 @@ const Sidebar = React.forwardRef<
         <SheetContent
           data-sidebar="sidebar"
           data-mobile="true"
-          className="w-[--sidebar-width] bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl p-0 text-sidebar-foreground [&>button]:hidden border-r border-white/20"
+          className="w-[--sidebar-width] bg-white p-0 text-sidebar-foreground [&>button]:hidden border-r border-[#222121]/10"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -204,7 +207,7 @@ const Sidebar = React.forwardRef<
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-            : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=left]:border-white/20 dark:group-data-[side=left]:border-white/10 group-data-[side=right]:border-l group-data-[side=right]:border-white/20 dark:group-data-[side=right]:border-white/10",
+            : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=left]:border-[#222121]/10 group-data-[side=right]:border-l group-data-[side=right]:border-[#222121]/10",
           className,
         )}
         {...props}
@@ -213,9 +216,9 @@ const Sidebar = React.forwardRef<
           data-sidebar="sidebar"
           className={cn(
             "flex h-full w-full flex-col",
-            "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl",
-            "group-data-[variant=floating]:rounded-2xl group-data-[variant=floating]:border group-data-[variant=floating]:border-white/20 dark:group-data-[variant=floating]:border-white/10",
-            "group-data-[variant=floating]:shadow-[0_8px_32px_-8px_rgb(0_0_0/0.1),0_0_0_1px_rgb(255_255_255/0.5)_inset]"
+            "bg-white",
+            "group-data-[variant=floating]:rounded-2xl group-data-[variant=floating]:border group-data-[variant=floating]:border-[#222121]/10",
+            "group-data-[variant=floating]:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
           )}
         >
           {children}

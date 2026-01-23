@@ -27,8 +27,8 @@ export function NavMain({ items }: NavMainProps) {
                 <NavLink
                   to={item.url}
                   end
-                  activeClassName="bg-accent text-accent-foreground font-medium"
-                  className="hover:bg-accent hover:text-accent-foreground transition-colors duration-200 text-[15px]"
+                  activeClassName="bg-[#34B192]/10 text-[#222121] font-semibold"
+                  className="rounded-full px-3 py-2 text-sm font-medium text-[#222121]/60 transition-colors duration-200 hover:bg-[#34B192]/5 hover:text-[#222121]"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>

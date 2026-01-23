@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,7 @@ const ReportReviewDialog = ({ report, open, onOpenChange, onReviewComplete }: Re
   const [editPipeline, setEditPipeline] = useState(0);
 
   // Initialize edit form when report changes
-  useState(() => {
+  useEffect(() => {
     if (report) {
       setEditCalls(report.callsMade);
       const hours = Math.floor(report.timeOnDialerMinutes / 60);
@@ -58,8 +58,9 @@ const ReportReviewDialog = ({ report, open, onOpenChange, onReviewComplete }: Re
       setEditBookings(report.bookingsMade);
       setEditPipeline(report.pipelineValue);
       setReviewNotes("");
+      setActiveTab("review");
     }
-  });
+  }, [report]);
 
   if (!report) return null;
 

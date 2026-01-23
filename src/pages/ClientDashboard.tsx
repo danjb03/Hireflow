@@ -147,7 +147,7 @@ const ClientDashboard = () => {
   if (checkingOnboarding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
       </div>
     );
   }
@@ -155,9 +155,10 @@ const ClientDashboard = () => {
   if (isLoading) {
     return (
       <ClientLayout userEmail={user?.email}>
-        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-          <div className="space-y-1">
-            <div className="h-8 w-64 bg-muted/60 rounded animate-pulse" />
+        <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+          <div className="space-y-2">
+            <div className="h-7 w-40 rounded-full bg-muted/60 animate-pulse" />
+            <div className="h-8 w-72 bg-muted/60 rounded animate-pulse" />
             <div className="h-4 w-48 bg-muted/60 rounded animate-pulse" />
           </div>
           <SkeletonStats />
@@ -169,13 +170,17 @@ const ClientDashboard = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Welcome Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Client dashboard
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">
+            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}.
           </h1>
-          <p className="text-sm text-muted-foreground font-normal">
+          <p className="text-sm text-[#222121]/60">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
@@ -187,83 +192,75 @@ const ClientDashboard = () => {
 
         {/* Key Metrics Cards */}
         <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4 stagger-children">
-          <Card hover="lift">
-            <CardContent className="p-5 relative">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <Users className="h-5 w-5 text-primary" />
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-5">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Users className="h-5 w-5 text-[#34B192]" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
-                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.totalLeads}</div>
-              </div>
+              <div className="text-2xl font-semibold tabular-nums text-[#222121]">{stats.totalLeads}</div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[#222121]/50">Total Leads</p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
-            <CardContent className="p-5 relative">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
-                <Target className="h-5 w-5 text-secondary" />
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-5">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Target className="h-5 w-5 text-[#34B192]" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Leads</p>
-                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.activeLeads}</div>
-              </div>
+              <div className="text-2xl font-semibold tabular-nums text-[#222121]">{stats.activeLeads}</div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[#222121]/50">Active Leads</p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
-            <CardContent className="p-5 relative">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-accent" />
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-5">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Calendar className="h-5 w-5 text-[#34B192]" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Upcoming Callbacks</p>
-                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.upcomingCallbacks}</div>
-              </div>
+              <div className="text-2xl font-semibold tabular-nums text-[#222121]">{stats.upcomingCallbacks}</div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[#222121]/50">Callbacks</p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
-            <CardContent className="p-5 relative">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-success" />
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-5">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                <TrendingUp className="h-5 w-5 text-[#34B192]" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Conversion Rate</p>
-                <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground">{stats.conversionRate}%</div>
-              </div>
+              <div className="text-2xl font-semibold tabular-nums text-[#222121]">{stats.conversionRate}%</div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[#222121]/50">Conversion</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Orders Summary */}
         {orders.length > 0 && (
-          <Card className="shadow-sm">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-lg font-semibold">Your Orders</CardTitle>
+                  <Package className="h-5 w-5 text-[#34B192]" />
+                  <CardTitle className="text-lg font-semibold text-[#222121]">Your Orders</CardTitle>
                 </div>
               </div>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 Track your lead purchase orders and delivery progress
               </CardDescription>
             </CardHeader>
             <CardContent>
               {/* Order Summary Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-muted/30 rounded-lg">
+              <div className="grid grid-cols-3 gap-4 mb-4 rounded-xl border border-[#222121]/10 bg-[#F5F5F5] p-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold">{orderTotals.totalPurchased}</p>
-                  <p className="text-xs text-muted-foreground">Total Purchased</p>
+                  <p className="text-2xl font-semibold text-[#222121]">{orderTotals.totalPurchased}</p>
+                  <p className="text-xs text-[#222121]/60">Total Purchased</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-emerald-600">{orderTotals.totalDelivered}</p>
-                  <p className="text-xs text-muted-foreground">Delivered</p>
+                  <p className="text-2xl font-semibold text-[#34B192]">{orderTotals.totalDelivered}</p>
+                  <p className="text-xs text-[#222121]/60">Delivered</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-amber-600">{orderTotals.totalPurchased - orderTotals.totalDelivered}</p>
-                  <p className="text-xs text-muted-foreground">Remaining</p>
+                  <p className="text-2xl font-semibold text-[#222121]">{orderTotals.totalPurchased - orderTotals.totalDelivered}</p>
+                  <p className="text-xs text-[#222121]/60">Remaining</p>
                 </div>
               </div>
 
@@ -272,41 +269,41 @@ const ClientDashboard = () => {
                 {orders.map((order) => (
                   <div
                     key={order.id}
-                    className="p-4 rounded-lg border bg-card"
+                    className="rounded-xl border border-[#222121]/10 bg-white p-4"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{order.order_number}</span>
+                        <span className="font-medium text-[#222121]">{order.order_number}</span>
                         {order.status === 'completed' ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-xs">Completed</Badge>
+                          <Badge variant="outline" className="border-transparent bg-[#34B192] text-white text-xs">Completed</Badge>
                         ) : (
-                          <Badge className="bg-blue-100 text-blue-700 text-xs">Active</Badge>
+                          <Badge variant="outline" className="border-transparent bg-[#222121]/70 text-white text-xs">Active</Badge>
                         )}
                       </div>
                       {order.target_delivery_date && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-[#222121]/60">
                           Target: {formatDate(order.target_delivery_date)}
                           {order.days_remaining !== null && order.days_remaining >= 0 && (
                             <span className="ml-1">({order.days_remaining}d left)</span>
                           )}
                           {order.days_remaining !== null && order.days_remaining < 0 && (
-                            <span className="ml-1 text-red-500">({Math.abs(order.days_remaining)}d overdue)</span>
+                            <span className="ml-1 text-[#D64545]">({Math.abs(order.days_remaining)}d overdue)</span>
                           )}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 w-full rounded-full bg-[#E5E5E5] overflow-hidden">
                           <div
-                            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                            className="h-full rounded-full bg-[#34B192] transition-all duration-500"
                             style={{ width: `${order.completion_percentage}%` }}
                           />
                         </div>
                       </div>
-                      <span className="text-sm font-medium w-12 text-right">{order.completion_percentage}%</span>
+                      <span className="w-12 text-right text-sm font-medium text-[#222121]">{order.completion_percentage}%</span>
                     </div>
-                    <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                    <div className="mt-2 flex items-center justify-between text-xs text-[#222121]/60">
                       <span>{order.leads_delivered} of {order.leads_purchased} leads delivered</span>
                       <span>{order.leads_purchased - order.leads_delivered} remaining</span>
                     </div>
@@ -318,16 +315,16 @@ const ClientDashboard = () => {
         )}
 
         {/* Recent Activity */}
-        <Card className="shadow-sm">
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+              <CardTitle className="text-lg font-semibold text-[#222121]">Recent Activity</CardTitle>
               {recentLeads.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/client/leads")}
-                  className="text-xs"
+                  className="text-xs text-[#222121]/60 hover:text-[#222121]"
                 >
                   View All
                   <ArrowRight className="h-3 w-3 ml-1" />
@@ -337,26 +334,26 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             {recentLeads.length === 0 ? (
-              <div className="text-center py-8 bg-muted/20 rounded-lg border border-dashed">
-                <FileText className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-sm font-medium text-foreground mb-1">No recent leads</p>
-                <p className="text-xs text-muted-foreground">Your latest leads will appear here</p>
+              <div className="text-center py-8 rounded-xl border border-dashed border-[#222121]/20 bg-[#F7F7F7]">
+                <FileText className="h-10 w-10 mx-auto mb-3 text-[#222121]/30" />
+                <p className="text-sm font-medium text-[#222121] mb-1">No recent leads</p>
+                <p className="text-xs text-[#222121]/60">Your latest leads will appear here</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {recentLeads.map((lead) => (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 hover:border-accent cursor-pointer transition-all duration-200 group"
+                    className="flex items-center justify-between rounded-xl border border-[#222121]/10 bg-white p-3 transition-all duration-200 group hover:border-[#34B192]/40 hover:bg-[#F7F7F7]"
                     onClick={() => navigate(`/client/leads/${lead.id}`)}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">{lead.companyName}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(lead.dateAdded)}</p>
+                      <p className="truncate text-sm font-medium text-[#222121]">{lead.companyName}</p>
+                      <p className="mt-0.5 text-xs text-[#222121]/60">{formatDate(lead.dateAdded)}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                       <StatusBadge status={lead.status} size="sm" showIcon={false} />
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <ArrowRight className="h-3.5 w-3.5 text-[#222121]/40 transition-colors group-hover:text-[#222121]" />
                     </div>
                   </div>
                 ))}
@@ -367,10 +364,20 @@ const ClientDashboard = () => {
 
         {/* Quick Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={() => navigate("/client/leads")} size="default" className="flex-1">
+          <Button
+            onClick={() => navigate("/client/leads")}
+            size="default"
+            variant="ghost"
+            className="flex-1 h-11 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
+          >
             View All Leads
           </Button>
-          <Button onClick={() => navigate("/client/calendar")} variant="outline" size="default" className="flex-1">
+          <Button
+            onClick={() => navigate("/client/calendar")}
+            variant="outline"
+            size="default"
+            className="flex-1 h-11 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+          >
             Check Calendar
           </Button>
         </div>

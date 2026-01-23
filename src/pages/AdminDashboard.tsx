@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Users, FileText, PlusCircle, TrendingUp, AlertTriangle, Smile, Frown, Clock, CheckCircle2, X } from "lucide-react";
+import { Users, FileText, PlusCircle, AlertTriangle, Smile, Frown, Clock, CheckCircle2, X } from "lucide-react";
 import { getCompletionPercentage, getDaysRemaining, getPriorityScore } from "@/lib/clientOnboarding";
 import AdminLayout from "@/components/AdminLayout";
 import { NoClientsEmpty } from "@/components/EmptyState";
@@ -229,17 +229,6 @@ const AdminDashboard = () => {
     return grouped;
   }, [clients]);
 
-  const getStatusColor = (status: ClientStatus | null | undefined) => {
-    const colors: Record<string, string> = {
-      happy: "bg-success/10 text-success border-success/20",
-      unhappy: "bg-destructive/10 text-destructive border-destructive/20",
-      urgent: "bg-destructive/20 text-destructive border-destructive/40 font-bold",
-      at_risk: "bg-warning/10 text-warning border-warning/20",
-      on_track: "bg-info/10 text-info border-info/20",
-    };
-    return colors[status || 'on_track'] || colors.on_track;
-  };
-
   const getStatusIcon = (status: ClientStatus | null | undefined) => {
     switch (status) {
       case 'happy':
@@ -266,22 +255,10 @@ const AdminDashboard = () => {
     return labels[status] || status;
   };
 
-  const getLeadStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      New: "bg-blue-100 text-blue-700",
-      Approved: "bg-emerald-100 text-emerald-700",
-      'Needs Work': "bg-yellow-100 text-yellow-700",
-      Rejected: "bg-red-100 text-red-700",
-      Unknown: "bg-blue-100 text-blue-700",
-      'Not Qualified': "bg-gray-100 text-gray-700",
-    };
-    return colors[status] || "bg-blue-100 text-blue-700";
-  };
-
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="space-y-3 md:space-y-4 p-4 md:p-6">
+        <div className="-mx-4 -my-6 space-y-4 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="h-7 w-32 bg-muted/60 rounded animate-pulse" />
@@ -298,119 +275,187 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-3 md:space-y-4 p-4 md:p-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">System overview and quick actions</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Admin overview
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">
+              <span className="text-[#222121]/40">Monitor the</span>{" "}
+              <span className="text-[#222121]">Hireflow pipeline.</span>
+            </h1>
+            <p className="text-sm text-[#222121]/60">
+              System health, lead progress, and client delivery status.
+            </p>
           </div>
-          <Button 
+          <Button
             onClick={() => navigate("/admin/submit-lead")}
-            size="default"
-            className="w-full sm:w-auto"
+            variant="ghost"
+            className="h-11 w-full rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)] sm:w-auto"
           >
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <PlusCircle className="mr-2 h-4 w-4" />
             Submit Lead
           </Button>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5 stagger-children">
-          <Card hover="lift">
+          <Card
+            hover="none"
+            className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <Users className="h-5 w-5 text-[#34B192]" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalClients}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Clients</p>
+              <div className="mb-1 text-3xl font-semibold tabular-nums text-[#222121] md:text-4xl">
+                {stats.totalClients}
+              </div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">
+                Active Clients
+              </p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
+          <Card
+            hover="none"
+            className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-secondary" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <FileText className="h-5 w-5 text-[#34B192]" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.totalLeads}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Leads</p>
+              <div className="mb-1 text-3xl font-semibold tabular-nums text-[#222121] md:text-4xl">
+                {stats.totalLeads}
+              </div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">
+                Total Leads
+              </p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
+          <Card
+            hover="none"
+            className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-success" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <CheckCircle2 className="h-5 w-5 text-[#34B192]" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Approved}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Approved</p>
+              <div className="mb-1 text-3xl font-semibold tabular-nums text-[#222121] md:text-4xl">
+                {stats.statusBreakdown.Approved}
+              </div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">
+                Approved
+              </p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
+          <Card
+            hover="none"
+            className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning/20 to-warning/5 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <AlertTriangle className="h-5 w-5 text-[#34B192]" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown['Needs Work']}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Needs Work</p>
+              <div className="mb-1 text-3xl font-semibold tabular-nums text-[#222121] md:text-4xl">
+                {stats.statusBreakdown["Needs Work"]}
+              </div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">
+                Needs Work
+              </p>
             </CardContent>
           </Card>
 
-          <Card hover="lift">
+          <Card
+            hover="none"
+            className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/5 flex items-center justify-center">
-                  <X className="h-5 w-5 text-destructive" />
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <X className="h-5 w-5 text-[#34B192]" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-bold tabular-nums text-foreground mb-1">{stats.statusBreakdown.Rejected}</div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rejected</p>
+              <div className="mb-1 text-3xl font-semibold tabular-nums text-[#222121] md:text-4xl">
+                {stats.statusBreakdown.Rejected}
+              </div>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">
+                Rejected
+              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Status Breakdown */}
-        <Card className="shadow-sm">
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold">Leads by Status</CardTitle>
-            <CardDescription className="text-sm">Breakdown of lead statuses across the system</CardDescription>
+            <CardTitle className="text-lg font-semibold text-[#222121]">
+              Leads by Status
+            </CardTitle>
+            <CardDescription className="text-sm text-[#222121]/60">
+              Breakdown of lead statuses across the system
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-center gap-4 md:gap-6">
               <div className="flex items-center gap-2">
-                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Approved ?? 0}</div>
-                <Badge variant="outline" className="gap-1 text-xs">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                <div className="text-xl font-semibold tabular-nums text-[#222121] md:text-2xl">
+                  {stats.statusBreakdown.Approved ?? 0}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="gap-1 rounded-full border-transparent bg-[#34B192] px-2.5 py-0.5 text-xs text-white"
+                >
+                  <CheckCircle2 className="h-3 w-3 text-white" />
                   Approved
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown['Needs Work'] ?? 0}</div>
-                <Badge variant="outline" className="gap-1 text-xs">
-                  <AlertTriangle className="h-3 w-3 text-amber-600" />
+                <div className="text-xl font-semibold tabular-nums text-[#222121] md:text-2xl">
+                  {stats.statusBreakdown["Needs Work"] ?? 0}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="gap-1 rounded-full border-transparent bg-amber-500 px-2.5 py-0.5 text-xs text-white"
+                >
+                  <AlertTriangle className="h-3 w-3 text-white" />
                   Needs Work
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Rejected ?? 0}</div>
-                <Badge variant="outline" className="gap-1 text-xs">
-                  <X className="h-3 w-3 text-red-600" />
+                <div className="text-xl font-semibold tabular-nums text-[#222121] md:text-2xl">
+                  {stats.statusBreakdown.Rejected ?? 0}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="gap-1 rounded-full border-transparent bg-red-500 px-2.5 py-0.5 text-xs text-white"
+                >
+                  <X className="h-3 w-3 text-white" />
                   Rejected
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <div className="text-xl md:text-2xl font-semibold tabular-nums text-foreground">{stats.statusBreakdown.Unknown ?? 0}</div>
-                <Badge variant="outline" className="gap-1 text-xs">
-                  <FileText className="h-3 w-3 text-muted-foreground" />
+                <div className="text-xl font-semibold tabular-nums text-[#222121] md:text-2xl">
+                  {stats.statusBreakdown.Unknown ?? 0}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="gap-1 rounded-full border-transparent bg-[#222121]/40 px-2.5 py-0.5 text-xs text-white"
+                >
+                  <FileText className="h-3 w-3 text-white" />
                   Unknown
                 </Badge>
               </div>
@@ -419,14 +464,23 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Client Status Overview - Prioritized View */}
-        <Card className="shadow-sm">
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader className="pb-3">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
-                <CardTitle className="text-lg font-semibold">Client Status Overview</CardTitle>
-                <CardDescription className="text-sm">Monitor client progress and status</CardDescription>
+                <CardTitle className="text-lg font-semibold text-[#222121]">
+                  Client Status Overview
+                </CardTitle>
+                <CardDescription className="text-sm text-[#222121]/60">
+                  Monitor client progress and status
+                </CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin/clients")} className="w-full sm:w-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/admin/clients")}
+                className="h-9 w-full rounded-full border border-[#222121]/10 bg-white px-4 text-xs font-semibold text-[#222121] transition-all hover:border-[#222121]/20 hover:bg-[#34B192]/5 sm:w-auto"
+              >
                 View All Clients
               </Button>
             </div>
@@ -440,19 +494,33 @@ const AdminDashboard = () => {
                 return (
                   <div key={status} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      {getStatusIcon(status)}
-                      <h3 className="font-semibold text-base text-foreground">{getStatusLabel(status)}</h3>
-                      <Badge variant="outline" className="ml-2 rounded-full text-xs px-2 py-0.5">{statusClients.length}</Badge>
+                      <span className="text-[#34B192]">{getStatusIcon(status)}</span>
+                      <h3 className="text-base font-semibold text-[#222121]">
+                        {getStatusLabel(status)}
+                      </h3>
+                      <Badge className="ml-2 rounded-full border border-[#222121]/10 bg-white px-2 py-0.5 text-xs text-[#222121]/60">
+                        {statusClients.length}
+                      </Badge>
                     </div>
-                    <div className="overflow-hidden rounded-lg border">
+                    <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client</TableHead>
-                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Progress</TableHead>
-                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Leads/Day</TableHead>
-                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Days Remaining</TableHead>
-                            <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</TableHead>
+                            <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">
+                              Client
+                            </TableHead>
+                            <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">
+                              Progress
+                            </TableHead>
+                            <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">
+                              Leads/Day
+                            </TableHead>
+                            <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">
+                              Days Remaining
+                            </TableHead>
+                            <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">
+                              Status
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -491,40 +559,54 @@ const AdminDashboard = () => {
                             return (
                               <TableRow
                                 key={client.id}
-                                className={status === 'urgent' ? "bg-destructive/5" : ""}
+                                className={status === "urgent" ? "bg-[#34B192]/5" : ""}
                               >
                                 <TableCell className="font-medium">
                                   <div>
-                                    <div className="text-sm text-foreground">{client.client_name}</div>
-                                    <div className="text-xs text-muted-foreground">{client.email}</div>
+                                    <div className="text-sm text-[#222121]">{client.client_name}</div>
+                                    <div className="text-xs text-[#222121]/50">{client.email}</div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   {leadsPurchased > 0 ? (
                                     <div>
-                                      <div className="text-sm font-medium text-foreground">{completion}%</div>
-                                      <div className="text-xs text-muted-foreground">
+                                      <div className="text-sm font-medium text-[#222121]">
+                                        {completion}%
+                                      </div>
+                                      <div className="text-xs text-[#222121]/50">
                                         {leadsDelivered} / {leadsPurchased}
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-[#222121]/50">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {displayLeadsPerDay ? (
-                                    <span className="text-sm font-medium text-foreground">{displayLeadsPerDay}</span>
+                                    <span className="text-sm font-medium text-[#222121]">
+                                      {displayLeadsPerDay}
+                                    </span>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-[#222121]/50">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
                                   {daysRemaining !== null ? (
-                                    <span className={daysRemaining < 0 ? "text-sm text-destructive font-semibold" : daysRemaining < 7 ? "text-sm text-warning font-medium" : "text-sm text-foreground"}>
-                                      {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
+                                    <span
+                                      className={
+                                        daysRemaining < 0
+                                          ? "text-sm font-semibold text-[#222121]"
+                                          : daysRemaining < 7
+                                            ? "text-sm font-medium text-[#222121]"
+                                            : "text-sm text-[#222121]"
+                                      }
+                                    >
+                                      {daysRemaining < 0
+                                        ? `${Math.abs(daysRemaining)} overdue`
+                                        : `${daysRemaining} days`}
                                     </span>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                    <span className="text-sm text-[#222121]/50">N/A</span>
                                   )}
                                 </TableCell>
                                 <TableCell>
@@ -533,7 +615,7 @@ const AdminDashboard = () => {
                                     onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
                                     disabled={updatingStatus === client.id}
                                   >
-                                    <SelectTrigger className="w-32 h-8 text-xs">
+                                    <SelectTrigger className="h-9 w-32 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -564,33 +646,55 @@ const AdminDashboard = () => {
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/leads")}>
+          <Card
+            hover="none"
+            className="group cursor-pointer border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+            onClick={() => navigate("/admin/leads")}
+          >
             <CardHeader className="pb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <FileText className="h-5 w-5 text-secondary" />
+              <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10 transition-transform group-hover:scale-105">
+                <FileText className="h-5 w-5 text-[#34B192]" />
               </div>
-              <CardTitle className="text-base font-semibold">All Leads</CardTitle>
-              <CardDescription className="text-sm">View and manage all leads in the system</CardDescription>
+              <CardTitle className="text-base font-semibold text-[#222121]">All Leads</CardTitle>
+              <CardDescription className="text-sm text-[#222121]/60">
+                View and manage all leads in the system
+              </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/clients")}>
+          <Card
+            hover="none"
+            className="group cursor-pointer border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+            onClick={() => navigate("/admin/clients")}
+          >
             <CardHeader className="pb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Users className="h-5 w-5 text-primary" />
+              <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10 transition-transform group-hover:scale-105">
+                <Users className="h-5 w-5 text-[#34B192]" />
               </div>
-              <CardTitle className="text-base font-semibold">Manage Clients</CardTitle>
-              <CardDescription className="text-sm">View and configure client accounts</CardDescription>
+              <CardTitle className="text-base font-semibold text-[#222121]">
+                Manage Clients
+              </CardTitle>
+              <CardDescription className="text-sm text-[#222121]/60">
+                View and configure client accounts
+              </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card hover="glow" className="cursor-pointer group" onClick={() => navigate("/admin/invite")}>
+          <Card
+            hover="none"
+            className="group cursor-pointer border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+            onClick={() => navigate("/admin/invite")}
+          >
             <CardHeader className="pb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <PlusCircle className="h-5 w-5 text-accent" />
+              <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-[#34B192]/10 transition-transform group-hover:scale-105">
+                <PlusCircle className="h-5 w-5 text-[#34B192]" />
               </div>
-              <CardTitle className="text-base font-semibold">Invite Client</CardTitle>
-              <CardDescription className="text-sm">Send invitation to new client</CardDescription>
+              <CardTitle className="text-base font-semibold text-[#222121]">
+                Invite Client
+              </CardTitle>
+              <CardDescription className="text-sm text-[#222121]/60">
+                Send invitation to new client
+              </CardDescription>
             </CardHeader>
           </Card>
         </div>

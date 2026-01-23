@@ -23,21 +23,29 @@ export const EmptyState = ({
   secondaryAction,
 }: EmptyStateProps) => {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-gradient-to-b from-muted/30 to-muted/10 border-2 border-dashed rounded-2xl">
-      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-6">
-        <Icon className="h-8 w-8 text-muted-foreground/60" />
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#222121]/20 bg-[#F7F7F7] px-6 py-14 text-center">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+        <Icon className="h-8 w-8 text-[#34B192]" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      <p className="text-muted-foreground max-w-sm mb-6">{description}</p>
+      <h3 className="mb-2 text-lg font-semibold text-[#222121]">{title}</h3>
+      <p className="mb-6 max-w-sm text-sm text-[#222121]/60">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex items-center gap-3">
           {action && (
-            <Button onClick={action.onClick} className="gap-2">
+            <Button
+              onClick={action.onClick}
+              variant="ghost"
+              className="h-10 gap-2 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+            >
               {action.label}
             </Button>
           )}
           {secondaryAction && (
-            <Button variant="outline" onClick={secondaryAction.onClick}>
+            <Button
+              variant="outline"
+              onClick={secondaryAction.onClick}
+              className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+            >
               {secondaryAction.label}
             </Button>
           )}

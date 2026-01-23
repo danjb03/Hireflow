@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft } from "lucide-react";
-import hireflowLogo from "@/assets/hireflow-logo.svg";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+import hireflowLightLogo from "@/assets/hireflow-light.svg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -70,107 +70,113 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-
-      {/* Animated mesh gradient overlay */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[128px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/30 rounded-full blur-[128px] animate-pulse delay-1000" />
-      </div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F7F7F7] px-4 py-16">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,177,146,0.12),transparent_55%)]" />
 
       {/* Back to home */}
       <Link
         to="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-white/60 hover:text-white transition-colors z-20"
+        className="absolute left-6 top-6 z-20 flex items-center gap-2 text-sm text-[#222121]/60 transition-colors hover:text-[#222121]"
       >
         <ArrowLeft className="h-4 w-4" />
-        <span className="text-sm">Back to home</span>
+        <span>Back to home</span>
       </Link>
 
-      <div className="relative z-10 w-full max-w-md p-4">
-        <Card variant="elevated" className="border-white/10 bg-white/5 backdrop-blur-2xl">
-          <CardHeader className="space-y-6 pb-2">
-            <div className="flex justify-center">
-              <img src={hireflowLogo} alt="Hireflow" className="h-12" />
+      <div className="relative z-10 w-full max-w-md">
+        <div className="rounded-2xl border border-[#222121]/[0.08] bg-white p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <div className="flex flex-col items-center gap-6 text-center">
+            <img src={hireflowLightLogo} alt="Hireflow" className="h-12" />
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold text-[#222121]">
+                <span className="text-[#222121]/40">
+                  {isSignUp ? "Create" : "Welcome"}
+                </span>{" "}
+                <span className="text-[#222121]">
+                  {isSignUp ? "your account" : "back"}
+                </span>
+              </h1>
+              <p className="text-sm text-[#222121]/60">
+                {isSignUp
+                  ? "Create an account to access your leads."
+                  : "Sign in to access the client portal."}
+              </p>
             </div>
-            <div className="text-center space-y-2">
-              <CardTitle className="text-2xl font-bold text-white">
-                {isSignUp ? "Create Account" : "Welcome Back"}
-              </CardTitle>
-              <CardDescription className="text-white/60">
-                {isSignUp ? "Create an account to access your leads" : "Sign in to access the client portal"}
-              </CardDescription>
+          </div>
+
+          <form onSubmit={handleAuth} className="mt-8 space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm text-[#222121]/70">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="h-12 rounded-xl border-[#222121]/10 bg-[#F7F7F7] text-[#222121] placeholder:text-[#222121]/40 focus-visible:border-[#34B192]/50 focus-visible:ring-[#34B192]/20"
+              />
             </div>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <form onSubmit={handleAuth} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white/80">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:border-primary/50 focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white/80">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  minLength={6}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:border-primary/50 focus-visible:ring-primary/20"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm text-[#222121]/70">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait
-                  </>
-                ) : (
-                  isSignUp ? "Create Account" : "Sign In"
-                )}
-              </Button>
-            </form>
-            <div className="mt-6 text-center space-y-3">
-              <Button
-                variant="link"
-                onClick={() => setIsSignUp(!isSignUp)}
-                disabled={isLoading}
-                className="text-white/60 hover:text-white"
-              >
-                {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-              </Button>
-              {!isSignUp && (
-                <div>
-                  <Link
-                    to="/reset-password"
-                    className="text-sm text-white/40 hover:text-white/60 transition-colors"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                minLength={6}
+                className="h-12 rounded-xl border-[#222121]/10 bg-[#F7F7F7] text-[#222121] placeholder:text-[#222121]/40 focus-visible:border-[#34B192]/50 focus-visible:ring-[#34B192]/20"
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="ghost"
+              className="h-12 w-full rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : isSignUp ? (
+                "Create Account"
+              ) : (
+                "Sign In"
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-[#222121]/60">
+            <Button
+              variant="link"
+              onClick={() => setIsSignUp(!isSignUp)}
+              disabled={isLoading}
+              className="text-sm text-[#222121]/60 hover:text-[#34B192]"
+            >
+              {isSignUp
+                ? "Already have an account? Sign in"
+                : "Need an account? Sign up"}
+            </Button>
+            {!isSignUp && (
+              <div className="mt-2">
+                <Link
+                  to="/reset-password"
+                  className="text-xs text-[#222121]/50 transition-colors hover:text-[#222121]/70"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

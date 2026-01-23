@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -110,12 +110,18 @@ const AdminClients = () => {
   const [editingCell, setEditingCell] = useState<{ clientId: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const [savingClient, setSavingClient] = useState<string | null>(null);
+  const [clientOrders, setClientOrders] = useState<Record<string, {
+    totalOrdered: number;
+    totalDelivered: number;
+    startDate: string | null;
+    endDate: string | null;
+  }>>({});
 
   useEffect(() => {
     checkAdminAndLoadClients();
     loadAirtableClients();
     loadAirtableClientsWithStats();
-    loadAttachedUsers();
+    loadAttachedUsersAndOrders();
     const getUserEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) setUserEmail(user.email);
@@ -123,28 +129,80 @@ const AdminClients = () => {
     getUserEmail();
   }, []);
 
-  const loadAttachedUsers = async () => {
+  const loadAttachedUsersAndOrders = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch profiles with airtable_client_id
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('email, airtable_client_id')
+        .select('id, email, airtable_client_id')
         .not('airtable_client_id', 'is', null);
 
-      if (error) {
-        console.error("Error loading attached users:", error);
+      if (profilesError) {
+        console.error("Error loading attached users:", profilesError);
         return;
       }
 
       // Build a map of airtable_client_id -> user email
       const usersMap: Record<string, string> = {};
-      for (const profile of data || []) {
+      const userIdToAirtableId: Record<string, string> = {};
+      for (const profile of profiles || []) {
         if (profile.airtable_client_id && profile.email) {
           usersMap[profile.airtable_client_id] = profile.email;
+          userIdToAirtableId[profile.id] = profile.airtable_client_id;
         }
       }
       setAttachedUsers(usersMap);
+
+      // Fetch all orders
+      const { data: ordersData, error: ordersError } = await supabase.functions.invoke("get-orders");
+
+      if (ordersError) {
+        console.error("Error loading orders:", ordersError);
+        return;
+      }
+
+      // Build a map of airtable_client_id -> aggregated order stats
+      const ordersMap: Record<string, {
+        totalOrdered: number;
+        totalDelivered: number;
+        startDate: string | null;
+        endDate: string | null;
+      }> = {};
+
+      for (const order of ordersData?.orders || []) {
+        const airtableClientId = userIdToAirtableId[order.client_id];
+        if (!airtableClientId) continue;
+
+        if (!ordersMap[airtableClientId]) {
+          ordersMap[airtableClientId] = {
+            totalOrdered: 0,
+            totalDelivered: 0,
+            startDate: null,
+            endDate: null,
+          };
+        }
+
+        ordersMap[airtableClientId].totalOrdered += order.leads_purchased || 0;
+        ordersMap[airtableClientId].totalDelivered += order.leads_delivered || 0;
+
+        // Use earliest start date and latest end date
+        if (order.created_at) {
+          const orderStart = order.created_at.split('T')[0];
+          if (!ordersMap[airtableClientId].startDate || orderStart < ordersMap[airtableClientId].startDate) {
+            ordersMap[airtableClientId].startDate = orderStart;
+          }
+        }
+        if (order.target_delivery_date) {
+          const orderEnd = order.target_delivery_date.split('T')[0];
+          if (!ordersMap[airtableClientId].endDate || orderEnd > ordersMap[airtableClientId].endDate) {
+            ordersMap[airtableClientId].endDate = orderEnd;
+          }
+        }
+      }
+
+      setClientOrders(ordersMap);
     } catch (error) {
-      console.error("Error loading attached users:", error);
+      console.error("Error loading attached users and orders:", error);
     }
   };
 
@@ -230,14 +288,30 @@ const AdminClients = () => {
 
   const loadClients = async () => {
     try {
-      const { data, error } = await supabase
+      // Load profiles
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setClients((data || []) as Client[]);
+      // Load user roles to exclude admins and reps
+      const { data: allRoles } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+
+      // Build a set of user IDs that are admins or reps (internal users)
+      const internalUserIds = new Set(
+        (allRoles || [])
+          .filter(r => r.role === 'admin' || r.role === 'rep')
+          .map(r => r.user_id)
+      );
+
+      // Filter out internal users - only show actual clients
+      const clientProfiles = (profiles || []).filter(p => !internalUserIds.has(p.id));
+
+      setClients(clientProfiles);
       // Load sentiment data after clients are loaded
       loadSentimentData();
     } catch (error: any) {
@@ -502,7 +576,7 @@ const AdminClients = () => {
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="space-y-6">
+        <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <div className="h-8 w-32 bg-muted/60 rounded animate-pulse" />
@@ -523,69 +597,79 @@ const AdminClients = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Client management
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">
+              <span className="text-[#222121]/40">Manage your</span>{" "}
+              <span className="text-[#222121]">active client base.</span>
+            </h1>
+            <p className="text-sm text-[#222121]/60">
               {activeClients.length} active clients • {pendingUsers.length} pending users
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => navigate("/admin/invite")}
-            className="bg-primary hover:bg-primary/90"
+            variant="ghost"
+            className="h-11 w-full rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)] sm:w-auto"
           >
-            <Mail className="h-4 w-4 mr-2" />
+            <Mail className="mr-2 h-4 w-4" />
             Invite Client
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Card className="bg-gradient-to-t from-primary/5 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Airtable Clients</CardDescription>
-              <CardTitle className="text-2xl font-bold tabular-nums mb-1">{airtableClientsWithStats.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Total clients</p>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-4">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#222121]/50">Airtable Clients</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-[#222121]">
+                {airtableClientsWithStats.length}
+              </p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-emerald-500/10 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Active Clients</CardDescription>
-              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-emerald-600">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-4">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#222121]/50">Active Clients</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-[#34B192]">
                 {airtableClientsWithStats.filter(c => c.status !== 'Inactive' && c.status !== 'Not Active').length}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Currently active</p>
+              </p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-blue-500/10 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Leads Delivered</CardDescription>
-              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-blue-600">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-4">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#222121]/50">Leads Delivered</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-[#222121]">
                 {airtableClientsWithStats.reduce((sum, c) => sum + c.leadsDelivered, 0)}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">Across all clients</p>
+              </p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-amber-500/10 to-card shadow-sm aspect-square flex flex-col">
-            <CardContent className="flex-1 flex flex-col justify-center p-6">
-              <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Platform Users</CardDescription>
-              <CardTitle className="text-2xl font-bold tabular-nums mb-1 text-amber-600">{clients.length}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-auto">{pendingUsers.length} pending</p>
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardContent className="p-4">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-[#222121]/50">Platform Users</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-[#222121]">
+                {clients.length}
+              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Overall Sentiment Summary */}
         {Object.keys(sentimentData).length > 0 && (
-          <Card className="shadow-sm">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Target className="h-5 w-5 text-[#34B192]" />
                 Overall Lead Performance
               </CardTitle>
-              <CardDescription>Aggregate statistics across all clients</CardDescription>
+              <CardDescription className="text-[#222121]/60">
+                Aggregate statistics across all clients
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {(() => {
@@ -604,30 +688,30 @@ const AdminClients = () => {
                 const overallApprovalRate = processed > 0 ? Math.round((totals.approved / processed) * 100) : 0;
 
                 return (
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="text-center p-4 bg-muted/30 rounded-lg">
-                      <p className="text-3xl font-bold">{totals.total}</p>
-                      <p className="text-sm text-muted-foreground">Total Leads</p>
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-6">
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#222121]">{totals.total}</p>
+                      <p className="text-sm text-[#222121]/60">Total Leads</p>
                     </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">{totals.new}</p>
-                      <p className="text-sm text-muted-foreground">New</p>
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#34B192]">{totals.new}</p>
+                      <p className="text-sm text-[#222121]/60">New</p>
                     </div>
-                    <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                      <p className="text-3xl font-bold text-emerald-600">{totals.approved}</p>
-                      <p className="text-sm text-muted-foreground">Approved</p>
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#34B192]">{totals.approved}</p>
+                      <p className="text-sm text-[#222121]/60">Approved</p>
                     </div>
-                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                      <p className="text-3xl font-bold text-yellow-600">{totals.needsWork}</p>
-                      <p className="text-sm text-muted-foreground">Needs Work</p>
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#222121]">{totals.needsWork}</p>
+                      <p className="text-sm text-[#222121]/60">Needs Work</p>
                     </div>
-                    <div className="text-center p-4 bg-red-50 rounded-lg">
-                      <p className="text-3xl font-bold text-red-500">{totals.rejected}</p>
-                      <p className="text-sm text-muted-foreground">Rejected</p>
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#222121]">{totals.rejected}</p>
+                      <p className="text-sm text-[#222121]/60">Rejected</p>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-lg">
-                      <p className={`text-3xl font-bold ${overallApprovalRate >= 70 ? 'text-emerald-600' : overallApprovalRate >= 40 ? 'text-yellow-600' : 'text-red-500'}`}>{overallApprovalRate}%</p>
-                      <p className="text-sm text-muted-foreground">Approval Rate</p>
+                    <div className="rounded-2xl border border-[#222121]/10 bg-white p-4 text-center">
+                      <p className="text-3xl font-semibold text-[#222121]">{overallApprovalRate}%</p>
+                      <p className="text-sm text-[#222121]/60">Approval Rate</p>
                     </div>
                   </div>
                 );
@@ -638,34 +722,41 @@ const AdminClients = () => {
 
         {/* Pending Users Section */}
         {pendingUsers.length > 0 && (
-          <Card className="shadow-sm">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <UserX className="h-5 w-5 text-amber-600" />
+                    <UserX className="h-5 w-5 text-[#34B192]" />
                     Pending Users
                   </CardTitle>
-                  <CardDescription>Review and approve or delete new signups</CardDescription>
+                  <CardDescription className="text-[#222121]/60">
+                    Review and approve or delete new signups
+                  </CardDescription>
                 </div>
-                <Badge variant="outline">{pendingUsers.length}</Badge>
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-[#222121]/10 bg-white px-2.5 py-0.5 text-xs text-[#222121]/60"
+                >
+                  {pendingUsers.length}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client Name</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Signed Up</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Email</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Client Name</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Signed Up</TableHead>
+                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-[#222121]/40">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pendingUsers.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell className="text-sm font-medium">{user.email}</TableCell>
+                        <TableCell className="text-sm font-medium text-[#222121]">{user.email}</TableCell>
                       <TableCell>
                         {editingClient === user.id ? (
                           <div className="flex items-center gap-2">
@@ -673,7 +764,7 @@ const AdminClients = () => {
                               value={editingAirtableClientId}
                               onValueChange={setEditingAirtableClientId}
                             >
-                              <SelectTrigger className="w-48">
+                              <SelectTrigger className="h-9 w-48 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]">
                                 <SelectValue placeholder="Select client from Airtable" />
                               </SelectTrigger>
                               <SelectContent>
@@ -694,7 +785,7 @@ const AdminClients = () => {
                               size="sm"
                               onClick={() => handleUpdateClient(user.id, editingAirtableClientId)}
                               disabled={!editingAirtableClientId}
-                              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                              className="h-9 rounded-full bg-[#34B192] px-3 text-white transition-all hover:bg-[#2D9A7E]"
                             >
                               <Save className="h-4 w-4" />
                             </Button>
@@ -711,10 +802,10 @@ const AdminClients = () => {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Not assigned</span>
+                          <span className="text-sm text-[#222121]/50">Not assigned</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-sm text-[#222121]/50">
                         {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
                       </TableCell>
                       <TableCell className="text-right">
@@ -727,7 +818,7 @@ const AdminClients = () => {
                             setEditingClient(user.id);
                             setEditingAirtableClientId("");
                           }}
-                              className="text-success hover:text-success transition-colors duration-200"
+                              className="text-[#34B192] hover:text-[#2D9A7E] transition-colors duration-200"
                             >
                               <CheckCircle2 className="h-4 w-4 mr-1" />
                               Approve
@@ -737,7 +828,7 @@ const AdminClients = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() => setDeleteClient(user)}
-                            className="text-destructive hover:text-destructive transition-colors duration-200"
+                            className="text-red-500 hover:text-red-600 transition-colors duration-200"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -754,29 +845,36 @@ const AdminClients = () => {
 
         {/* Clients Needing Help */}
         {activeClients.filter(needsHelp).length > 0 && (
-          <Card className="shadow-sm border-destructive/20">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <AlertTriangle className="h-5 w-5 text-[#34B192]" />
                     Clients Needing Help
                   </CardTitle>
-                  <CardDescription>Clients requiring immediate attention</CardDescription>
+                  <CardDescription className="text-[#222121]/60">
+                    Clients requiring immediate attention
+                  </CardDescription>
                 </div>
-                <Badge variant="destructive">{activeClients.filter(needsHelp).length}</Badge>
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-[#222121]/10 bg-white px-2.5 py-0.5 text-xs text-[#222121]/60"
+                >
+                  {activeClients.filter(needsHelp).length}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Progress</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Days Remaining</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Client</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Status</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Progress</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Days Remaining</TableHead>
+                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-[#222121]/40">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                 <TableBody>
@@ -790,38 +888,41 @@ const AdminClients = () => {
                       : null;
                     
                     return (
-                      <TableRow key={client.id} className="bg-destructive/5">
-                        <TableCell className="text-sm font-medium">
+                      <TableRow key={client.id} className="bg-[#34B192]/5">
+                        <TableCell className="text-sm font-medium text-[#222121]">
                           <div>
                             <div>{client.client_name}</div>
-                            <div className="text-xs text-muted-foreground">{client.email}</div>
+                            <div className="text-xs text-[#222121]/50">{client.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="gap-1">
-                            {getStatusIcon(client.client_status)}
-                            <span className="capitalize">{client.client_status || 'on_track'}</span>
+                          <Badge
+                            variant="outline"
+                            className="gap-1 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]/60"
+                          >
+                            <span className="text-[#34B192]">{getStatusIcon(client.client_status)}</span>
+                            <span className="capitalize">{client.client_status || "on_track"}</span>
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {client.leads_purchased ? (
                             <div className="text-sm">
-                              <div className="font-medium">{completion}%</div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="font-medium text-[#222121]">{completion}%</div>
+                              <div className="text-xs text-[#222121]/50">
                                 {client.leads_fulfilled || 0} / {client.leads_purchased}
                               </div>
                             </div>
                           ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
+                            <span className="text-sm text-[#222121]/50">N/A</span>
                           )}
                         </TableCell>
                         <TableCell>
                           {daysRemaining !== null ? (
-                            <span className={`text-sm ${daysRemaining < 0 ? "text-destructive font-bold" : daysRemaining < 7 ? "text-warning font-medium" : ""}`}>
+                            <span className="text-sm text-[#222121]">
                               {daysRemaining < 0 ? `${Math.abs(daysRemaining)} overdue` : `${daysRemaining} days`}
                             </span>
                           ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
+                            <span className="text-sm text-[#222121]/50">N/A</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -830,7 +931,7 @@ const AdminClients = () => {
                             onValueChange={(value) => handleUpdateStatus(client.id, value as ClientStatus)}
                             disabled={updatingStatus === client.id}
                           >
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="h-9 w-32 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -853,19 +954,21 @@ const AdminClients = () => {
         )}
 
         {/* Airtable Clients Section */}
-        <Card className="shadow-sm">
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
+                  <Building2 className="h-5 w-5 text-[#34B192]" />
                   Clients
                 </CardTitle>
-                <CardDescription>All clients from Airtable with lead stats</CardDescription>
+                <CardDescription className="text-[#222121]/60">
+                  All clients from Airtable with lead stats
+                </CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <Select value={clientStatusFilter} onValueChange={setClientStatusFilter}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="h-9 w-32 rounded-full border-[#222121]/10 bg-white text-xs text-[#222121]">
                     <SelectValue placeholder="Filter" />
                   </SelectTrigger>
                   <SelectContent>
@@ -888,21 +991,20 @@ const AdminClients = () => {
                 No clients found in Airtable
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Client Name</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Attached User</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Ordered</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Delivered</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Remaining</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Start Date</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">End Date</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">Lead Stats</TableHead>
-                      <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Client Name</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Contact</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Attached User</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Status</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Ordered</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Delivered</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Remaining</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Start Date</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">End Date</TableHead>
+                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-[#222121]/40">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -914,156 +1016,90 @@ const AdminClients = () => {
                         return true;
                       })
                       .map((client) => {
-                        const completionPercent = client.leadsPurchased > 0
-                          ? Math.round((client.leadsDelivered / client.leadsPurchased) * 100)
-                          : 0;
-                        const stats = client.leadStats;
+                        // Get order data for this client
+                        const orderData = clientOrders[client.id];
+                        const ordered = orderData?.totalOrdered || 0;
+                        // Delivered = approved leads from Airtable (client.leadsDelivered comes from edge function)
+                        const delivered = client.leadsDelivered || 0;
+                        const remaining = Math.max(0, ordered - delivered);
+                        const completionPercent = ordered > 0 ? Math.round((delivered / ordered) * 100) : 0;
+                        const startDate = orderData?.startDate;
+                        const endDate = orderData?.endDate;
 
                         return (
                           <TableRow
                             key={client.id}
-                            className="cursor-pointer hover:bg-muted/50"
+                            className="cursor-pointer hover:bg-[#34B192]/5"
                             onClick={() => navigate(`/admin/clients/${client.id}`)}
                           >
                             <TableCell>
-                              <div className="font-medium">{client.name}</div>
+                              <div className="font-medium text-[#222121]">{client.name}</div>
                               {client.companyName && client.companyName !== client.name && (
-                                <div className="text-sm text-muted-foreground">{client.companyName}</div>
+                                <div className="text-sm text-[#222121]/50">{client.companyName}</div>
                               )}
                             </TableCell>
                             <TableCell>
                               <div className="text-sm">
                                 {client.email && (
-                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                  <div className="flex items-center gap-1 text-[#222121]/50">
                                     <Mail className="h-3 w-3" />
                                     {client.email}
                                   </div>
                                 )}
                                 {client.contactPerson && (
-                                  <div className="text-muted-foreground">{client.contactPerson}</div>
+                                  <div className="text-[#222121]/50">{client.contactPerson}</div>
                                 )}
                               </div>
                             </TableCell>
                             <TableCell>
                               {attachedUsers[client.id] ? (
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-sm text-[#222121]/50">
                                   {attachedUsers[client.id]}
                                 </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground/50">No user</span>
+                                <span className="text-xs text-[#222121]/40">No user</span>
                               )}
                             </TableCell>
                             <TableCell className="text-center">
                               {client.status === 'Inactive' || client.status === 'Not Active' ? (
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-600">
+                                <Badge variant="outline" className="rounded-full border-transparent bg-[#222121]/15 text-white">
                                   Inactive
                                 </Badge>
                               ) : (
-                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                <Badge variant="outline" className="rounded-full border-transparent bg-[#34B192] text-white">
                                   Active
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                              {editingCell?.clientId === client.id && editingCell?.field === 'leadsPurchased' ? (
-                                <Input
-                                  type="number"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => saveAirtableField(client.id, 'leadsPurchased', editValue)}
-                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'leadsPurchased')}
-                                  className="w-20 h-8 text-center mx-auto"
-                                  autoFocus
-                                  disabled={savingClient === client.id}
-                                />
-                              ) : (
-                                <button
-                                  onClick={() => startEditing(client.id, 'leadsPurchased', client.leadsPurchased)}
-                                  className="font-medium hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors"
-                                  title="Click to edit"
-                                >
-                                  {client.leadsPurchased || 0}
-                                </button>
-                              )}
-                            </TableCell>
                             <TableCell className="text-center">
-                              <div className="font-medium text-blue-600">{client.leadsDelivered}</div>
-                              {client.leadsPurchased > 0 && (
-                                <div className="text-xs text-muted-foreground">{completionPercent}%</div>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <span className={client.leadsRemaining > 0 ? "font-medium text-amber-600" : "text-muted-foreground"}>
-                                {client.leadsRemaining}
+                              <span className="text-sm font-medium text-[#222121]">
+                                {ordered || <span className="text-[#222121]/40">—</span>}
                               </span>
                             </TableCell>
-                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                              {editingCell?.clientId === client.id && editingCell?.field === 'campaignStartDate' ? (
-                                <Input
-                                  type="date"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => saveAirtableField(client.id, 'campaignStartDate', editValue)}
-                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'campaignStartDate')}
-                                  className="w-32 h-8 text-center mx-auto text-xs"
-                                  autoFocus
-                                  disabled={savingClient === client.id}
-                                />
-                              ) : (
-                                <button
-                                  onClick={() => startEditing(client.id, 'campaignStartDate', client.campaignStartDate?.split('T')[0] || '')}
-                                  className="text-sm hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors min-w-[80px]"
-                                  title="Click to edit"
-                                >
-                                  {client.campaignStartDate
-                                    ? new Date(client.campaignStartDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-                                    : <span className="text-muted-foreground">—</span>}
-                                </button>
+                            <TableCell className="text-center">
+                              <div className="font-medium text-[#222121]">{delivered || <span className="text-[#222121]/40">—</span>}</div>
+                              {ordered > 0 && (
+                                <div className="text-xs text-[#222121]/50">{completionPercent}%</div>
                               )}
                             </TableCell>
-                            <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                              {editingCell?.clientId === client.id && editingCell?.field === 'targetEndDate' ? (
-                                <Input
-                                  type="date"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => saveAirtableField(client.id, 'targetEndDate', editValue)}
-                                  onKeyDown={(e) => handleKeyDown(e, client.id, 'targetEndDate')}
-                                  className="w-32 h-8 text-center mx-auto text-xs"
-                                  autoFocus
-                                  disabled={savingClient === client.id}
-                                />
-                              ) : (
-                                <button
-                                  onClick={() => startEditing(client.id, 'targetEndDate', client.targetEndDate?.split('T')[0] || '')}
-                                  className="text-sm hover:bg-muted px-2 py-1 rounded cursor-pointer transition-colors min-w-[80px]"
-                                  title="Click to edit"
-                                >
-                                  {client.targetEndDate
-                                    ? new Date(client.targetEndDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-                                    : <span className="text-muted-foreground">—</span>}
-                                </button>
-                              )}
+                            <TableCell className="text-center">
+                              <span className={remaining > 0 ? "font-medium text-[#222121]" : "text-[#222121]/50"}>
+                                {ordered > 0 ? remaining : <span className="text-[#222121]/40">—</span>}
+                              </span>
                             </TableCell>
-                            <TableCell>
-                              {stats && stats.total > 0 ? (
-                                <div className="flex items-center justify-center gap-1 text-xs">
-                                  <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded" title="New">
-                                    {stats.new}
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded" title="Approved">
-                                    {stats.approved + stats.booked}
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded" title="Needs Work">
-                                    {stats.needsWork}
-                                  </span>
-                                  <span className="px-1.5 py-0.5 bg-red-100 text-red-600 rounded" title="Rejected">
-                                    {stats.rejected}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="text-center text-muted-foreground text-sm">—</div>
-                              )}
+                            <TableCell className="text-center">
+                              <span className="text-sm text-[#222121]">
+                                {startDate
+                                  ? new Date(startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                                  : <span className="text-[#222121]/40">—</span>}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className="text-sm text-[#222121]">
+                                {endDate
+                                  ? new Date(endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                                  : <span className="text-[#222121]/40">—</span>}
+                              </span>
                             </TableCell>
                             <TableCell className="text-right">
                               <Button
@@ -1073,6 +1109,7 @@ const AdminClients = () => {
                                   e.stopPropagation();
                                   navigate(`/admin/clients/${client.id}`);
                                 }}
+                                className="hover:bg-[#34B192]/10"
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </Button>

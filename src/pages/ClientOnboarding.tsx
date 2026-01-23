@@ -79,8 +79,8 @@ const ClientOnboarding = () => {
 
   if (checking) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F7F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
       </div>
     );
   }
@@ -88,22 +88,26 @@ const ClientOnboarding = () => {
   // If already linked, show a simplified view with skip option
   if (isAlreadyLinked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+      <div className="min-h-screen bg-[#F7F7F7] px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome to Hireflow!</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl font-semibold text-[#222121]">Welcome to Hireflow!</h1>
+            <p className="mt-2 text-sm text-[#222121]/60">
               Your account is already set up and ready to go.
             </p>
           </div>
 
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 mb-6">
+          <Card className="mb-6 border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4">
-                <CheckCircle2 className="h-12 w-12 text-emerald-600" />
+                <div className="flex size-14 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <CheckCircle2 className="h-7 w-7 text-[#34B192]" />
+                </div>
                 <div className="text-center">
-                  <h3 className="font-semibold text-lg">You're All Set{clientName ? `, ${clientName}` : ''}!</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
+                  <h3 className="text-lg font-semibold text-[#222121]">
+                    You're All Set{clientName ? `, ${clientName}` : ''}!
+                  </h3>
+                  <p className="mt-1 text-sm text-[#222121]/60">
                     Your account has already been linked by your administrator. You can proceed directly to your dashboard.
                   </p>
                 </div>
@@ -111,7 +115,8 @@ const ClientOnboarding = () => {
                   onClick={handleComplete}
                   disabled={completing}
                   size="lg"
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  variant="ghost"
+                  className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                 >
                   {completing ? (
                     <>
@@ -131,7 +136,7 @@ const ClientOnboarding = () => {
 
           <Card className="border-dashed">
             <CardHeader>
-              <CardTitle className="text-base">Need to update your details?</CardTitle>
+              <CardTitle className="text-base text-[#222121]">Need to update your details?</CardTitle>
               <CardDescription>
                 If you haven't filled out the onboarding form yet, you can do so below. Otherwise, just click "Go to Dashboard" above.
               </CardDescription>
@@ -143,7 +148,7 @@ const ClientOnboarding = () => {
                 frameBorder="0"
                 width="100%"
                 height="400"
-                style={{ background: 'transparent', border: '1px solid #ccc', borderRadius: '8px' }}
+                style={{ background: 'transparent', border: '1px solid #E2E2E2', borderRadius: '16px' }}
               />
             </CardContent>
           </Card>
@@ -153,18 +158,18 @@ const ClientOnboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+    <div className="min-h-screen bg-[#F7F7F7] px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome to Hireflow!</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-semibold text-[#222121]">Welcome to Hireflow!</h1>
+          <p className="mt-2 text-sm text-[#222121]/60">
             Please complete the onboarding form below so we can find the perfect leads for you.
           </p>
         </div>
 
-        <Card className="mb-6">
+        <Card className="mb-6 border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle>Client Onboarding Form</CardTitle>
+            <CardTitle className="text-[#222121]">Client Onboarding Form</CardTitle>
             <CardDescription>
               Fill out all the required fields in the form below. Once you've submitted, click the "Complete Onboarding" button.
             </CardDescription>
@@ -176,17 +181,17 @@ const ClientOnboarding = () => {
               frameBorder="0"
               width="100%"
               height="600"
-              style={{ background: 'transparent', border: '1px solid #ccc', borderRadius: '8px' }}
+              style={{ background: 'transparent', border: '1px solid #E2E2E2', borderRadius: '16px' }}
             />
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
               <div className="text-center">
-                <h3 className="font-semibold text-lg">Finished filling out the form?</h3>
-                <p className="text-muted-foreground text-sm mt-1">
+                <h3 className="text-lg font-semibold text-[#222121]">Finished filling out the form?</h3>
+                <p className="mt-1 text-sm text-[#222121]/60">
                   After you've submitted the Airtable form above, click the button below to complete your onboarding.
                 </p>
               </div>
@@ -194,7 +199,8 @@ const ClientOnboarding = () => {
                 onClick={handleComplete}
                 disabled={completing}
                 size="lg"
-                className="bg-emerald-600 hover:bg-emerald-700"
+                variant="ghost"
+                className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
               >
                 {completing ? (
                   <>

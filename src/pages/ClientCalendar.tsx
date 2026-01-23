@@ -141,8 +141,8 @@ const ClientCalendar = () => {
   if (isLoading) {
     return (
       <ClientLayout userEmail={user?.email}>
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-screen items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </ClientLayout>
     );
@@ -152,26 +152,46 @@ const ClientCalendar = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-6 space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
-            <p className="text-sm text-muted-foreground mt-1">View your scheduled bookings</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Callbacks calendar
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">Calendar</h1>
+            <p className="text-sm text-[#222121]/60">View your scheduled bookings</p>
           </div>
-          <Button onClick={goToToday} className="bg-primary hover:bg-primary/90">Today</Button>
+          <Button
+            onClick={goToToday}
+            variant="ghost"
+            className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+          >
+            Today
+          </Button>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           {/* Calendar */}
-          <div className="bg-card border rounded-xl shadow-sm p-6">
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">{monthName}</h2>
+              <h2 className="text-lg font-semibold text-[#222121]">{monthName}</h2>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={previousMonth}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={previousMonth}
+                  className="h-9 w-9 rounded-full hover:bg-[#F5F5F5]"
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={nextMonth}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={nextMonth}
+                  className="h-9 w-9 rounded-full hover:bg-[#F5F5F5]"
+                >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -179,7 +199,7 @@ const ClientCalendar = () => {
             <div className="grid grid-cols-7 gap-2">
               {/* Day headers */}
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-xs font-medium text-muted-foreground uppercase text-center p-2">
+                <div key={day} className="p-2 text-center text-xs font-medium uppercase text-[#222121]/40">
                   {day}
                 </div>
               ))}
@@ -202,25 +222,25 @@ const ClientCalendar = () => {
                     key={day}
                     onClick={() => setSelectedDate(date)}
                     className={`
-                      rounded-lg hover:bg-muted/50 transition-colors p-2 min-h-[90px] text-left border
-                      ${isToday ? 'bg-primary/10 border-primary' : ''}
-                      ${isSelected && !isToday ? 'ring-2 ring-primary bg-primary/5' : ''}
-                      ${leads.length > 0 ? 'bg-emerald-50 border-emerald-200' : ''}
+                      min-h-[90px] rounded-xl border p-2 text-left transition-colors
+                      ${isToday ? 'bg-[#34B192]/10 border-[#34B192]' : ''}
+                      ${isSelected && !isToday ? 'ring-2 ring-[#34B192] bg-[#34B192]/5' : ''}
+                      ${leads.length > 0 ? 'bg-[#F1FBF7] border-[#34B192]/30' : 'border-[#222121]/10 hover:bg-[#F7F7F7]'}
                     `}
                   >
-                    <div className={`font-medium text-sm mb-1 ${isToday ? 'text-primary' : ''}`}>{day}</div>
+                    <div className={`mb-1 text-sm font-medium ${isToday ? 'text-[#34B192]' : 'text-[#222121]'}`}>{day}</div>
                     <div className="space-y-1">
                       {leads.slice(0, 2).map(lead => (
                         <div
                           key={lead.id}
-                          className="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded truncate font-medium"
+                          className="truncate rounded-full bg-[#34B192] px-2 py-0.5 text-xs font-medium text-white"
                           title={`${lead.companyName} - ${formatCallbackTime(lead.callback1!)}`}
                         >
                           📞 {formatCallbackTime(lead.callback1!)}
                         </div>
                       ))}
                       {leads.length > 2 && (
-                        <div className="text-xs font-medium text-emerald-600">+{leads.length - 2} more</div>
+                        <div className="text-xs font-medium text-[#34B192]">+{leads.length - 2} more</div>
                       )}
                     </div>
                   </button>
@@ -230,9 +250,9 @@ const ClientCalendar = () => {
           </div>
 
           {/* Selected Day Details */}
-          <div className="bg-card border rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-              <CalendarIcon className="h-4 w-4" />
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[#222121]">
+              <CalendarIcon className="h-4 w-4 text-[#34B192]" />
               {selectedDate ? selectedDate.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
@@ -244,26 +264,26 @@ const ClientCalendar = () => {
                 {selectedDayLeads.map(lead => (
                   <div
                     key={lead.id}
-                    className="p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                    className="cursor-pointer rounded-xl border border-[#222121]/10 bg-white p-4 transition-colors hover:bg-[#F7F7F7]"
                     onClick={() => navigate(`/client/leads/${lead.id}`)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <p className="text-sm font-medium text-foreground">{lead.companyName}</p>
-                      <Badge className={getStatusColor(lead.status)}>
+                      <p className="text-sm font-medium text-[#222121]">{lead.companyName}</p>
+                      <Badge variant="outline" className={`${getStatusColor(lead.status)} border-transparent text-white`}>
                         {lead.status}
                       </Badge>
                     </div>
                     {lead.contactName && (
-                      <p className="text-xs text-muted-foreground mb-2">{lead.contactName}</p>
+                      <p className="mb-2 text-xs text-[#222121]/60">{lead.contactName}</p>
                     )}
                     {lead.callback1 && (
-                      <p className="text-sm font-medium text-emerald-600 flex items-center gap-2 mb-1">
-                        <Clock className="h-3 w-3" />
+                      <p className="mb-1 flex items-center gap-2 text-sm font-medium text-[#34B192]">
+                        <Clock className="h-3 w-3 text-[#34B192]" />
                         Callback: {formatCallbackTime(lead.callback1)}
                       </p>
                     )}
                     {lead.phone && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-[#222121]/60">
                         📞 {lead.phone}
                       </p>
                     )}
@@ -272,13 +292,13 @@ const ClientCalendar = () => {
               </div>
             ) : selectedDate ? (
               <div className="text-center py-8">
-                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">No bookings scheduled for this day</p>
+                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-[#222121]/30" />
+                <p className="text-sm text-[#222121]/60">No bookings scheduled for this day</p>
               </div>
             ) : (
               <div className="text-center py-8">
-                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">Select a date to view bookings</p>
+                <CalendarIcon className="h-10 w-10 mx-auto mb-4 text-[#222121]/30" />
+                <p className="text-sm text-[#222121]/60">Select a date to view bookings</p>
               </div>
             )}
           </div>

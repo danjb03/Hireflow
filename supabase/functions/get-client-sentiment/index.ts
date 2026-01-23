@@ -47,7 +47,8 @@ Deno.serve(async (req) => {
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
-    // First, fetch all clients from Airtable to build ID -> Name map
+    // First, fetch all ACTIVE clients from Airtable to build ID -> Name map
+    // Only include real clients (with Status = Active or not Inactive/Not Active)
     const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent('Clients')}`;
     let clientOffset: string | undefined;
     const clientIdToName: Record<string, string> = {};
@@ -63,6 +64,14 @@ Deno.serve(async (req) => {
 
       for (const record of data.records || []) {
         const name = record.fields['Client Name'] || record.fields['Name'] || 'Unknown';
+        const status = (record.fields['Status'] || '').toLowerCase().trim();
+
+        // Skip inactive clients and internal users (no leads purchased = likely not a real client)
+        if (status === 'inactive' || status === 'not active') continue;
+
+        // Only include clients that have a proper client name
+        if (!name || name === 'Unknown') continue;
+
         clientIdToName[record.id] = name;
       }
 
@@ -91,7 +100,8 @@ Deno.serve(async (req) => {
     }
 
     // Fetch leads from Airtable - ONLY the fields we need for speed
-    const fields = ['Status', 'Clients', 'Feedback'].map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
+    // Use 'Client Feedback' field for feedback data
+    const fields = ['Status', 'Clients', 'Client Feedback'].map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
     const baseUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?${fields}`;
 
     let offset: string | undefined;
@@ -111,11 +121,11 @@ Deno.serve(async (req) => {
 
       const data = await response.json();
 
-      // Process each record immediately
+      // Process each record immediately - get feedback regardless of status
       for (const record of data.records) {
         const recordClients = record.fields['Clients'] || [];
         const status = (record.fields['Status'] || '').toLowerCase().trim();
-        const feedback = record.fields['Feedback'];
+        const feedback = record.fields['Client Feedback'];
 
         // Clients field contains Airtable record IDs - convert to names
         const clientIds = Array.isArray(recordClients) ? recordClients : [recordClients];

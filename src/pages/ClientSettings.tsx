@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, User, Lock, LifeBuoy } from "lucide-react";
 import ClientLayout from "@/components/ClientLayout";
@@ -70,8 +68,8 @@ const ClientSettings = () => {
   if (isLoading) {
     return (
       <ClientLayout userEmail={user?.email}>
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-screen items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </ClientLayout>
     );
@@ -79,32 +77,38 @@ const ClientSettings = () => {
 
   return (
     <ClientLayout userEmail={user?.email}>
-      <div className="p-6 space-y-6 max-w-4xl">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground mt-1">Manage your account settings</p>
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Account settings
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">Settings</h1>
+          <p className="text-sm text-[#222121]/60">Manage your account settings</p>
         </div>
 
         {/* Account Information */}
-        <div className="bg-card border rounded-xl p-6 shadow-sm space-y-6">
+        <div className="space-y-6 rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <User className="h-5 w-5" />
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <User className="h-5 w-5 text-[#34B192]" />
+              </span>
               Account Information
             </h2>
-            <p className="text-base text-muted-foreground mb-4">Your account details</p>
+            <p className="mb-4 text-sm text-[#222121]/60">Your account details</p>
           </div>
           <div className="space-y-4">
             <div>
-              <Label className="text-base font-medium">Email</Label>
+              <Label className="text-sm font-medium text-[#222121]">Email</Label>
               <Input 
                 value={user?.email || ""} 
                 disabled 
-                className="mt-1 rounded-lg border bg-background bg-muted/50 text-muted-foreground" 
+                className="mt-1 h-11 rounded-full border-[#222121]/15 bg-[#F5F5F5] text-sm text-[#222121]/60" 
               />
             </div>
             <div>
-              <Label className="text-base font-medium">Member Since</Label>
+              <Label className="text-sm font-medium text-[#222121]">Member Since</Label>
               <Input 
                 value={new Date(user?.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -112,61 +116,68 @@ const ClientSettings = () => {
                   day: 'numeric'
                 })} 
                 disabled 
-                className="mt-1 rounded-lg border bg-background bg-muted/50 text-muted-foreground" 
+                className="mt-1 h-11 rounded-full border-[#222121]/15 bg-[#F5F5F5] text-sm text-[#222121]/60" 
               />
             </div>
           </div>
         </div>
 
         {/* Change Password */}
-        <div className="bg-card border rounded-xl p-6 shadow-sm space-y-6">
+        <div className="space-y-6 rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Lock className="h-5 w-5" />
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Lock className="h-5 w-5 text-[#34B192]" />
+              </span>
               Change Password
             </h2>
-            <p className="text-base text-muted-foreground mb-4">Update your password</p>
+            <p className="mb-4 text-sm text-[#222121]/60">Update your password</p>
           </div>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <Label htmlFor="current-password" className="text-base font-medium">Current Password</Label>
+              <Label htmlFor="current-password" className="text-sm font-medium text-[#222121]">Current Password</Label>
               <Input
                 id="current-password"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="mt-1 rounded-lg border bg-background"
+                className="mt-1 h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 placeholder="Enter current password"
               />
             </div>
             <div>
-              <Label htmlFor="new-password" className="text-base font-medium">New Password</Label>
+              <Label htmlFor="new-password" className="text-sm font-medium text-[#222121]">New Password</Label>
               <Input
                 id="new-password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="mt-1 rounded-lg border bg-background"
+                className="mt-1 h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 placeholder="Enter new password"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="confirm-password" className="text-base font-medium">Confirm New Password</Label>
+              <Label htmlFor="confirm-password" className="text-sm font-medium text-[#222121]">Confirm New Password</Label>
               <Input
                 id="confirm-password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 rounded-lg border bg-background"
+                className="mt-1 h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 placeholder="Confirm new password"
                 required
               />
             </div>
-            <p className="text-base text-muted-foreground">
+            <p className="text-sm text-[#222121]/60">
               Password must be at least 6 characters long
             </p>
-            <Button type="submit" disabled={isUpdating} className="bg-primary hover:bg-primary/90">
+            <Button
+              type="submit"
+              disabled={isUpdating}
+              variant="ghost"
+              className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+            >
               {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Update Password
             </Button>
@@ -174,16 +185,22 @@ const ClientSettings = () => {
         </div>
 
         {/* Support */}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 border rounded-xl p-6">
+        <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
-              <LifeBuoy className="h-5 w-5" />
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <LifeBuoy className="h-5 w-5 text-[#34B192]" />
+              </span>
               Support
             </h2>
-            <p className="text-base text-muted-foreground mb-4">
+            <p className="mb-4 text-sm text-[#222121]/60">
               If you have any questions or need assistance, please reach out to our support team.
             </p>
-            <Button variant="outline" onClick={() => window.location.href = "mailto:daniel@hireflow.uk"}>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "mailto:daniel@hireflow.uk"}
+              className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+            >
               Contact Support
             </Button>
           </div>

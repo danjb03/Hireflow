@@ -21,100 +21,70 @@ interface StatusBadgeProps {
 
 const statusConfig: Record<
   string,
-  { gradient: string; glow: string; icon: React.ReactNode }
+  { color: string; icon: React.ReactNode }
 > = {
   // Lead statuses
   new: {
-    gradient:
-      "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_2px_10px_-2px_rgba(59,130,246,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(59,130,246,0.6)]",
+    color: "border-transparent bg-[#3B82F6] text-white",
     icon: <Sparkles className="h-3.5 w-3.5" />,
   },
   lead: {
-    gradient:
-      "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-[0_2px_10px_-2px_rgba(59,130,246,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(59,130,246,0.6)]",
+    color: "border-transparent bg-[#3B82F6] text-white",
     icon: <Sparkles className="h-3.5 w-3.5" />,
   },
   approved: {
-    gradient:
-      "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-[0_2px_10px_-2px_rgba(16,185,129,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.6)]",
+    color: "border-transparent bg-[#34B192] text-white",
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
   },
   booked: {
-    gradient:
-      "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_2px_10px_-2px_rgba(16,185,129,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.6)]",
+    color: "border-transparent bg-[#34B192] text-white",
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
   },
   "needs work": {
-    gradient:
-      "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_2px_10px_-2px_rgba(245,158,11,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(245,158,11,0.6)]",
+    color: "border-transparent bg-[#F2B84B] text-white",
     icon: <AlertTriangle className="h-3.5 w-3.5" />,
   },
   "in progress": {
-    gradient:
-      "bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_2px_10px_-2px_rgba(139,92,246,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(139,92,246,0.6)]",
+    color: "border-transparent bg-[#64748B] text-white",
     icon: <Clock className="h-3.5 w-3.5" />,
   },
   contacted: {
-    gradient:
-      "bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-[0_2px_10px_-2px_rgba(14,165,233,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(14,165,233,0.6)]",
+    color: "border-transparent bg-[#3B82F6] text-white",
     icon: <Clock className="h-3.5 w-3.5" />,
   },
   rejected: {
-    gradient:
-      "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-[0_2px_10px_-2px_rgba(239,68,68,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(239,68,68,0.6)]",
+    color: "border-transparent bg-[#D64545] text-white",
     icon: <X className="h-3.5 w-3.5" />,
   },
   "not qualified": {
-    gradient:
-      "bg-gradient-to-r from-slate-400 to-gray-500 text-white shadow-[0_2px_10px_-2px_rgba(100,116,139,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(100,116,139,0.6)]",
+    color: "border-transparent bg-[#9AA3A0] text-white",
     icon: <X className="h-3.5 w-3.5" />,
   },
   // Client sentiment statuses
   happy: {
-    gradient:
-      "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-[0_2px_10px_-2px_rgba(16,185,129,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.6)]",
+    color: "border-transparent bg-[#34B192] text-white",
     icon: <Smile className="h-3.5 w-3.5" />,
   },
   unhappy: {
-    gradient:
-      "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-[0_2px_10px_-2px_rgba(239,68,68,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(239,68,68,0.6)]",
+    color: "border-transparent bg-[#D64545] text-white",
     icon: <Frown className="h-3.5 w-3.5" />,
   },
   urgent: {
-    gradient:
-      "bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-[0_2px_10px_-2px_rgba(220,38,38,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(220,38,38,0.6)]",
+    color: "border-transparent bg-[#C53030] text-white",
     icon: <Zap className="h-3.5 w-3.5" />,
   },
   at_risk: {
-    gradient:
-      "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_2px_10px_-2px_rgba(245,158,11,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(245,158,11,0.6)]",
+    color: "border-transparent bg-[#F2B84B] text-white",
     icon: <AlertCircle className="h-3.5 w-3.5" />,
   },
   on_track: {
-    gradient:
-      "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_2px_10px_-2px_rgba(16,185,129,0.5)]",
-    glow: "hover:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.6)]",
+    color: "border-transparent bg-[#34B192] text-white",
     icon: <TrendingUp className="h-3.5 w-3.5" />,
   },
 };
 
 const defaultConfig = {
-  gradient:
-    "bg-gradient-to-r from-slate-500 to-gray-500 text-white shadow-[0_2px_10px_-2px_rgba(100,116,139,0.5)]",
-  glow: "hover:shadow-[0_4px_20px_-4px_rgba(100,116,139,0.6)]",
+  color: "border-transparent bg-[#9AA3A0] text-white",
   icon: <Clock className="h-3.5 w-3.5" />,
 };
 
@@ -133,10 +103,10 @@ export const StatusBadge = ({
 
   return (
     <Badge
+      variant="outline"
       className={cn(
-        "border-0 rounded-full font-semibold inline-flex items-center justify-center transition-all duration-200 whitespace-nowrap",
-        config.gradient,
-        config.glow,
+        "rounded-full border text-xs font-semibold inline-flex items-center justify-center whitespace-nowrap",
+        config.color,
         sizeClasses[size]
       )}
     >
@@ -148,7 +118,7 @@ export const StatusBadge = ({
 
 export const getStatusColor = (status: string): string => {
   const config = statusConfig[status.toLowerCase()] || defaultConfig;
-  return config.gradient;
+  return config.color;
 };
 
 export default StatusBadge;

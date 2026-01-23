@@ -183,8 +183,9 @@ Deno.serve(async (req) => {
       for (const client of allClients) {
         const stats = clientLeadStats[client.id];
         if (stats) {
-          client.leadsDelivered = stats.total;
-          client.leadsRemaining = Math.max(0, (client.leadsPurchased || 0) - stats.total);
+          // Leads delivered = approved + booked (leads that were passed to client)
+          client.leadsDelivered = stats.approved + stats.booked;
+          client.leadsRemaining = Math.max(0, (client.leadsPurchased || 0) - client.leadsDelivered);
           client.leadStats = stats;
           // Use first lead date as campaign start if no explicit start date
           client.firstLeadDate = stats.firstLeadDate;
