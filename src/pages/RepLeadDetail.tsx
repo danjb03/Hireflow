@@ -3,9 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { ArrowLeft, Loader2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, Clock, Calendar, MessageSquare, StickyNote } from "lucide-react";
 import RepLayout from "@/components/RepLayout";
+import { toast } from "sonner";
 
 interface LeadData {
   id: string;
@@ -63,6 +65,8 @@ const RepLeadDetail = () => {
   const [lead, setLead] = useState<LeadData | null>(null);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [feedback, setFeedback] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -95,6 +99,7 @@ const RepLeadDetail = () => {
         setLead(null);
       } else {
         setLead(foundLead);
+        setFeedback(String(foundLead.feedback || ""));
       }
     } catch (error) {
       console.error("Error loading lead:", error);
@@ -139,6 +144,30 @@ const RepLeadDetail = () => {
       });
     } catch {
       return "N/A";
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedback.trim()) {
+      toast.error("Please enter feedback before saving.");
+      return;
+    }
+
+    try {
+      setIsSubmittingFeedback(true);
+      const { error } = await supabase.functions.invoke("update-lead-feedback", {
+        body: { leadId: id, feedback },
+      });
+
+      if (error) throw error;
+
+      toast.success("Feedback updated successfully");
+      loadLead();
+    } catch (error: any) {
+      console.error("Error updating feedback:", error);
+      toast.error(error?.message || "Failed to update feedback");
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -502,21 +531,35 @@ const RepLeadDetail = () => {
           </div>
         )}
 
-        {/* Client Feedback Card */}
-        {lead.feedback && (
-          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
-              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
-                <MessageSquare className="h-5 w-5 text-[#34B192]" />
-              </span>
-              Client Feedback
-            </div>
-            <p className="text-sm leading-relaxed text-[#222121] whitespace-pre-wrap">{lead.feedback}</p>
-            <p className="mt-4 text-xs italic text-[#222121]/60">
-              Feedback from the client about this lead.
-            </p>
+        {/* Client Feedback */}
+        <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+            <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+              <MessageSquare className="h-5 w-5 text-[#34B192]" />
+            </span>
+            Client Feedback
           </div>
-        )}
+          <Textarea
+            placeholder="Client feedback will appear here..."
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            rows={5}
+            className="resize-none rounded-2xl border-[#222121]/15 text-sm"
+          />
+          <div className="mt-4 flex items-center justify-end">
+            <Button
+              onClick={handleSubmitFeedback}
+              disabled={isSubmittingFeedback || !feedback.trim()}
+              variant="ghost"
+              className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+            >
+              {isSubmittingFeedback ? "Saving..." : "Save Feedback"}
+            </Button>
+          </div>
+          <p className="mt-4 text-xs italic text-[#222121]/60">
+            Feedback from the client about this lead.
+          </p>
+        </div>
       </div>
     </RepLayout>
   );

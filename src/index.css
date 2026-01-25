@@ -508,6 +508,20 @@
     }
   }
 
+  /* Infinite scroll animation for logo banner */
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
   /* Status indicator dot with pulse */
   .status-dot {
     @apply relative w-2.5 h-2.5 rounded-full;

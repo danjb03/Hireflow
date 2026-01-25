@@ -39,6 +39,18 @@ export const TestimonialsSection = () => {
       embedScript.type = "module";
       document.body.appendChild(embedScript);
     }
+
+    // DSD testimonial video
+    const existingDsdEmbed = document.querySelector(
+      "script[src=\"https://fast.wistia.com/embed/20jpmcshz5.js\"]"
+    );
+    if (!existingDsdEmbed) {
+      const dsdEmbedScript = document.createElement("script");
+      dsdEmbedScript.src = "https://fast.wistia.com/embed/20jpmcshz5.js";
+      dsdEmbedScript.async = true;
+      dsdEmbedScript.type = "module";
+      document.body.appendChild(dsdEmbedScript);
+    }
   }, []);
 
   return (
@@ -113,6 +125,53 @@ export const TestimonialsSection = () => {
                 <p className="text-xs text-[#222121]/60">
                   Managing Director, Hyrra
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* DSD Testimonial Section */}
+          <div className="mt-20 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+                <span className="size-2 rounded-full bg-[#34B192]" />
+                Long-term partnership
+              </div>
+              <h2 className="mt-6 text-4xl font-semibold text-[#222121] md:text-5xl">
+                <span className="text-[#222121]/40">3 years of</span>{" "}
+                <span className="text-[#222121]">scaling together.</span>
+              </h2>
+              <p className="mt-5 text-base text-[#222121]/70">
+                3000+ leads generated for DSD. Over 220+ leads a month. Over 3 years of development with Nick from DSD to get him the speed of recruitment he needed to scale his business.
+              </p>
+              <div className="mt-8 grid grid-cols-2 gap-6">
+                <div>
+                  <div className="text-4xl font-semibold text-[#34B192]">3000+</div>
+                  <p className="mt-2 text-sm text-[#222121]/50">
+                    Total leads generated
+                  </p>
+                </div>
+                <div>
+                  <div className="text-4xl font-semibold text-[#222121]">220+</div>
+                  <p className="mt-2 text-sm text-[#222121]/50">
+                    Leads per month
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="mt-12 rounded-2xl border border-[#222121]/[0.08] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <style>{`
+                  wistia-player[media-id='20jpmcshz5']:not(:defined) {
+                    background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/20jpmcshz5/swatch');
+                    display: block;
+                    filter: blur(5px);
+                    padding-top: 56.25%;
+                  }
+                `}</style>
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <wistia-player media-id="20jpmcshz5" aspect="1.7777777777777777"></wistia-player>
+                </div>
               </div>
             </div>
           </div>

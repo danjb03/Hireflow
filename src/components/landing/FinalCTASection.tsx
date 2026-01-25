@@ -23,7 +23,7 @@ export const FinalCTASection = () => {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4">
             <a
-              href="https://calendly.com/jordan-m-hireflow"
+              href="https://calendly.com/jordan-m-hireflow/30min?back=1&month=2026-01"
               target="_blank"
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-3 rounded-2xl bg-[#34B192] px-6 py-4 text-left text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:scale-[1.02] hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
@@ -43,8 +43,8 @@ export const FinalCTASection = () => {
               </div>
             </a>
             <p className="flex items-center gap-2 text-sm text-[#222121]/50">
-              <span className="size-1.5 rounded-full bg-[#34B192]" />
-              Limited availability for January onboarding.
+              <span className="size-1.5 rounded-full bg-[#34B192] animate-pulse" />
+              Limited availability for {new Date().toLocaleString('default', { month: 'long' })} onboarding.
             </p>
             <Button
               asChild

@@ -43,7 +43,7 @@ export const HeroSection = () => {
                 className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
               >
                 <a
-                  href="https://calendly.com/jordan-m-hireflow"
+                  href="https://calendly.com/jordan-m-hireflow/30min?back=1&month=2026-01"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -86,7 +86,7 @@ export const HeroSection = () => {
 
             <div className="flex flex-col items-center justify-center gap-4">
               <a
-                href="https://calendly.com/jordan-m-hireflow"
+                href="https://calendly.com/jordan-m-hireflow/30min?back=1&month=2026-01"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-3 rounded-2xl bg-[#34B192] px-6 py-4 text-left text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:scale-[1.02] hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
@@ -107,8 +107,8 @@ export const HeroSection = () => {
                 <ArrowRight className="ml-2 size-4 text-white/90" />
               </a>
               <p className="flex items-center gap-2 text-sm text-[#222121]/50">
-                <span className="size-1.5 rounded-full bg-[#34B192]" />
-                Be quick! Spots are almost gone for January.
+                <span className="size-1.5 rounded-full bg-[#34B192] animate-pulse" />
+                Be quick! Spots are almost gone for {new Date().toLocaleString('default', { month: 'long' })}.
               </p>
             </div>
 
@@ -138,6 +138,25 @@ export const HeroSection = () => {
                     <div className="mt-2 text-sm text-[#222121]/50">
                       {stat.label}
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Trusted By Section */}
+          <div className="mt-16">
+            <p className="text-center text-sm font-medium text-[#222121]/40 uppercase tracking-wider mb-8">
+              Trusted by leading recruitment companies
+            </p>
+            <div className="relative overflow-hidden">
+              <div className="flex animate-scroll">
+                {[...Array(2)].map((_, setIndex) => (
+                  <div key={setIndex} className="flex shrink-0 items-center gap-16 px-8">
+                    <img src="/logos/hyrra.svg" alt="Hyrra" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all" />
+                    <img src="/logos/squarelogik.svg" alt="Squarelogik" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all" />
+                    <img src="/logos/octogle.svg" alt="Octogle" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all" />
+                    <img src="/logos/recruitment-revenue.svg" alt="Recruitment Revenue" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all" />
                   </div>
                 ))}
               </div>

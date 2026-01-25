@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
@@ -92,6 +93,8 @@ const AdminLeadDetail = () => {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [availability, setAvailability] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
@@ -157,6 +160,7 @@ const AdminLeadDetail = () => {
       setLead(sanitizedLead);
       setSelectedStatus(sanitizedLead.status);
       setAvailability(String(leadData.availability || ""));
+      setFeedback(String(leadData.feedback || ""));
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -288,6 +292,42 @@ const AdminLeadDetail = () => {
     }
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!feedback.trim()) {
+      toast({
+        title: "Feedback required",
+        description: "Please enter feedback before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmittingFeedback(true);
+      const { error } = await supabase.functions.invoke("update-lead-feedback", {
+        body: { leadId: id, feedback },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Feedback updated successfully",
+      });
+
+      loadLead();
+    } catch (error) {
+      console.error("Error updating feedback:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update feedback",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
   const handleDeleteLead = async () => {
     try {
       const { error } = await supabase.functions.invoke("delete-lead", {
@@ -314,15 +354,15 @@ const AdminLeadDetail = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      New: "bg-blue-100 text-blue-700 border-blue-200",
-      NEW: "bg-blue-100 text-blue-700 border-blue-200",
-      Lead: "bg-blue-100 text-blue-700 border-blue-200",
-      Approved: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      'Needs Work': "bg-yellow-100 text-yellow-700 border-yellow-200",
-      Rejected: "bg-red-100 text-red-700 border-red-200",
-      'Not Qualified': "bg-gray-100 text-gray-700 border-gray-200",
+      New: "border-transparent bg-[#3B82F6] text-white",
+      NEW: "border-transparent bg-[#3B82F6] text-white",
+      Lead: "border-transparent bg-[#3B82F6] text-white",
+      Approved: "border-transparent bg-[#34B192] text-white",
+      'Needs Work': "border-transparent bg-[#F2B84B] text-white",
+      Rejected: "border-transparent bg-[#D64545] text-white",
+      'Not Qualified': "border-transparent bg-[#9AA3A0] text-white",
     };
-    return colors[status] || "bg-blue-100 text-blue-700 border-blue-200";
+    return colors[status] || "border-transparent bg-[#3B82F6] text-white";
   };
 
   const getStatusIcon = (status: string) => {
@@ -348,8 +388,8 @@ const AdminLeadDetail = () => {
   if (loading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-[60vh] items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </AdminLayout>
     );
@@ -358,8 +398,8 @@ const AdminLeadDetail = () => {
   if (!lead) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <p className="text-muted-foreground">Lead not found</p>
+        <div className="flex min-h-[60vh] items-center justify-center bg-[#F7F7F7]">
+          <p className="text-sm text-[#222121]/60">Lead not found</p>
         </div>
       </AdminLayout>
     );
@@ -370,21 +410,21 @@ const AdminLeadDetail = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="-mx-4 -my-6 grid grid-cols-1 gap-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:grid-cols-5 lg:px-6">
         {/* Main Content */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="space-y-6 lg:col-span-4">
         {/* Breadcrumb */}
         <Breadcrumb>
-          <BreadcrumbList className="text-base text-muted-foreground">
+          <BreadcrumbList className="text-sm text-[#222121]/60">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href="/admin" className="hover:text-foreground transition-colors">Dashboard</a>
+                <a href="/admin" className="transition-colors hover:text-[#222121]">Dashboard</a>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href="/admin/leads" className="hover:text-foreground transition-colors">All Leads</a>
+                <a href="/admin/leads" className="transition-colors hover:text-[#222121]">All Leads</a>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -396,95 +436,97 @@ const AdminLeadDetail = () => {
 
         {/* Callback Appointment Slots */}
         {(lead.callbackDate1 || lead.callbackDate2 || lead.callbackDate3 || lead.availability) ? (
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 border-2 mb-6">
+          <Card className="mb-6 border border-[#34B192]/30 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-emerald-700">
-                <Phone className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <span className="flex size-8 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <Phone className="h-4 w-4 text-[#34B192]" />
+                </span>
                 Callback Appointment Options
               </CardTitle>
-              <CardDescription className="text-emerald-600">
+              <CardDescription className="text-[#222121]/60">
                 Available times for callback provided by the lead
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {lead.callbackDate1 && lead.callbackTime1 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
+                  <div className="rounded-full bg-[#34B192]/10 p-2">
+                    <Clock className="h-4 w-4 text-[#34B192]" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 1 (Primary)</p>
-                    <p className="text-base font-semibold text-emerald-700">
+                    <p className="text-xs font-medium text-[#34B192]">Option 1 (Primary)</p>
+                    <p className="text-base font-semibold text-[#222121]/70">
                       {new Date(lead.callbackDate1).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime1}
                     </p>
                   </div>
                 </div>
               )}
               {lead.callbackDate2 && lead.callbackTime2 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
+                  <div className="rounded-full bg-[#34B192]/10 p-2">
+                    <Clock className="h-4 w-4 text-[#34B192]" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 2 (Alternative)</p>
-                    <p className="text-base font-semibold text-emerald-700">
+                    <p className="text-xs font-medium text-[#34B192]">Option 2 (Alternative)</p>
+                    <p className="text-base font-semibold text-[#222121]/70">
                       {new Date(lead.callbackDate2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime2}
                     </p>
                   </div>
                 </div>
               )}
               {lead.callbackDate3 && lead.callbackTime3 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
+                  <div className="rounded-full bg-[#34B192]/10 p-2">
+                    <Clock className="h-4 w-4 text-[#34B192]" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Option 3 (Alternative)</p>
-                    <p className="text-base font-semibold text-emerald-700">
+                    <p className="text-xs font-medium text-[#34B192]">Option 3 (Alternative)</p>
+                    <p className="text-base font-semibold text-[#222121]/70">
                       {new Date(lead.callbackDate3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime3}
                     </p>
                   </div>
                 </div>
               )}
               {lead.availability && !lead.callbackDate1 && (
-                <div className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-emerald-200">
-                  <div className="p-2 bg-emerald-100 rounded-full">
-                    <Clock className="h-4 w-4 text-emerald-600" />
+                <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
+                  <div className="rounded-full bg-[#34B192]/10 p-2">
+                    <Clock className="h-4 w-4 text-[#34B192]" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-600 font-medium">Availability Notes</p>
-                    <p className="text-base font-semibold text-emerald-700">{lead.availability}</p>
+                    <p className="text-xs font-medium text-[#34B192]">Availability Notes</p>
+                    <p className="text-base font-semibold text-[#222121]/70">{lead.availability}</p>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 border-2 mb-6">
+          <Card className="mb-6 border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="flex items-center gap-4 py-4">
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Phone className="h-6 w-6 text-emerald-600" />
+              <div className="rounded-full bg-[#F5F5F5] p-3">
+                <Phone className="h-6 w-6 text-[#222121]/50" />
               </div>
               <div>
-                <p className="text-base text-emerald-600 font-medium">Scheduled Callback</p>
-                <p className="text-base text-muted-foreground">No callback scheduled</p>
+                <p className="text-base font-medium text-[#222121]">Scheduled Callback</p>
+                <p className="text-base text-[#222121]/60">No callback scheduled</p>
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Admin Actions */}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 border rounded-xl p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-base font-medium text-muted-foreground mb-2 block">Assign to Client</label>
+              <label className="mb-2 block text-sm font-medium text-[#222121]/60">Assign to Client</label>
               {clients.length > 0 ? (
                 <div className="space-y-3">
                   <Select
                     value={selectedClient}
                     onValueChange={setSelectedClient}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/15 bg-white text-sm">
                       <SelectValue placeholder="Select client" />
                     </SelectTrigger>
                     <SelectContent>
@@ -498,23 +540,28 @@ const AdminLeadDetail = () => {
                   <Button
                     onClick={handleAssignClient}
                     disabled={!selectedClient}
-                    className="w-full bg-primary hover:bg-primary/90"
+                    variant="ghost"
+                    className="h-11 w-full rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                   >
                     Assign
                   </Button>
                 </div>
               ) : (
-                <div className="bg-muted/50 rounded-lg p-3 text-base text-muted-foreground">
-                  No clients with configured names. Go to <button onClick={() => navigate("/admin/clients")} className="text-primary underline hover:text-primary/80 transition-colors">Client Management</button> to configure client names.
+                <div className="rounded-lg bg-[#F7F7F7] p-3 text-sm text-[#222121]/60">
+                  No clients with configured names. Go to{" "}
+                  <button onClick={() => navigate("/admin/clients")} className="font-medium text-[#34B192] underline hover:text-[#2D9A7E] transition-colors">
+                    Client Management
+                  </button>{" "}
+                  to configure client names.
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-base font-medium text-muted-foreground mb-2 block">Update Stage</label>
+              <label className="mb-2 block text-sm font-medium text-[#222121]/60">Update Stage</label>
               <div className="flex gap-2">
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="h-11 flex-1 rounded-full border-[#222121]/15 bg-white text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -527,7 +574,8 @@ const AdminLeadDetail = () => {
                 </Select>
                 <Button
                   onClick={handleUpdateStatus}
-                  className="bg-primary hover:bg-primary/90"
+                  variant="ghost"
+                  className="h-11 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                 >
                   Update
                 </Button>
@@ -535,38 +583,34 @@ const AdminLeadDetail = () => {
 
               {/* AI Recommendation */}
               {lead.aiSuggestedStatus && (
-                <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg">
+                <div className="mt-3 rounded-xl border border-[#222121]/10 bg-[#F7F7F7] p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-700">AI Recommendation</span>
+                    <Sparkles className="h-4 w-4 text-[#34B192]" />
+                    <span className="text-sm font-medium text-[#222121]">AI Recommendation</span>
                     {lead.aiConfidence !== null && (
-                      <Badge variant="outline" className="text-xs border-purple-300 text-purple-600">
+                      <Badge variant="outline" className="border-[#222121]/20 text-xs text-[#222121]/60">
                         {lead.aiConfidence}% confidence
                       </Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className={
-                      lead.aiSuggestedStatus === 'Approved' ? 'bg-emerald-500' :
-                      lead.aiSuggestedStatus === 'Rejected' ? 'bg-red-500' :
-                      'bg-yellow-500'
-                    }>
+                    <Badge variant="outline" className={getStatusColor(lead.aiSuggestedStatus)}>
                       {lead.aiSuggestedStatus}
                     </Badge>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-7 border-purple-300 text-purple-600 hover:bg-purple-100"
+                      className="h-7 rounded-full border-[#222121]/20 text-xs font-semibold text-[#222121] hover:bg-[#F7F7F7]"
                       onClick={() => setSelectedStatus(lead.aiSuggestedStatus || '')}
                     >
                       Apply Suggestion
                     </Button>
                   </div>
                   {lead.aiReasoning && (
-                    <p className="text-xs text-purple-700 leading-relaxed">{lead.aiReasoning}</p>
+                    <p className="text-xs text-[#222121]/70 leading-relaxed">{lead.aiReasoning}</p>
                   )}
                   {lead.aiAnalyzedAt && (
-                    <p className="text-xs text-purple-500 mt-1">
+                    <p className="text-xs text-[#222121]/50 mt-1">
                       Analyzed: {new Date(lead.aiAnalyzedAt).toLocaleString()}
                     </p>
                   )}
@@ -575,17 +619,18 @@ const AdminLeadDetail = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-base font-medium text-muted-foreground mb-2 block">Availability</label>
+              <label className="mb-2 block text-sm font-medium text-[#222121]/60">Availability</label>
               <div className="flex gap-2">
                 <Input 
                   placeholder="e.g. Mon-Fri 9am-5pm, Weekends after 2pm" 
                   value={availability}
                   onChange={(e) => setAvailability(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
                 <Button 
                   onClick={handleUpdateAvailability}
-                  className="bg-primary hover:bg-primary/90"
+                  variant="ghost"
+                  className="h-11 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                 >
                   Update
                 </Button>
@@ -595,18 +640,18 @@ const AdminLeadDetail = () => {
         </div>
 
         {/* Company Header Card */}
-        <div className="bg-card border rounded-xl p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <h1 className="text-3xl font-bold tracking-tight">{lead.companyName}</h1>
-                <Badge className={`${getStatusColor(lead.status)} border rounded-full flex items-center gap-1.5 px-2.5 py-1`}>
+                <h1 className="text-3xl font-semibold text-[#222121]">{lead.companyName}</h1>
+                <Badge variant="outline" className={`${getStatusColor(lead.status)} rounded-full flex items-center gap-1.5 px-2.5 py-1`}>
                   {getStatusIcon(lead.status)}
                   <span>{lead.status}</span>
                 </Badge>
               </div>
               {lead.companyDescription && (
-                <p className="text-muted-foreground mt-2 text-base leading-relaxed">{lead.companyDescription}</p>
+                <p className="mt-2 text-base leading-relaxed text-[#222121]/60">{lead.companyDescription}</p>
               )}
               <div className="flex flex-wrap gap-4 mt-4">
                 {lead.companyWebsite && (
@@ -614,7 +659,7 @@ const AdminLeadDetail = () => {
                     href={lead.companyWebsite} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline flex items-center gap-2 text-base"
+                    className="flex items-center gap-2 text-base font-medium text-[#34B192] hover:underline"
                   >
                     <Globe className="h-4 w-4" />
                     {lead.companyWebsite}
@@ -625,7 +670,7 @@ const AdminLeadDetail = () => {
                     href={lead.companyLinkedIn} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline flex items-center gap-2 text-base"
+                    className="flex items-center gap-2 text-base font-medium text-[#34B192] hover:underline"
                   >
                     <Linkedin className="h-4 w-4" />
                     Company LinkedIn
@@ -635,7 +680,11 @@ const AdminLeadDetail = () => {
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 shrink-0 rounded-full border-[#D64545]/40 text-[#D64545] hover:bg-[#FDF1F1]"
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Reject Lead
                 </Button>
@@ -658,61 +707,63 @@ const AdminLeadDetail = () => {
 
         <div className="space-y-6">
           {/* Contact Details */}
-          <div className="bg-card border rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-              <User className="h-5 w-5" />
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <User className="h-5 w-5 text-[#34B192]" />
+              </span>
               Contact Details
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {lead.contactName && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Name</p>
-                  <p className="text-base font-medium flex items-center gap-2">{lead.contactName}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Contact Name</p>
+                  <p className="text-base font-medium flex items-center gap-2 text-[#222121]">{lead.contactName}</p>
                 </div>
               )}
               {lead.contactTitle && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact Title</p>
-                  <p className="text-base font-medium">{lead.contactTitle}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Contact Title</p>
+                  <p className="text-base font-medium text-[#222121]">{lead.contactTitle}</p>
                 </div>
               )}
               {lead.jobTitle && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
-                  <p className="text-base font-medium flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
+                  <p className="text-base font-medium flex items-center gap-2 text-[#222121]">
+                    <Briefcase className="h-4 w-4 text-[#34B192]" />
                     {lead.jobTitle}
                   </p>
                 </div>
               )}
               {lead.email && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Email</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Email</p>
                   <a 
                     href={`mailto:${lead.email}`} 
-                    className="text-primary hover:underline text-base font-medium flex items-center gap-2"
+                    className="flex items-center gap-2 text-base font-medium text-[#34B192] hover:underline"
                   >
-                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    <Mail className="h-4 w-4 flex-shrink-0 text-[#34B192]" />
                     {lead.email}
                   </a>
                 </div>
               )}
               {lead.phone && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Phone</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Phone</p>
                   <a 
                     href={`tel:${lead.phone}`} 
-                    className="text-primary hover:underline text-base font-medium flex items-center gap-2"
+                    className="flex items-center gap-2 text-base font-medium text-[#34B192] hover:underline"
                   >
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-4 w-4 text-[#34B192]" />
                     {lead.phone}
                   </a>
                 </div>
               )}
             </div>
             {lead.contactLinkedIn && (
-              <div className="mt-6 pt-6 border-t">
-                <Button variant="outline" asChild className="gap-2">
+              <div className="mt-6 border-t border-[#222121]/10 pt-6">
+                <Button variant="outline" asChild className="h-10 gap-2 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]">
                   <a href={lead.contactLinkedIn} target="_blank" rel="noopener noreferrer">
                     <Linkedin className="h-4 w-4" />
                     View Contact LinkedIn Profile
@@ -722,203 +773,157 @@ const AdminLeadDetail = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column - Company Info */}
-            <div className="bg-card border rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                <Building2 className="h-5 w-5" />
-                Company Information
-              </div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                {lead.industry && (
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Industry</p>
-                    <p className="text-base text-foreground">{lead.industry}</p>
-                  </div>
-                )}
-                {lead.companySize && (
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Company Size</p>
-                    <p className="flex items-center gap-2 text-base text-foreground">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      {lead.companySize}
-                    </p>
-                  </div>
-                )}
-                {lead.employeeCount && (
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Employee Count</p>
-                    <p className="text-base text-foreground">{lead.employeeCount}</p>
-                  </div>
-                )}
-                {lead.country && (
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Country</p>
-                    <p className="text-base text-foreground">{lead.country}</p>
-                  </div>
-                )}
-                {lead.address && (
-                  <div className="space-y-1 col-span-2">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Address / Location</p>
-                    <p className="flex items-center gap-2 text-base text-foreground">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      {lead.address}
-                    </p>
-                  </div>
-                )}
-                {lead.companyLinkedIn && (
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Company LinkedIn</p>
-                    <a 
-                      href={lead.companyLinkedIn} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-primary hover:underline inline-flex items-center gap-2 text-base"
-                    >
-                      <Linkedin className="h-4 w-4" />
-                      View Profile
-                    </a>
-                  </div>
-                )}
-              </div>
-              {lead.companyDescription && (
-                <>
-                  <Separator className="my-6" />
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-2">Company Description</p>
-                    <p className="text-base text-foreground leading-relaxed">{lead.companyDescription}</p>
-                  </div>
-                </>
+          {/* Company Info */}
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Building2 className="h-5 w-5 text-[#34B192]" />
+              </span>
+              Company Information
+            </div>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              {lead.industry && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Industry</p>
+                  <p className="text-base text-[#222121]">{lead.industry}</p>
+                </div>
+              )}
+              {lead.companySize && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Company Size</p>
+                  <p className="flex items-center gap-2 text-base text-[#222121]">
+                    <Users className="h-4 w-4 text-[#34B192]" />
+                    {lead.companySize}
+                  </p>
+                </div>
+              )}
+              {lead.employeeCount && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Employee Count</p>
+                  <p className="text-base text-[#222121]">{lead.employeeCount}</p>
+                </div>
+              )}
+              {lead.country && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Country</p>
+                  <p className="text-base text-[#222121]">{lead.country}</p>
+                </div>
+              )}
+              {lead.address && (
+                <div className="space-y-1 col-span-2">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Address / Location</p>
+                  <p className="flex items-center gap-2 text-base text-[#222121]">
+                    <MapPin className="h-4 w-4 text-[#34B192]" />
+                    {lead.address}
+                  </p>
+                </div>
+              )}
+              {lead.companyLinkedIn && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Company LinkedIn</p>
+                  <a 
+                    href={lead.companyLinkedIn} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-2 text-base font-medium text-[#34B192] hover:underline"
+                  >
+                    <Linkedin className="h-4 w-4 text-[#34B192]" />
+                    View Profile
+                  </a>
+                </div>
               )}
             </div>
-
-            {/* Right Column - Job Openings */}
-            {(lead.jobTitle || lead.jobDescription || lead.jobUrl || lead.jobType || lead.jobLevel) && (
-              <div className="bg-card border rounded-xl p-6 shadow-sm">
-                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                  <Briefcase className="h-5 w-5" />
-                  Job Openings
+            {lead.companyDescription && (
+              <>
+                <Separator className="my-6 bg-[#222121]/10" />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-2">Company Description</p>
+                  <p className="text-base text-[#222121] leading-relaxed">{lead.companyDescription}</p>
                 </div>
-                <div className="space-y-4">
-                  {lead.jobTitle && (
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Title</p>
-                      <p className="text-base font-medium text-foreground">{lead.jobTitle}</p>
-                    </div>
-                  )}
-                  
-                  {lead.jobType && (
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Type</p>
-                      <p className="text-base text-foreground">{lead.jobType}</p>
-                    </div>
-                  )}
-                  
-                  {lead.jobLevel && (
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Job Level</p>
-                      <p className="text-base text-foreground">{lead.jobLevel}</p>
-                    </div>
-                  )}
-                  
-                  {lead.jobDescription && (
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-2">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-base text-foreground leading-relaxed whitespace-pre-wrap">
-                        {lead.jobDescription}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {lead.jobUrl && (
-                    <Button variant="outline" asChild className="gap-2">
-                      <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
-                        View Job Posting URL
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Rep Notes Card (Original submission from rep) */}
-          {lead.internalNotes && (
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-slate-200 border rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                <FileText className="h-5 w-5 text-slate-600" />
+          {/* Rep Notes */}
+          {lead.clientNotes && (
+            <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+                <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <Sparkles className="h-5 w-5 text-[#34B192]" />
+                </span>
                 Rep Notes
               </div>
-              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
-                {lead.internalNotes}
-              </p>
-              <p className="text-xs text-muted-foreground mt-4 italic">
-                Original notes submitted by the rep.
-              </p>
-            </div>
-          )}
-
-          {/* Client Notes Card (AI Improved by Airtable) */}
-          {lead.clientNotes && (
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 border rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-                Client Notes
-              </div>
-              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">
+              <p className="text-base leading-relaxed text-[#222121] whitespace-pre-wrap">
                 {lead.clientNotes}
               </p>
-              <p className="text-xs text-muted-foreground mt-4 italic">
-                AI-polished notes visible to the client.
+              <p className="text-xs text-[#222121]/60 mt-4 italic">
+                Notes submitted by the rep.
               </p>
             </div>
           )}
 
           {/* Activity Card */}
-          <div className="bg-card border rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-              <Clock className="h-5 w-5" />
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Clock className="h-5 w-5 text-[#34B192]" />
+              </span>
               Activity
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {lead.lastContactDate && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Last Contact Date</p>
-                  <p className="text-base text-foreground">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Last Contact Date</p>
+                  <p className="text-base text-[#222121]">{new Date(lead.lastContactDate).toLocaleDateString()}</p>
                 </div>
               )}
               {lead.nextAction && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Action</p>
-                  <p className="text-base text-foreground">{lead.nextAction}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Next Action</p>
+                  <p className="text-base text-[#222121]">{lead.nextAction}</p>
                 </div>
               )}
               {lead.dateCreated && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Date Created</p>
-                  <p className="text-base text-foreground">{new Date(lead.dateCreated).toLocaleDateString()}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Date Created</p>
+                  <p className="text-base text-[#222121]">{new Date(lead.dateCreated).toLocaleDateString()}</p>
                 </div>
               )}
               {lead.availability && (
                 <div className="space-y-1">
-                  <p className="text-base font-medium text-muted-foreground uppercase tracking-wide mb-1">Availability</p>
-                  <p className="text-base text-foreground">{lead.availability}</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Availability</p>
+                  <p className="text-base text-[#222121]">{lead.availability}</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Client Feedback Card */}
-          {lead.feedback && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 border rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                <FileText className="h-5 w-5 text-amber-600" />
-                Client Feedback
-              </div>
-              <p className="text-base leading-relaxed text-foreground whitespace-pre-wrap">{lead.feedback}</p>
+          {/* Client Feedback */}
+          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <FileText className="h-5 w-5 text-[#34B192]" />
+              </span>
+              Client Feedback
             </div>
-          )}
+            <Textarea
+              placeholder="Client feedback will appear here..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              rows={5}
+              className="resize-none rounded-2xl border-[#222121]/15 text-sm"
+            />
+            <div className="mt-4 flex items-center justify-end">
+              <Button
+                onClick={handleSubmitFeedback}
+                disabled={isSubmittingFeedback || !feedback.trim()}
+                variant="ghost"
+                className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+              >
+                {isSubmittingFeedback ? "Saving..." : "Save Feedback"}
+              </Button>
+            </div>
+          </div>
         </div>
         </div>
 
