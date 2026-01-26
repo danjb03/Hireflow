@@ -41,6 +41,7 @@ const RepSettings = lazyRetry(() => import("./pages/RepSettings"), "RepSettings"
 const RepLeadDetail = lazyRetry(() => import("./pages/RepLeadDetail"), "RepLeadDetail");
 const AdminInviteRep = lazyRetry(() => import("./pages/AdminInviteRep"), "AdminInviteRep");
 const AdminEmailSettings = lazyRetry(() => import("./pages/AdminEmailSettings"), "AdminEmailSettings");
+const AdminListBuilder = lazyRetry(() => import("./pages/AdminListBuilder"), "AdminListBuilder");
 
 const App = () => (
   <TooltipProvider>
@@ -80,6 +81,7 @@ const App = () => (
           <Route path="/admin/reporting" element={<AdminReporting />} />
           <Route path="/admin/invite-rep" element={<AdminInviteRep />} />
           <Route path="/admin/email-settings" element={<AdminEmailSettings />} />
+          <Route path="/admin/list-builder" element={<AdminListBuilder />} />
           {/* Rep portal routes */}
           <Route path="/rep/dashboard" element={<RepDashboard />} />
           <Route path="/rep/leads" element={<RepLeads />} />

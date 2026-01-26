@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Headset,
   Mail,
+  ListPlus,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -43,6 +44,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
     { title: "Invite Client", url: "/admin/invite", icon: UserPlus },
     { title: "Invite Rep", url: "/admin/invite-rep", icon: Headset },
     { title: "Email Settings", url: "/admin/email-settings", icon: Mail },
+    { title: "List Builder", url: "/admin/list-builder", icon: ListPlus },
   ];
 
   const getInitials = (email: string) => {
