@@ -222,28 +222,28 @@ const AdminClientDetail = () => {
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     if (statusLower.includes('booked') || statusLower.includes('meeting')) {
-      return <Badge className="bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-3 w-3 mr-1" />Booked</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#34B192] text-white"><CheckCircle2 className="h-3 w-3 mr-1" />Booked</Badge>;
     }
     if (statusLower.includes('approved') || statusLower.includes('good')) {
-      return <Badge className="bg-blue-100 text-blue-700"><CheckCircle2 className="h-3 w-3 mr-1" />Approved</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#3B82F6] text-white"><CheckCircle2 className="h-3 w-3 mr-1" />Approved</Badge>;
     }
     if (statusLower.includes('rejected') || statusLower.includes('not interested')) {
-      return <Badge className="bg-red-100 text-red-600"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#D64545] text-white"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
     }
     if (statusLower.includes('needs work') || statusLower.includes('improve')) {
-      return <Badge className="bg-yellow-100 text-yellow-700"><AlertTriangle className="h-3 w-3 mr-1" />Needs Work</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#F2B84B] text-white"><AlertTriangle className="h-3 w-3 mr-1" />Needs Work</Badge>;
     }
-    return <Badge className="bg-slate-100 text-slate-600"><Clock className="h-3 w-3 mr-1" />New</Badge>;
+    return <Badge variant="outline" className="border-transparent bg-[#64748B] text-white"><Clock className="h-3 w-3 mr-1" />New</Badge>;
   };
 
   const getOrderStatusBadge = (status: string) => {
     if (status === 'completed') {
-      return <Badge className="bg-emerald-100 text-emerald-700">Completed</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#34B192] text-white">Completed</Badge>;
     }
     if (status === 'active') {
-      return <Badge className="bg-blue-100 text-blue-700">Active</Badge>;
+      return <Badge variant="outline" className="border-transparent bg-[#3B82F6] text-white">Active</Badge>;
     }
-    return <Badge className="bg-slate-100 text-slate-600">{status}</Badge>;
+    return <Badge variant="outline" className="border-transparent bg-[#9AA3A0] text-white">{status}</Badge>;
   };
 
   // Calculate order totals
@@ -255,8 +255,8 @@ const AdminClientDetail = () => {
   if (isLoading) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex min-h-[400px] items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </AdminLayout>
     );
@@ -265,9 +265,13 @@ const AdminClientDetail = () => {
   if (!client) {
     return (
       <AdminLayout userEmail={userEmail}>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Client not found</p>
-          <Button onClick={() => navigate("/admin/clients")} className="mt-4">
+        <div className="text-center py-12 bg-[#F7F7F7]">
+          <p className="text-[#222121]/60">Client not found</p>
+          <Button
+            onClick={() => navigate("/admin/clients")}
+            variant="outline"
+            className="mt-4 h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+          >
             Back to Clients
           </Button>
         </div>
@@ -281,51 +285,63 @@ const AdminClientDetail = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/clients")}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Client detail
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">{client.name}</h1>
+            {client.companyName && client.companyName !== client.name && (
+              <p className="text-sm text-[#222121]/60">{client.companyName}</p>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/admin/clients")}
+            className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
         </div>
 
         {/* Client Info Card */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Building2 className="h-6 w-6" />
+                <CardTitle className="text-2xl flex items-center gap-2 text-[#222121]">
+                  <Building2 className="h-6 w-6 text-[#34B192]" />
                   {client.name}
                 </CardTitle>
-                {client.companyName && client.companyName !== client.name && (
-                  <CardDescription className="text-base mt-1">{client.companyName}</CardDescription>
-                )}
               </div>
               {client.status === 'Inactive' || client.status === 'Not Active' ? (
-                <Badge variant="secondary" className="bg-slate-100 text-slate-600">Inactive</Badge>
+                <Badge variant="outline" className="border-transparent bg-[#9AA3A0] text-white">Inactive</Badge>
               ) : (
-                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Active</Badge>
+                <Badge variant="outline" className="border-transparent bg-[#34B192] text-white">Active</Badge>
               )}
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {client.email && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-[#222121]/60">
+                  <Mail className="h-4 w-4 text-[#34B192]" />
                   <span>{client.email}</span>
                 </div>
               )}
               {client.phone && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-[#222121]/60">
+                  <Phone className="h-4 w-4 text-[#34B192]" />
                   <span>{client.phone}</span>
                 </div>
               )}
               {client.contactPerson && (
-                <div className="text-muted-foreground">
+                <div className="text-[#222121]/60">
                   Contact: {client.contactPerson}
                 </div>
               )}
@@ -335,52 +351,56 @@ const AdminClientDetail = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card className="bg-gradient-to-t from-primary/5 to-card">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold">{orderTotals.totalPurchased || client.leadsPurchased || 0}</p>
-              <p className="text-sm text-muted-foreground">Total Leads Purchased</p>
+              <p className="text-3xl font-semibold text-[#222121]">{orderTotals.totalPurchased || client.leadsPurchased || 0}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Total Leads Purchased</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-blue-500/10 to-card">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-blue-600">{client.leadsDelivered}</p>
-              <p className="text-sm text-muted-foreground">Leads Delivered</p>
+              <p className="text-3xl font-semibold text-[#34B192]">{client.leadsDelivered}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Leads Delivered</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-amber-500/10 to-card">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-amber-600">{client.leadsRemaining}</p>
-              <p className="text-sm text-muted-foreground">Remaining</p>
+              <p className="text-3xl font-semibold text-[#222121]">{client.leadsRemaining}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Remaining</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-emerald-500/10 to-card">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-emerald-600">{completionPercent}%</p>
-              <p className="text-sm text-muted-foreground">Complete</p>
+              <p className="text-3xl font-semibold text-[#34B192]">{completionPercent}%</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Complete</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-t from-purple-500/10 to-card">
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-purple-600">{client.leadStats?.booked || 0}</p>
-              <p className="text-sm text-muted-foreground">Meetings Booked</p>
+              <p className="text-3xl font-semibold text-[#222121]">{client.leadStats?.booked || 0}</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Meetings Booked</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Orders Section */}
-        <Card>
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-[#222121]">
+                  <Package className="h-5 w-5 text-[#34B192]" />
                   Orders
                 </CardTitle>
-                <CardDescription>Track lead purchases and delivery progress</CardDescription>
+                <CardDescription className="text-[#222121]/60">Track lead purchases and delivery progress</CardDescription>
               </div>
               <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-10 rounded-full bg-[#34B192] px-4 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Order
                   </Button>
@@ -435,13 +455,18 @@ const AdminClientDetail = () => {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOrderDialogOpen(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsOrderDialogOpen(false)}
+                      className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+                    >
                       Cancel
                     </Button>
                     <Button
                       onClick={handleCreateOrder}
                       disabled={isCreatingOrder}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                      variant="ghost"
+                      className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                     >
                       {isCreatingOrder ? "Creating..." : "Create Order"}
                     </Button>
@@ -453,62 +478,62 @@ const AdminClientDetail = () => {
           <CardContent>
             {loadingOrders ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-[#222121]/50" />
               </div>
             ) : !profileId ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-[#222121]/60">
                 <p>No linked user account found.</p>
                 <p className="text-sm mt-1">Invite a user to this client to track orders.</p>
               </div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <div className="text-center py-8 text-[#222121]/60">
+                <Package className="h-12 w-12 mx-auto mb-3 text-[#222121]/30" />
                 <p>No orders yet</p>
                 <p className="text-sm mt-1">Create an order to start tracking lead purchases</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order #</TableHead>
-                      <TableHead className="text-center">Leads</TableHead>
-                      <TableHead className="text-center">Delivered</TableHead>
-                      <TableHead className="text-center">Progress</TableHead>
-                      <TableHead>Target Date</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Order #</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Leads</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Delivered</TableHead>
+                      <TableHead className="text-center text-xs font-medium uppercase tracking-wide text-[#222121]/40">Progress</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Target Date</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {orders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.order_number}</TableCell>
-                        <TableCell className="text-center">{order.leads_purchased}</TableCell>
-                        <TableCell className="text-center">{order.leads_delivered}</TableCell>
+                        <TableCell className="font-medium text-[#222121]">{order.order_number}</TableCell>
+                        <TableCell className="text-center text-[#222121]">{order.leads_purchased}</TableCell>
+                        <TableCell className="text-center text-[#222121]">{order.leads_delivered}</TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center gap-2 justify-center">
-                            <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-2 w-20 rounded-full bg-[#E5E5E5] overflow-hidden">
                               <div
-                                className="h-full bg-emerald-500 rounded-full"
+                                className="h-full rounded-full bg-[#34B192]"
                                 style={{ width: `${order.completion_percentage}%` }}
                               />
                             </div>
-                            <span className="text-sm text-muted-foreground">{order.completion_percentage}%</span>
+                            <span className="text-sm text-[#222121]/60">{order.completion_percentage}%</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           {order.target_delivery_date ? (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Calendar className="h-3 w-3" />
+                            <div className="flex items-center gap-1 text-sm text-[#222121]">
+                              <Calendar className="h-3 w-3 text-[#34B192]" />
                               {new Date(order.target_delivery_date).toLocaleDateString()}
                               {order.days_remaining !== null && (
-                                <span className={`ml-1 ${order.days_remaining < 0 ? 'text-red-500' : order.days_remaining < 7 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                <span className={`ml-1 ${order.days_remaining < 0 ? 'text-[#D64545]' : order.days_remaining < 7 ? 'text-[#C7771E]' : 'text-[#222121]/60'}`}>
                                   ({order.days_remaining < 0 ? `${Math.abs(order.days_remaining)}d overdue` : `${order.days_remaining}d left`})
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-[#222121]/50">—</span>
                           )}
                         </TableCell>
                         <TableCell>{getOrderStatusBadge(order.status)}</TableCell>
@@ -521,23 +546,23 @@ const AdminClientDetail = () => {
 
             {/* Order Summary */}
             {orders.length > 0 && (
-              <div className="mt-4 p-4 bg-slate-50 rounded-lg flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#222121]/10 bg-[#F7F7F7] p-4">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Total across all orders:</span>
+                  <TrendingUp className="h-4 w-4 text-[#34B192]" />
+                  <span className="text-sm text-[#222121]/60">Total across all orders:</span>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-sm">
-                    <span className="font-semibold">{orderTotals.totalPurchased}</span>
-                    <span className="text-muted-foreground ml-1">purchased</span>
+                    <span className="font-semibold text-[#222121]">{orderTotals.totalPurchased}</span>
+                    <span className="ml-1 text-[#222121]/60">purchased</span>
                   </div>
                   <div className="text-sm">
-                    <span className="font-semibold">{orderTotals.totalDelivered}</span>
-                    <span className="text-muted-foreground ml-1">delivered</span>
+                    <span className="font-semibold text-[#222121]">{orderTotals.totalDelivered}</span>
+                    <span className="ml-1 text-[#222121]/60">delivered</span>
                   </div>
                   <div className="text-sm">
-                    <span className="font-semibold">{orderTotals.totalPurchased - orderTotals.totalDelivered}</span>
-                    <span className="text-muted-foreground ml-1">remaining</span>
+                    <span className="font-semibold text-[#222121]">{orderTotals.totalPurchased - orderTotals.totalDelivered}</span>
+                    <span className="ml-1 text-[#222121]/60">remaining</span>
                   </div>
                 </div>
               </div>
@@ -547,34 +572,34 @@ const AdminClientDetail = () => {
 
         {/* Lead Breakdown */}
         {client.leadStats && client.leadStats.total > 0 && (
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Target className="h-5 w-5 text-[#34B192]" />
                 Lead Performance Breakdown
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600">{client.leadStats.new}</p>
-                  <p className="text-sm text-muted-foreground">New</p>
+                <div className="text-center p-4 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <p className="text-2xl font-semibold text-[#3B82F6]">{client.leadStats.new}</p>
+                  <p className="text-xs text-[#222121]/60">New</p>
                 </div>
-                <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                  <p className="text-2xl font-bold text-emerald-600">{client.leadStats.approved}</p>
-                  <p className="text-sm text-muted-foreground">Approved</p>
+                <div className="text-center p-4 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <p className="text-2xl font-semibold text-[#34B192]">{client.leadStats.approved}</p>
+                  <p className="text-xs text-[#222121]/60">Approved</p>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <p className="text-2xl font-bold text-purple-600">{client.leadStats.booked}</p>
-                  <p className="text-sm text-muted-foreground">Booked</p>
+                <div className="text-center p-4 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <p className="text-2xl font-semibold text-[#222121]">{client.leadStats.booked}</p>
+                  <p className="text-xs text-[#222121]/60">Booked</p>
                 </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-2xl font-bold text-yellow-600">{client.leadStats.needsWork}</p>
-                  <p className="text-sm text-muted-foreground">Needs Work</p>
+                <div className="text-center p-4 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <p className="text-2xl font-semibold text-[#F2B84B]">{client.leadStats.needsWork}</p>
+                  <p className="text-xs text-[#222121]/60">Needs Work</p>
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <p className="text-2xl font-bold text-red-500">{client.leadStats.rejected}</p>
-                  <p className="text-sm text-muted-foreground">Rejected</p>
+                <div className="text-center p-4 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <p className="text-2xl font-semibold text-[#D64545]">{client.leadStats.rejected}</p>
+                  <p className="text-xs text-[#222121]/60">Rejected</p>
                 </div>
               </div>
             </CardContent>
@@ -582,39 +607,39 @@ const AdminClientDetail = () => {
         )}
 
         {/* Leads Table */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle>Assigned Leads</CardTitle>
-            <CardDescription>All leads assigned to this client</CardDescription>
+            <CardTitle className="text-[#222121]">Assigned Leads</CardTitle>
+            <CardDescription className="text-[#222121]/60">All leads assigned to this client</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingLeads ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-[#222121]/50" />
               </div>
             ) : leads.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-[#222121]/60">
                 No leads assigned to this client yet
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-2xl border border-[#222121]/10">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Feedback</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Company</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Contact</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Status</TableHead>
+                      <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/40">Feedback</TableHead>
+                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-[#222121]/40">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {leads.map((lead) => (
                       <TableRow key={lead.id}>
-                        <TableCell className="font-medium">{lead.companyName}</TableCell>
-                        <TableCell>{lead.contactName || '—'}</TableCell>
+                        <TableCell className="font-medium text-[#222121]">{lead.companyName}</TableCell>
+                        <TableCell className="text-[#222121]">{lead.contactName || '—'}</TableCell>
                         <TableCell>{getStatusBadge(lead.feedback || lead.status)}</TableCell>
-                        <TableCell className="max-w-xs truncate">
+                        <TableCell className="max-w-xs truncate text-[#222121]/70">
                           {lead.feedback || '—'}
                         </TableCell>
                         <TableCell className="text-right">
@@ -622,6 +647,7 @@ const AdminClientDetail = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/admin/leads/${lead.id}`)}
+                            className="h-9 w-9 rounded-full hover:bg-[#F5F5F5]"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>

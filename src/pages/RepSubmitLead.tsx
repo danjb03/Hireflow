@@ -130,19 +130,29 @@ const RepSubmitLead = () => {
     return (
       <RepLayout userEmail={user?.email}>
         <div className="max-w-2xl mx-auto">
-          <Card className="border-emerald-200 bg-emerald-50/50">
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="py-12">
               <div className="text-center">
-                <CheckCircle className="h-16 w-16 mx-auto mb-4 text-emerald-500" />
-                <h2 className="text-2xl font-semibold text-emerald-700 mb-2">Lead Submitted!</h2>
-                <p className="text-muted-foreground mb-6">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <CheckCircle className="h-8 w-8 text-[#34B192]" />
+                </div>
+                <h2 className="text-2xl font-semibold text-[#222121] mb-2">Lead Submitted!</h2>
+                <p className="text-[#222121]/60 mb-6">
                   Your lead has been added to the system and will be reviewed shortly.
                 </p>
                 <div className="flex gap-3 justify-center">
-                  <Button onClick={handleReset} className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+                  <Button
+                    onClick={handleReset}
+                    variant="ghost"
+                    className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+                  >
                     Submit Another Lead
                   </Button>
-                  <Button variant="outline" onClick={() => navigate("/rep/leads")}>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/rep/leads")}
+                    className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+                  >
                     View My Leads
                   </Button>
                 </div>
@@ -156,89 +166,94 @@ const RepSubmitLead = () => {
 
   return (
     <RepLayout userEmail={user?.email}>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold">Submit New Lead</h1>
-          <p className="text-muted-foreground mt-1">Add a new lead to the system</p>
+      <div className="-mx-4 -my-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+        <div className="max-w-4xl mx-auto">
+        <div className="mb-6 space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Submit new lead
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">Submit New Lead</h1>
+          <p className="text-sm text-[#222121]/60">Add a new lead to the system</p>
           {repName && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Submitting as: <span className="font-medium text-foreground">{repName}</span>
+            <p className="text-sm text-[#222121]/60">
+              Submitting as: <span className="font-medium text-[#222121]">{repName}</span>
             </p>
           )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Company Information */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Building2 className="h-5 w-5 text-[#34B192]" />
                 Company Information
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name *</Label>
-                <Input id="companyName" value={formData.companyName} onChange={e => updateField('companyName', e.target.value)} required />
+                <Input id="companyName" value={formData.companyName} onChange={e => updateField('companyName', e.target.value)} required className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="companyWebsite">Company Website</Label>
-                <Input id="companyWebsite" placeholder="https://..." value={formData.companyWebsite} onChange={e => updateField('companyWebsite', e.target.value)} />
+                <Input id="companyWebsite" placeholder="https://..." value={formData.companyWebsite} onChange={e => updateField('companyWebsite', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="companyLinkedIn">Company LinkedIn</Label>
-                <Input id="companyLinkedIn" placeholder="https://linkedin.com/company/..." value={formData.companyLinkedIn} onChange={e => updateField('companyLinkedIn', e.target.value)} />
+                <Input id="companyLinkedIn" placeholder="https://linkedin.com/company/..." value={formData.companyLinkedIn} onChange={e => updateField('companyLinkedIn', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
             </CardContent>
           </Card>
 
           {/* Contact Information */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <User className="h-5 w-5 text-[#34B192]" />
                 Contact Information
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contactName">Contact Name *</Label>
-                <Input id="contactName" value={formData.contactName} onChange={e => updateField('contactName', e.target.value)} required />
+                <Input id="contactName" value={formData.contactName} onChange={e => updateField('contactName', e.target.value)} required className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contactTitle">Contact Title / Role</Label>
-                <Input id="contactTitle" placeholder="e.g. HR Manager, CEO" value={formData.contactTitle} onChange={e => updateField('contactTitle', e.target.value)} />
+                <Input id="contactTitle" placeholder="e.g. HR Manager, CEO" value={formData.contactTitle} onChange={e => updateField('contactTitle', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email *</Label>
-                <Input id="email" type="email" value={formData.email} onChange={e => updateField('email', e.target.value)} required />
+                <Input id="email" type="email" value={formData.email} onChange={e => updateField('email', e.target.value)} required className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone *</Label>
-                <Input id="phone" value={formData.phone} onChange={e => updateField('phone', e.target.value)} required />
+                <Input id="phone" value={formData.phone} onChange={e => updateField('phone', e.target.value)} required className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="contactLinkedIn">Contact LinkedIn</Label>
-                <Input id="contactLinkedIn" placeholder="https://linkedin.com/in/..." value={formData.contactLinkedIn} onChange={e => updateField('contactLinkedIn', e.target.value)} />
+                <Input id="contactLinkedIn" placeholder="https://linkedin.com/in/..." value={formData.contactLinkedIn} onChange={e => updateField('contactLinkedIn', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
             </CardContent>
           </Card>
 
           {/* Job Information */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Briefcase className="h-5 w-5 text-[#34B192]" />
                 Job Information
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 What role(s) are they hiring for? What did they mention on the call?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="jobTitle">Job Title / Role They're Hiring For</Label>
-                <Input id="jobTitle" placeholder="e.g. Software Developer, Sales Manager" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} />
+                <Input id="jobTitle" placeholder="e.g. Software Developer, Sales Manager" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="jobDescription">Role Details</Label>
@@ -248,19 +263,20 @@ const RepSubmitLead = () => {
                   value={formData.jobDescription}
                   onChange={e => updateField('jobDescription', e.target.value)}
                   rows={2}
+                  className="resize-none rounded-2xl border-[#222121]/15 text-sm"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Callback Dates & Times */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Calendar className="h-5 w-5 text-[#34B192]" />
                 Callback Appointment Slots
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 Enter the date(s) and time(s) the lead is available for a callback. Add up to 3 options.
               </CardDescription>
             </CardHeader>
@@ -272,6 +288,7 @@ const RepSubmitLead = () => {
                   type="datetime-local"
                   value={formData.callback1}
                   onChange={e => updateField('callback1', e.target.value)}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -281,6 +298,7 @@ const RepSubmitLead = () => {
                   type="datetime-local"
                   value={formData.callback2}
                   onChange={e => updateField('callback2', e.target.value)}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -290,19 +308,20 @@ const RepSubmitLead = () => {
                   type="datetime-local"
                   value={formData.callback3}
                   onChange={e => updateField('callback3', e.target.value)}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Close Link URL */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Link className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Link className="h-5 w-5 text-[#34B192]" />
                 Close Link URL
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 If you have a Close.com link for this lead, paste it here
               </CardDescription>
             </CardHeader>
@@ -314,21 +333,22 @@ const RepSubmitLead = () => {
                   placeholder="https://app.close.com/..."
                   value={formData.closeLinkUrl}
                   onChange={e => updateField('closeLinkUrl', e.target.value)}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Call Notes */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <FileText className="h-5 w-5 text-[#34B192]" />
                 Call Notes & Summary
               </CardTitle>
-              <CardDescription className="text-sm space-y-1">
+              <CardDescription className="text-sm space-y-1 text-[#222121]/60">
                 <p>Please include details about the call:</p>
-                <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
+                <ul className="list-disc list-inside text-[#222121]/60 mt-2 space-y-1">
                   <li>How did the call go overall?</li>
                   <li>Was the customer interested in moving forward?</li>
                   <li>Did the customer explicitly agree to work with a recruiter?</li>
@@ -345,19 +365,33 @@ const RepSubmitLead = () => {
                 value={formData.aiSummary}
                 onChange={e => updateField('aiSummary', e.target.value)}
                 rows={6}
+                className="resize-none rounded-2xl border-[#222121]/15 text-sm"
               />
             </CardContent>
           </Card>
 
           <div className="flex gap-3">
-            <Button type="submit" size="lg" className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600" disabled={submitting || !airtableRepId}>
+            <Button
+              type="submit"
+              size="lg"
+              variant="ghost"
+              className="flex-1 h-12 rounded-full bg-[#34B192] text-base font-semibold text-white shadow-[0_6px_18px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+              disabled={submitting || !airtableRepId}
+            >
               {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : "Submit Lead"}
             </Button>
-            <Button type="button" variant="outline" size="lg" onClick={() => navigate("/rep/dashboard")}>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => navigate("/rep/dashboard")}
+              className="h-12 rounded-full border-[#222121]/20 bg-white text-base font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+            >
               Cancel
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </RepLayout>
   );

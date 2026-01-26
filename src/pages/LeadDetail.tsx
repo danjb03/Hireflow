@@ -84,22 +84,22 @@ const LeadDetail = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "booked":
-        return "bg-green-500";
+        return "border-transparent bg-[#34B192] text-white";
       case "in progress":
-        return "bg-yellow-500";
+        return "border-transparent bg-[#F2B84B] text-white";
       case "contacted":
-        return "bg-emerald-500";
+        return "border-transparent bg-[#34B192] text-white";
       case "new":
-        return "bg-gray-500";
+        return "border-transparent bg-[#64748B] text-white";
       default:
-        return "bg-muted";
+        return "border-transparent bg-[#64748B] text-white";
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F7F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
       </div>
     );
   }
@@ -109,20 +109,20 @@ const LeadDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F7F7F7]">
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b border-[#222121]/10 bg-white">
         <div className="container mx-auto p-4">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-4">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-4 h-9 rounded-full px-4 text-sm text-[#222121]/70 hover:bg-[#F7F7F7]">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{lead.companyName}</h1>
-              <p className="text-muted-foreground">Lead Details</p>
+              <h1 className="text-3xl font-semibold text-[#222121]">{lead.companyName}</h1>
+              <p className="text-sm text-[#222121]/60">Lead Details</p>
             </div>
-            <Badge className={getStatusColor(lead.status)}>
+            <Badge variant="outline" className={getStatusColor(lead.status)}>
               {lead.status}
             </Badge>
           </div>
@@ -132,50 +132,50 @@ const LeadDetail = () => {
       {/* Main Content */}
       <main className="container mx-auto p-4 md:p-6 space-y-6">
         {/* Company Info */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-[#222121]">
+              <Building2 className="h-5 w-5 text-[#34B192]" />
               Company Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Company Name</p>
-                <p className="text-foreground">{lead.companyName}</p>
+                <p className="text-sm font-medium text-[#222121]/60">Company Name</p>
+                <p className="text-[#222121]">{lead.companyName}</p>
               </div>
               {lead.companyWebsite && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Website</p>
-                  <a href={lead.companyWebsite} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
-                    <Globe className="h-4 w-4" />
+                  <p className="text-sm font-medium text-[#222121]/60">Website</p>
+                  <a href={lead.companyWebsite} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 font-medium text-[#34B192] hover:underline">
+                    <Globe className="h-4 w-4 text-[#34B192]" />
                     {lead.companyWebsite}
                   </a>
                 </div>
               )}
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Industry</p>
-                <p className="text-foreground">{lead.industry}</p>
+                <p className="text-sm font-medium text-[#222121]/60">Industry</p>
+                <p className="text-[#222121]">{lead.industry}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Company Size</p>
-                <p className="flex items-center gap-1 text-foreground">
-                  <Users className="h-4 w-4" />
+                <p className="text-sm font-medium text-[#222121]/60">Company Size</p>
+                <p className="flex items-center gap-1 text-[#222121]">
+                  <Users className="h-4 w-4 text-[#34B192]" />
                   {lead.companySize}
                 </p>
               </div>
               {lead.employeeCount && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Employee Count</p>
-                  <p className="text-foreground">{lead.employeeCount}</p>
+                  <p className="text-sm font-medium text-[#222121]/60">Employee Count</p>
+                  <p className="text-[#222121]">{lead.employeeCount}</p>
                 </div>
               )}
               {lead.location && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Location</p>
-                  <p className="flex items-center gap-1 text-foreground">
-                    <MapPin className="h-4 w-4" />
+                  <p className="text-sm font-medium text-[#222121]/60">Location</p>
+                  <p className="flex items-center gap-1 text-[#222121]">
+                    <MapPin className="h-4 w-4 text-[#34B192]" />
                     {lead.location}
                   </p>
                 </div>
@@ -183,10 +183,10 @@ const LeadDetail = () => {
             </div>
             {lead.companyDescription && (
               <>
-                <Separator />
+                <Separator className="bg-[#222121]/10" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Description</p>
-                  <p className="text-foreground">{lead.companyDescription}</p>
+                  <p className="text-sm font-medium text-[#222121]/60 mb-2">Description</p>
+                  <p className="text-[#222121]">{lead.companyDescription}</p>
                 </div>
               </>
             )}
@@ -194,40 +194,40 @@ const LeadDetail = () => {
         </Card>
 
         {/* Contact Details */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-[#222121]">
+              <User className="h-5 w-5 text-[#34B192]" />
               Contact Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Name</p>
-                <p className="text-foreground">{lead.contactName}</p>
+                <p className="text-sm font-medium text-[#222121]/60">Name</p>
+                <p className="text-[#222121]">{lead.contactName}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Job Title</p>
-                <p className="flex items-center gap-1 text-foreground">
-                  <Briefcase className="h-4 w-4" />
+                <p className="text-sm font-medium text-[#222121]/60">Job Title</p>
+                <p className="flex items-center gap-1 text-[#222121]">
+                  <Briefcase className="h-4 w-4 text-[#34B192]" />
                   {lead.jobTitle}
                 </p>
               </div>
               {lead.email && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-primary hover:underline">
-                    <Mail className="h-4 w-4" />
+                  <p className="text-sm font-medium text-[#222121]/60">Email</p>
+                  <a href={`mailto:${lead.email}`} className="flex items-center gap-1 font-medium text-[#34B192] hover:underline">
+                    <Mail className="h-4 w-4 text-[#34B192]" />
                     {lead.email}
                   </a>
                 </div>
               )}
               {lead.phone && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                  <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-primary hover:underline">
-                    <Phone className="h-4 w-4" />
+                  <p className="text-sm font-medium text-[#222121]/60">Phone</p>
+                  <a href={`tel:${lead.phone}`} className="flex items-center gap-1 font-medium text-[#34B192] hover:underline">
+                    <Phone className="h-4 w-4 text-[#34B192]" />
                     {lead.phone}
                   </a>
                 </div>
@@ -235,8 +235,8 @@ const LeadDetail = () => {
             </div>
             {lead.linkedInProfile && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">LinkedIn Profile</p>
-                <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                <p className="text-sm font-medium text-[#222121]/60">LinkedIn Profile</p>
+                <a href={lead.linkedInProfile} target="_blank" rel="noopener noreferrer" className="text-[#34B192] hover:underline">
                   {lead.linkedInProfile}
                 </a>
               </div>
@@ -246,53 +246,30 @@ const LeadDetail = () => {
 
         {/* Call Notes */}
         {lead.callNotes && (
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <FileText className="h-5 w-5 text-[#34B192]" />
                 Call Notes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-foreground whitespace-pre-wrap">{lead.callNotes}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Job Openings */}
-        {lead.jobOpenings && lead.jobOpenings.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Job Openings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {lead.jobOpenings.map((job, index) => (
-                  <li key={index}>
-                    <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                      {job.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-[#222121] whitespace-pre-wrap">{lead.callNotes}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Recording Transcript */}
         {lead.recordingTranscript && (
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mic className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Mic className="h-5 w-5 text-[#34B192]" />
                 Recording Transcript
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-foreground whitespace-pre-wrap">{lead.recordingTranscript}</p>
+              <p className="text-[#222121] whitespace-pre-wrap">{lead.recordingTranscript}</p>
             </CardContent>
           </Card>
         )}

@@ -101,20 +101,24 @@ const ResetPassword = () => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F7F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
       </div>
     );
   }
 
   if (!hasSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-md p-8 space-y-6 text-center">
-          <Lock className="h-16 w-16 text-red-500 mx-auto" />
-          <h1 className="text-2xl font-semibold">Reset Link Invalid</h1>
-          <p className="text-muted-foreground">This link has expired or is invalid. Please request a new password reset.</p>
-          <Button onClick={() => navigate("/login")} className="mt-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F7F7]">
+        <div className="w-full max-w-md rounded-2xl border border-[#222121]/10 bg-white p-8 space-y-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <Lock className="h-16 w-16 text-[#D64545] mx-auto" />
+          <h1 className="text-2xl font-semibold text-[#222121]">Reset Link Invalid</h1>
+          <p className="text-[#222121]/60">This link has expired or is invalid. Please request a new password reset.</p>
+          <Button
+            onClick={() => navigate("/login")}
+            variant="outline"
+            className="mt-4 h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+          >
             Back to Login
           </Button>
         </div>
@@ -124,23 +128,23 @@ const ResetPassword = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-md p-8 space-y-6 text-center">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-          <h1 className="text-2xl font-semibold">Password Reset Successful</h1>
-          <p className="text-muted-foreground">Redirecting to login...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F7F7]">
+        <div className="w-full max-w-md rounded-2xl border border-[#222121]/10 bg-white p-8 space-y-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <CheckCircle className="h-16 w-16 text-[#34B192] mx-auto" />
+          <h1 className="text-2xl font-semibold text-[#222121]">Password Reset Successful</h1>
+          <p className="text-[#222121]/60">Redirecting to login...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#F7F7F7]">
+      <div className="w-full max-w-md rounded-2xl border border-[#222121]/10 bg-white p-8 space-y-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
         <div className="text-center space-y-2">
-          <Lock className="h-12 w-12 text-primary mx-auto" />
-          <h1 className="text-2xl font-semibold tracking-tight">Reset Your Password</h1>
-          <p className="text-base text-muted-foreground">
+          <Lock className="h-12 w-12 text-[#34B192] mx-auto" />
+          <h1 className="text-2xl font-semibold tracking-tight text-[#222121]">Reset Your Password</h1>
+          <p className="text-sm text-[#222121]/60">
             Enter your new password below
           </p>
         </div>
@@ -156,6 +160,7 @@ const ResetPassword = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
+              className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
             />
           </div>
 
@@ -169,10 +174,16 @@ const ResetPassword = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
+              className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            variant="ghost"
+            className="w-full h-11 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

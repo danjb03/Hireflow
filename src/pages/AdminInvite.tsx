@@ -116,20 +116,24 @@ const AdminInvite = () => {
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="max-w-2xl space-y-6">
+      <div className="-mx-4 -my-6 max-w-2xl space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-semibold">Invite Client User</h1>
-          <p className="text-base text-muted-foreground mt-1">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Client onboarding
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">Invite Client User</h1>
+          <p className="text-sm text-[#222121]/60">
             Add a new user to an existing client account
           </p>
         </div>
 
         {/* Form Card */}
-        <Card className="shadow-sm border-border">
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader className="p-6 pb-4">
-            <CardTitle>User Information</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-[#222121]">User Information</CardTitle>
+            <CardDescription className="text-[#222121]/60">
               Select the client company and enter the user's email address
             </CardDescription>
           </CardHeader>
@@ -139,9 +143,9 @@ const AdminInvite = () => {
               <div className="space-y-2">
                 <Label htmlFor="airtableClient">Client Company *</Label>
                 {loadingClients ? (
-                  <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-muted-foreground">Loading clients...</span>
+                  <div className="flex items-center gap-2 h-11 px-3 border rounded-full bg-[#F7F7F7] border-[#222121]/15">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#34B192]" />
+                    <span className="text-[#222121]/60">Loading clients...</span>
                   </div>
                 ) : airtableClients.length > 0 ? (
                   <Select
@@ -149,7 +153,7 @@ const AdminInvite = () => {
                     onValueChange={handleAirtableClientSelect}
                     disabled={inviteSuccess}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/15 bg-white text-sm">
                       <SelectValue placeholder="Select a client company" />
                     </SelectTrigger>
                     <SelectContent>
@@ -161,13 +165,13 @@ const AdminInvite = () => {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Alert>
+                  <Alert className="border border-[#222121]/10 bg-[#F7F7F7]">
                     <AlertDescription>
                       No clients found in Airtable. Please create a client in Airtable first.
                     </AlertDescription>
                   </Alert>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/60">
                   Select which client company this user belongs to
                 </p>
               </div>
@@ -181,8 +185,9 @@ const AdminInvite = () => {
                   onChange={(e) => setClientName(e.target.value)}
                   required
                   disabled={inviteSuccess || !!selectedAirtableClient}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/60">
                   {selectedAirtableClient ? "Name from selected client" : "Select a client above"}
                 </p>
               </div>
@@ -197,8 +202,9 @@ const AdminInvite = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={inviteSuccess}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[#222121]/60">
                   This user will receive login credentials via email
                 </p>
               </div>
@@ -208,7 +214,8 @@ const AdminInvite = () => {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                    variant="ghost"
+                    className="flex-1 h-11 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                   >
                     {isLoading ? "Creating Account..." : "Send Invite"}
                   </Button>
@@ -216,7 +223,7 @@ const AdminInvite = () => {
                     type="button"
                     variant="outline"
                     onClick={() => navigate("/admin/clients")}
-                    className="transition-colors duration-200"
+                    className="h-11 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
                   >
                     Cancel
                   </Button>
@@ -228,25 +235,25 @@ const AdminInvite = () => {
 
         {/* Success Card */}
         {inviteSuccess && (
-          <Card className="border-emerald-200 bg-emerald-50/50 shadow-sm">
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="p-6 pb-4">
-              <CardTitle className="flex items-center gap-2 text-emerald-700">
-                <Check className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-[#222121]">
+                <Check className="h-5 w-5 text-[#34B192]" />
                 User Invited Successfully
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 A welcome email has been sent to the user
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0 space-y-4">
-              <Alert className="bg-white border-emerald-200">
-                <Send className="h-4 w-4 text-emerald-600" />
+              <Alert className="border border-[#222121]/10 bg-[#F7F7F7]">
+                <Send className="h-4 w-4 text-[#34B192]" />
                 <AlertDescription>
                   <div className="space-y-2">
                     <p>
                       <strong>Welcome email sent to:</strong> {email}
                     </p>
-                    <p className="text-muted-foreground">
+                    <p className="text-[#222121]/60">
                       The email contains their login credentials and a link to access the platform.
                       They can log in immediately using the credentials in the email.
                     </p>
@@ -257,14 +264,15 @@ const AdminInvite = () => {
               <div className="flex gap-2 pt-2">
                 <Button
                   onClick={handleReset}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white transition-all duration-200"
+                  variant="ghost"
+                  className="flex-1 h-11 rounded-full bg-[#34B192] text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
                 >
                   Invite Another User
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/admin/clients")}
-                  className="transition-colors duration-200"
+                  className="h-11 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
                 >
                   View All Clients
                 </Button>

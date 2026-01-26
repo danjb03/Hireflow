@@ -204,17 +204,21 @@ const RepReport = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardContent className="pt-8 pb-8">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+            <div className="w-16 h-16 bg-[#34B192]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="h-8 w-8 text-[#34B192]" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Report Submitted!</h2>
-            <p className="text-muted-foreground mb-6">
+            <h2 className="text-2xl font-semibold text-[#222121] mb-2">Report Submitted!</h2>
+            <p className="text-[#222121]/60 mb-6">
               Your daily report has been recorded successfully.
             </p>
-            <Button onClick={resetForm} variant="outline">
+            <Button
+              onClick={resetForm}
+              variant="outline"
+              className="h-10 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
+            >
               Submit Another Report
             </Button>
           </CardContent>
@@ -224,21 +228,21 @@ const RepReport = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-[#F7F7F7]">
       <div className="container max-w-2xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="text-center mb-8">
           <img src={hireflowLogo} alt="Hireflow" className="h-8 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold">Daily Report</h1>
-          <p className="text-muted-foreground">Submit your end of day stats</p>
+          <h1 className="text-2xl font-semibold text-[#222121]">Daily Report</h1>
+          <p className="text-sm text-[#222121]/60">Submit your end of day stats</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Rep Selection & Date */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
+              <CardTitle className="text-lg flex items-center gap-2 text-[#222121]">
+                <CalendarIcon className="h-5 w-5 text-[#34B192]" />
                 Basic Info
               </CardTitle>
             </CardHeader>
@@ -247,13 +251,13 @@ const RepReport = () => {
                 <div className="space-y-2">
                   <Label htmlFor="rep">Your Name *</Label>
                   {isLoadingReps ? (
-                    <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/50">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-muted-foreground">Loading...</span>
+                    <div className="flex items-center gap-2 h-11 px-3 border rounded-full bg-[#F7F7F7] border-[#222121]/15">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#34B192]" />
+                      <span className="text-[#222121]/60">Loading...</span>
                     </div>
                   ) : (
                     <Select value={selectedRep} onValueChange={setSelectedRep}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-full border-[#222121]/15 bg-white text-sm">
                         <SelectValue placeholder="Select your name" />
                       </SelectTrigger>
                       <SelectContent>
@@ -274,6 +278,7 @@ const RepReport = () => {
                     value={reportDate}
                     onChange={(e) => setReportDate(e.target.value)}
                     max={getTodayDate()}
+                    className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                   />
                 </div>
               </div>
@@ -281,24 +286,24 @@ const RepReport = () => {
           </Card>
 
           {/* Screenshot Upload */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Upload className="h-5 w-5" />
+              <CardTitle className="text-lg flex items-center gap-2 text-[#222121]">
+                <Upload className="h-5 w-5 text-[#34B192]" />
                 Close.com Screenshot
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 Upload your daily stats screenshot for automatic parsing
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-[#222121]/20 rounded-2xl p-6 text-center bg-[#F7F7F7]">
                 {screenshotPreview ? (
                   <div className="space-y-4">
                     <img
                       src={screenshotPreview}
                       alt="Screenshot preview"
-                      className="max-h-48 mx-auto rounded-lg border"
+                      className="max-h-48 mx-auto rounded-xl border border-[#222121]/10"
                     />
                     <div className="flex gap-2 justify-center">
                       <Button
@@ -309,6 +314,7 @@ const RepReport = () => {
                           setScreenshotPreview(null);
                           setAiExtraction(null);
                         }}
+                        className="h-9 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
                       >
                         Remove
                       </Button>
@@ -316,6 +322,8 @@ const RepReport = () => {
                         type="button"
                         onClick={handleParseScreenshot}
                         disabled={isParsingScreenshot}
+                        variant="ghost"
+                        className="h-9 rounded-full bg-[#34B192] px-4 text-sm font-semibold text-white hover:bg-[#2D9A7E]"
                       >
                         {isParsingScreenshot ? (
                           <>
@@ -339,8 +347,8 @@ const RepReport = () => {
                       className="hidden"
                       onChange={handleScreenshotChange}
                     />
-                    <div className="text-muted-foreground">
-                      <Upload className="h-8 w-8 mx-auto mb-2" />
+                    <div className="text-[#222121]/60">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-[#34B192]" />
                       <p>Click to upload screenshot</p>
                       <p className="text-sm">PNG, JPG up to 10MB</p>
                     </div>
@@ -350,25 +358,25 @@ const RepReport = () => {
 
               {/* AI Extraction Results */}
               {aiExtraction && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="rounded-xl border border-[#222121]/10 bg-[#F7F7F7] p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-900">AI Extracted Values</span>
+                      <Sparkles className="h-4 w-4 text-[#34B192]" />
+                      <span className="font-medium text-[#222121]">AI Extracted Values</span>
                     </div>
-                    <Badge variant="outline" className="bg-blue-100 text-blue-700">
+                    <Badge variant="outline" className="border-[#222121]/20 text-[#222121]/70">
                       {Math.round(aiExtraction.confidence * 100)}% confident
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
-                      <span className="text-blue-700">Time on Dialer:</span>
+                      <span className="text-[#222121]/60">Time on Dialer:</span>
                       <span className="ml-2 font-medium">
                         {formatDuration(aiExtraction.timeOnDialerMinutes)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-blue-700">Calls Made:</span>
+                      <span className="text-[#222121]/60">Calls Made:</span>
                       <span className="ml-2 font-medium">{aiExtraction.callsMade}</span>
                     </div>
                   </div>
@@ -377,7 +385,7 @@ const RepReport = () => {
                     variant="outline"
                     size="sm"
                     onClick={applyAIValues}
-                    className="w-full"
+                    className="w-full h-9 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
                   >
                     Use These Values
                   </Button>
@@ -387,13 +395,13 @@ const RepReport = () => {
           </Card>
 
           {/* Stats Input */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Phone className="h-5 w-5" />
+              <CardTitle className="text-lg flex items-center gap-2 text-[#222121]">
+                <Phone className="h-5 w-5 text-[#34B192]" />
                 Daily Stats
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 Enter your numbers for the day (or use AI values above)
               </CardDescription>
             </CardHeader>
@@ -402,7 +410,7 @@ const RepReport = () => {
                 {/* Time on Dialer */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4 text-[#34B192]" />
                     Time on Dialer *
                   </Label>
                   <div className="flex gap-2">
@@ -414,8 +422,9 @@ const RepReport = () => {
                         value={timeHours}
                         onChange={(e) => setTimeHours(parseInt(e.target.value) || 0)}
                         placeholder="Hours"
+                        className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                       />
-                      <span className="text-xs text-muted-foreground">Hours</span>
+                      <span className="text-xs text-[#222121]/50">Hours</span>
                     </div>
                     <div className="flex-1">
                       <Input
@@ -425,8 +434,9 @@ const RepReport = () => {
                         value={timeMinutes}
                         onChange={(e) => setTimeMinutes(parseInt(e.target.value) || 0)}
                         placeholder="Minutes"
+                        className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                       />
-                      <span className="text-xs text-muted-foreground">Minutes</span>
+                      <span className="text-xs text-[#222121]/50">Minutes</span>
                     </div>
                   </div>
                 </div>
@@ -434,7 +444,7 @@ const RepReport = () => {
                 {/* Calls Made */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-4 w-4 text-[#34B192]" />
                     Calls Made *
                   </Label>
                   <Input
@@ -442,13 +452,14 @@ const RepReport = () => {
                     min="0"
                     value={callsMade}
                     onChange={(e) => setCallsMade(parseInt(e.target.value) || 0)}
+                    className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                   />
                 </div>
 
                 {/* Bookings Made */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
+                    <CalendarIcon className="h-4 w-4 text-[#34B192]" />
                     Bookings Made
                   </Label>
                   <Input
@@ -456,13 +467,14 @@ const RepReport = () => {
                     min="0"
                     value={bookingsMade}
                     onChange={(e) => setBookingsMade(parseInt(e.target.value) || 0)}
+                    className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                   />
                 </div>
 
                 {/* Pipeline Value */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-4 w-4 text-[#34B192]" />
                     Pipeline (Warm Leads)
                   </Label>
                   <Input
@@ -470,8 +482,9 @@ const RepReport = () => {
                     min="0"
                     value={pipelineValue}
                     onChange={(e) => setPipelineValue(parseInt(e.target.value) || 0)}
+                    className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#222121]/50">
                     Number of interested prospects or callback leads generated
                   </p>
                 </div>
@@ -480,13 +493,13 @@ const RepReport = () => {
           </Card>
 
           {/* Notes */}
-          <Card>
+          <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="text-lg flex items-center gap-2 text-[#222121]">
+                <FileText className="h-5 w-5 text-[#34B192]" />
                 Daily Notes
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-[#222121]/60">
                 What went well? What needs improvement?
               </CardDescription>
             </CardHeader>
@@ -496,6 +509,7 @@ const RepReport = () => {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Share your thoughts on the day, challenges faced, wins, areas for improvement..."
                 rows={4}
+                className="resize-none rounded-2xl border-[#222121]/15 text-sm"
               />
             </CardContent>
           </Card>
@@ -503,7 +517,8 @@ const RepReport = () => {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-12 text-lg"
+            variant="ghost"
+            className="w-full h-12 rounded-full bg-[#34B192] text-lg font-semibold text-white shadow-[0_6px_18px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
             disabled={isSubmitting || isLoadingReps}
           >
             {isSubmitting ? (

@@ -1,36 +1,36 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/` contains the React + TypeScript app.
-  - `src/pages/` hosts route-level pages (`Admin*.tsx`, `Client*.tsx`).
-  - `src/components/` includes shared UI, with shadcn primitives in `src/components/ui/`.
-  - `src/integrations/supabase/` holds the Supabase client and types.
-  - `src/lib/` and `src/hooks/` contain utilities and custom hooks.
-  - Layout wrappers live at `src/AdminLayout.tsx`, `src/ClientLayout.tsx`, `src/RepLayout.tsx`.
-- `supabase/` contains edge functions (`supabase/functions/*`) and database migrations.
-- `public/` stores static assets; `docs/` holds architecture and API references.
+- `src/` contains the React + TypeScript application.
+  - `src/pages/` holds route-level screens (examples: `AdminClientDetail.tsx`, `ClientLeads.tsx`).
+  - `src/components/` contains shared UI building blocks; shadcn primitives live in `src/components/ui/`.
+  - `src/integrations/supabase/` includes Supabase client setup and generated types.
+  - `src/lib/` and `src/hooks/` keep utilities and custom hooks.
+  - Layout wrappers sit at `src/AdminLayout.tsx`, `src/ClientLayout.tsx`, and `src/RepLayout.tsx`.
+- `supabase/` houses edge functions (`supabase/functions/*`) and migrations.
+- `public/` is for static assets; `docs/` contains architecture and API references.
 
 ## Build, Test, and Development Commands
-- `npm run dev` starts the Vite dev server.
-- `npm run build` creates a production build.
-- `npm run build:dev` builds with development mode settings.
+- `npm run dev` runs the Vite dev server for local work.
+- `npm run build` outputs a production bundle.
+- `npm run build:dev` builds in development mode for debugging.
 - `npm run preview` serves the production build locally.
-- `npm run lint` runs ESLint across the repo.
+- `npm run lint` checks the codebase with ESLint.
 
 ## Coding Style & Naming Conventions
-- Use TypeScript + React with TailwindCSS (no CSS modules or styled-components).
-- Import via the `@/` alias and keep imports ordered per `CLAUDE.md`.
-- Naming: pages in PascalCase (`AdminDashboard.tsx`), hooks in `use-kebab-case` (`use-mobile.tsx`), shadcn/ui files in lowercase (`button.tsx`), edge functions in kebab-case (`get-client-leads/`).
-- Icons: `lucide-react` only. Forms: `react-hook-form` + `zod`.
+- TypeScript + React with TailwindCSS only (no CSS modules or styled-components).
+- Use the `@/` path alias, and keep import ordering consistent with `CLAUDE.md`.
+- Naming: pages in PascalCase (`RepReports.tsx`), hooks in `use-kebab-case` (`use-mobile.tsx`), shadcn files in lowercase (`button.tsx`), edge functions in kebab-case (`update-lead-feedback/`).
+- Use `lucide-react` for icons and `react-hook-form` + `zod` for forms.
 
 ## Testing Guidelines
-- No automated test framework is configured yet. Validate changes with `npm run lint`, run the app locally, and spot-check relevant flows.
-- If you add tests, keep them close to the feature area and document the runner in this file.
+- There is no test runner configured yet. Validate changes with `npm run lint`, run the app locally, and spot-check key flows.
+- If you add tests, colocate them with the feature and document the command here.
 
 ## Commit & Pull Request Guidelines
-- Commit messages are short, imperative, sentence case (e.g., “Add client lead filters”).
-- PRs should include a concise description, linked issues (if any), and UI screenshots for visual changes.
+- Recent commits use short, imperative, sentence-case messages (e.g., “Update landing page CTA”).
+- PRs should include a concise description, linked issues (if any), and screenshots for UI changes.
 
 ## Configuration & Secrets
-- Client env vars use `VITE_` prefixes (see `README.md`). Server-side edge functions require Supabase and Airtable keys.
-- Store secrets in local env files or deployment settings; do not commit credentials.
+- Client env vars use `VITE_` prefixes (see `README.md` and `VERCEL_ENV_SETUP.md`).
+- Keep secrets in local env files or deployment settings; never commit credentials.

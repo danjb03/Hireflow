@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -122,15 +122,15 @@ const RepLeads = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Approved":
-        return <Badge className="bg-emerald-100 text-emerald-700">Approved</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#34B192] text-white">Approved</Badge>;
       case "Needs Work":
-        return <Badge className="bg-amber-100 text-amber-700">Needs Work</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#F2B84B] text-white">Needs Work</Badge>;
       case "Rejected":
-        return <Badge className="bg-red-100 text-red-700">Rejected</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#D64545] text-white">Rejected</Badge>;
       case "In Progress":
-        return <Badge className="bg-blue-100 text-blue-700">In Progress</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#64748B] text-white">In Progress</Badge>;
       default:
-        return <Badge className="bg-slate-100 text-slate-700">New</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#3B82F6] text-white">New</Badge>;
     }
   };
 
@@ -146,8 +146,8 @@ const RepLeads = () => {
   if (isLoading) {
     return (
       <RepLayout userEmail={user?.email}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-[400px] items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </RepLayout>
     );
@@ -155,18 +155,23 @@ const RepLeads = () => {
 
   return (
     <RepLayout userEmail={user?.email}>
-      <div className="space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">My Leads</h1>
-            <p className="text-muted-foreground">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Leads overview
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">My Leads</h1>
+            <p className="text-sm text-[#222121]/60">
               View and track leads you've submitted
             </p>
           </div>
           <Button
             onClick={() => navigate("/rep/submit-lead")}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            variant="ghost"
+            className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Submit New Lead
@@ -176,69 +181,72 @@ const RepLeads = () => {
         {/* Status Pills */}
         <div className="flex flex-wrap gap-2">
           <Button
-            variant={statusFilter === "all" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("all")}
+            className={statusFilter === "all" ? "h-9 rounded-full border-transparent bg-[#34B192] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             All ({statusCounts.all})
           </Button>
           <Button
-            variant={statusFilter === "New" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("New")}
+            className={statusFilter === "New" ? "h-9 rounded-full border-transparent bg-[#3B82F6] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             New ({statusCounts.New})
           </Button>
           <Button
-            variant={statusFilter === "In Progress" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("In Progress")}
+            className={statusFilter === "In Progress" ? "h-9 rounded-full border-transparent bg-[#64748B] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             In Progress ({statusCounts["In Progress"]})
           </Button>
           <Button
-            variant={statusFilter === "Approved" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("Approved")}
-            className={statusFilter === "Approved" ? "bg-emerald-500 hover:bg-emerald-600" : ""}
+            className={statusFilter === "Approved" ? "h-9 rounded-full border-transparent bg-[#34B192] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             Approved ({statusCounts.Approved})
           </Button>
           <Button
-            variant={statusFilter === "Needs Work" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("Needs Work")}
-            className={statusFilter === "Needs Work" ? "bg-amber-500 hover:bg-amber-600" : ""}
+            className={statusFilter === "Needs Work" ? "h-9 rounded-full border-transparent bg-[#F2B84B] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             Needs Work ({statusCounts["Needs Work"]})
           </Button>
           <Button
-            variant={statusFilter === "Rejected" ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => setStatusFilter("Rejected")}
-            className={statusFilter === "Rejected" ? "bg-red-500 hover:bg-red-600" : ""}
+            className={statusFilter === "Rejected" ? "h-9 rounded-full border-transparent bg-[#D64545] text-white" : "h-9 rounded-full border-[#222121]/20 bg-white text-[#222121] hover:bg-[#F7F7F7]"}
           >
             Rejected ({statusCounts.Rejected})
           </Button>
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#222121]/40" />
                 <Input
                   placeholder="Search by company, contact, or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="h-11 rounded-full border-[#222121]/15 bg-white pl-10 text-sm"
                 />
               </div>
               {clients.length > 1 && (
                 <Select value={clientFilter} onValueChange={setClientFilter}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <Filter className="h-4 w-4 mr-2" />
+                  <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/15 bg-white text-sm sm:w-[200px]">
+                    <Filter className="h-4 w-4 mr-2 text-[#222121]/50" />
                     <SelectValue placeholder="Filter by client" />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,18 +263,22 @@ const RepLeads = () => {
 
         {/* Leads List */}
         {filteredLeads.length === 0 ? (
-          <Card>
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="py-12">
               <div className="text-center">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
-                <h3 className="text-lg font-medium mb-2">No leads found</h3>
-                <p className="text-muted-foreground mb-4">
+                <Users className="h-12 w-12 mx-auto mb-4 text-[#222121]/30" />
+                <h3 className="text-lg font-medium mb-2 text-[#222121]">No leads found</h3>
+                <p className="text-sm text-[#222121]/60 mb-4">
                   {leads.length === 0
                     ? "You haven't submitted any leads yet"
                     : "No leads match your current filters"}
                 </p>
                 {leads.length === 0 && (
-                  <Button onClick={() => navigate("/rep/submit-lead")}>
+                  <Button
+                    onClick={() => navigate("/rep/submit-lead")}
+                    variant="ghost"
+                    className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+                  >
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Submit Your First Lead
                   </Button>
@@ -279,18 +291,18 @@ const RepLeads = () => {
             {filteredLeads.map((lead) => (
               <Card
                 key={lead.id}
-                className="hover:border-primary/50 cursor-pointer transition-all"
+                className="cursor-pointer border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:border-[#34B192]/40"
                 onClick={() => navigate(`/rep/leads/${lead.id}`)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold truncate">{lead.companyName}</h3>
+                        <h3 className="font-semibold truncate text-[#222121]">{lead.companyName}</h3>
                         {getStatusBadge(lead.status)}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#222121]/60">
                         {lead.contactName && (
                           <span className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
@@ -316,17 +328,17 @@ const RepLeads = () => {
                       </div>
 
                       {lead.feedback && lead.status === "Needs Work" && (
-                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
+                        <div className="mt-2 rounded-lg border border-[#F2B84B]/40 bg-[#FFF3E1] p-2 text-sm text-[#C7771E]">
                           <strong>Feedback:</strong> {lead.feedback}
                         </div>
                       )}
 
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="mt-2 text-xs text-[#222121]/50">
                         Submitted: {formatDate(lead.dateAdded)}
                       </p>
                     </div>
 
-                    <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <ArrowRight className="h-5 w-5 text-[#222121]/40 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>

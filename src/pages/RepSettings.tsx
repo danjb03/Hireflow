@@ -73,8 +73,8 @@ const RepSettings = () => {
   if (isLoading) {
     return (
       <RepLayout userEmail={user?.email}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-[400px] items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </RepLayout>
     );
@@ -82,39 +82,45 @@ const RepSettings = () => {
 
   return (
     <RepLayout userEmail={user?.email}>
-      <div className="max-w-2xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Settings</h1>
-          <p className="text-muted-foreground">Manage your account settings</p>
+      <div className="-mx-4 -my-6 max-w-2xl space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+            <span className="size-2 rounded-full bg-[#34B192]" />
+            Account settings
+          </div>
+          <h1 className="text-3xl font-semibold text-[#222121]">Settings</h1>
+          <p className="text-sm text-[#222121]/60">Manage your account settings</p>
         </div>
 
         {/* Account Info */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Your account details</CardDescription>
+            <CardTitle className="text-[#222121]">Account Information</CardTitle>
+            <CardDescription className="text-[#222121]/60">Your account details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={user?.email || ""} disabled />
+              <Label className="text-sm font-medium text-[#222121]">Email</Label>
+              <Input value={user?.email || ""} disabled className="h-11 rounded-full border-[#222121]/15 bg-[#F5F5F5] text-sm text-[#222121]/60" />
             </div>
           </CardContent>
         </Card>
 
         {/* Change Password */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <Key className="h-5 w-5 text-[#34B192]" />
+              </span>
               Change Password
             </CardTitle>
-            <CardDescription>Update your account password</CardDescription>
+            <CardDescription className="text-[#222121]/60">Update your account password</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword" className="text-sm font-medium text-[#222121]">New Password</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -123,10 +129,11 @@ const RepSettings = () => {
                   placeholder="Enter new password"
                   required
                   minLength={6}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-[#222121]">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -135,9 +142,15 @@ const RepSettings = () => {
                   placeholder="Confirm new password"
                   required
                   minLength={6}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
-              <Button type="submit" disabled={changingPassword}>
+              <Button
+                type="submit"
+                disabled={changingPassword}
+                variant="ghost"
+                className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+              >
                 {changingPassword ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -152,16 +165,22 @@ const RepSettings = () => {
         </Card>
 
         {/* Sign Out */}
-        <Card>
+        <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LogOut className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-[#222121]">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
+                <LogOut className="h-5 w-5 text-[#34B192]" />
+              </span>
               Sign Out
             </CardTitle>
-            <CardDescription>Sign out of your account</CardDescription>
+            <CardDescription className="text-[#222121]/60">Sign out of your account</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="destructive" onClick={handleSignOut}>
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="h-10 rounded-full border-[#D64545]/40 text-[#D64545] hover:bg-[#FDF1F1]"
+            >
               Sign Out
             </Button>
           </CardContent>

@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, FileText, Clock, Phone, Calendar as CalendarIcon, TrendingUp, PlusCircle, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import RepLayout from "@/components/RepLayout";
-import { Progress } from "@/components/ui/progress";
 
 interface Report {
   id: string;
@@ -94,13 +93,13 @@ const RepReports = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Approved":
-        return <Badge className="bg-emerald-100 text-emerald-700"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#34B192] text-white"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
       case "Rejected":
-        return <Badge className="bg-red-100 text-red-700"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#D64545] text-white"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
       case "Needs Work":
-        return <Badge className="bg-amber-100 text-amber-700"><AlertCircle className="h-3 w-3 mr-1" />Needs Work</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#F2B84B] text-white"><AlertCircle className="h-3 w-3 mr-1" />Needs Work</Badge>;
       default:
-        return <Badge className="bg-slate-100 text-slate-700"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+        return <Badge variant="outline" className="border-transparent bg-[#64748B] text-white"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
     }
   };
 
@@ -117,8 +116,8 @@ const RepReports = () => {
   if (isLoading) {
     return (
       <RepLayout userEmail={user?.email}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex min-h-[400px] items-center justify-center bg-[#F7F7F7]">
+          <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
         </div>
       </RepLayout>
     );
@@ -126,18 +125,23 @@ const RepReports = () => {
 
   return (
     <RepLayout userEmail={user?.email}>
-      <div className="space-y-6">
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">My Reports</h1>
-            <p className="text-muted-foreground">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Reporting overview
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">My Reports</h1>
+            <p className="text-sm text-[#222121]/60">
               View your submitted daily reports
             </p>
           </div>
           <Button
             onClick={() => navigate("/rep-report")}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            variant="ghost"
+            className="h-11 rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Submit Daily Report
@@ -146,15 +150,19 @@ const RepReports = () => {
 
         {/* Reports List */}
         {reports.length === 0 ? (
-          <Card>
+          <Card className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardContent className="py-12">
               <div className="text-center">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
-                <h3 className="text-lg font-medium mb-2">No reports yet</h3>
-                <p className="text-muted-foreground mb-4">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-[#222121]/30" />
+                <h3 className="text-lg font-medium mb-2 text-[#222121]">No reports yet</h3>
+                <p className="text-sm text-[#222121]/60 mb-4">
                   You haven't submitted any daily reports
                 </p>
-                <Button onClick={() => navigate("/rep-report")}>
+                <Button
+                  onClick={() => navigate("/rep-report")}
+                  variant="ghost"
+                  className="h-10 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
+                >
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Submit Your First Report
                 </Button>
@@ -164,12 +172,12 @@ const RepReports = () => {
         ) : (
           <div className="space-y-4">
             {reports.map((report) => (
-              <Card key={report.id} className="overflow-hidden">
+              <Card key={report.id} className="overflow-hidden border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                      <CardTitle className="text-lg">{formatDate(report.report_date)}</CardTitle>
+                      <CalendarIcon className="h-5 w-5 text-[#34B192]" />
+                      <CardTitle className="text-lg text-[#222121]">{formatDate(report.report_date)}</CardTitle>
                     </div>
                     {getStatusBadge(report.status)}
                   </div>
@@ -177,40 +185,40 @@ const RepReports = () => {
                 <CardContent className="space-y-4">
                   {/* Summary Stats */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <Clock className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-lg font-semibold">{formatHours(report.time_on_dialer_minutes)}</p>
-                      <p className="text-xs text-muted-foreground">Time on Dialer</p>
+                    <div className="text-center p-3 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                      <Clock className="h-4 w-4 mx-auto mb-1 text-[#34B192]" />
+                      <p className="text-lg font-semibold text-[#222121]">{formatHours(report.time_on_dialer_minutes)}</p>
+                      <p className="text-xs text-[#222121]/60">Time on Dialer</p>
                     </div>
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <Phone className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-lg font-semibold">{report.calls_made}</p>
-                      <p className="text-xs text-muted-foreground">Calls</p>
+                    <div className="text-center p-3 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                      <Phone className="h-4 w-4 mx-auto mb-1 text-[#34B192]" />
+                      <p className="text-lg font-semibold text-[#222121]">{report.calls_made}</p>
+                      <p className="text-xs text-[#222121]/60">Calls</p>
                     </div>
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <CalendarIcon className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-lg font-semibold">{report.bookings_made}</p>
-                      <p className="text-xs text-muted-foreground">Bookings</p>
+                    <div className="text-center p-3 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                      <CalendarIcon className="h-4 w-4 mx-auto mb-1 text-[#34B192]" />
+                      <p className="text-lg font-semibold text-[#222121]">{report.bookings_made}</p>
+                      <p className="text-xs text-[#222121]/60">Bookings</p>
                     </div>
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <TrendingUp className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-lg font-semibold">{report.pipeline_value}</p>
-                      <p className="text-xs text-muted-foreground">Pipeline</p>
+                    <div className="text-center p-3 rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                      <TrendingUp className="h-4 w-4 mx-auto mb-1 text-[#34B192]" />
+                      <p className="text-lg font-semibold text-[#222121]">{report.pipeline_value}</p>
+                      <p className="text-xs text-[#222121]/60">Pipeline</p>
                     </div>
                   </div>
 
                   {/* Target Progress */}
                   <div className="space-y-3">
-                    <p className="text-sm font-medium text-muted-foreground">Target Progress</p>
+                    <p className="text-sm font-medium text-[#222121]/60">Target Progress</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Calls</span>
-                          <span className="text-muted-foreground">
+                          <span className="text-[#222121]">Calls</span>
+                          <span className="text-[#222121]/60">
                             {report.targets.calls.actual}/{report.targets.calls.target} ({report.targets.calls.percentOfTarget}%)
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-2 rounded-full bg-[#E5E5E5] overflow-hidden">
                           <div
                             className={`h-full ${getProgressColor(report.targets.calls.status)} transition-all`}
                             style={{ width: `${Math.min(report.targets.calls.percentOfTarget, 100)}%` }}
@@ -219,12 +227,12 @@ const RepReports = () => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Hours</span>
-                          <span className="text-muted-foreground">
+                          <span className="text-[#222121]">Hours</span>
+                          <span className="text-[#222121]/60">
                             {report.targets.hours.actual.toFixed(1)}/{report.targets.hours.target}h ({report.targets.hours.percentOfTarget}%)
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-2 rounded-full bg-[#E5E5E5] overflow-hidden">
                           <div
                             className={`h-full ${getProgressColor(report.targets.hours.status)} transition-all`}
                             style={{ width: `${Math.min(report.targets.hours.percentOfTarget, 100)}%` }}
@@ -233,12 +241,12 @@ const RepReports = () => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Bookings</span>
-                          <span className="text-muted-foreground">
+                          <span className="text-[#222121]">Bookings</span>
+                          <span className="text-[#222121]/60">
                             {report.targets.bookings.actual}/{report.targets.bookings.target} ({report.targets.bookings.percentOfTarget}%)
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-2 rounded-full bg-[#E5E5E5] overflow-hidden">
                           <div
                             className={`h-full ${getProgressColor(report.targets.bookings.status)} transition-all`}
                             style={{ width: `${Math.min(report.targets.bookings.percentOfTarget, 100)}%` }}
@@ -247,12 +255,12 @@ const RepReports = () => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Pipeline</span>
-                          <span className="text-muted-foreground">
+                          <span className="text-[#222121]">Pipeline</span>
+                          <span className="text-[#222121]/60">
                             {report.targets.pipeline.actual}/{report.targets.pipeline.target} ({report.targets.pipeline.percentOfTarget}%)
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-2 rounded-full bg-[#E5E5E5] overflow-hidden">
                           <div
                             className={`h-full ${getProgressColor(report.targets.pipeline.status)} transition-all`}
                             style={{ width: `${Math.min(report.targets.pipeline.percentOfTarget, 100)}%` }}
@@ -264,8 +272,8 @@ const RepReports = () => {
 
                   {/* Notes */}
                   {report.notes && (
-                    <div className="pt-2 border-t">
-                      <p className="text-sm text-muted-foreground">
+                    <div className="pt-2 border-t border-[#222121]/10">
+                      <p className="text-sm text-[#222121]/60">
                         <strong>Notes:</strong> {report.notes}
                       </p>
                     </div>
