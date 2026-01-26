@@ -152,8 +152,8 @@ const AdminListBuilder = () => {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
-              <span className="size-2 rounded-full bg-[#34B192]" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#222121]">
+              <span className="size-2 rounded-full bg-[#222121]" />
               Lead generation
             </div>
             <h1 className="text-3xl font-semibold text-[#222121]">
@@ -171,8 +171,8 @@ const AdminListBuilder = () => {
           <Card hover="none" className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#222121]">
-                <div className="flex size-8 items-center justify-center rounded-full bg-[#34B192]/10">
-                  <Search className="h-4 w-4 text-[#34B192]" />
+                <div className="flex size-8 items-center justify-center rounded-full bg-[#222121]/10">
+                  <Search className="h-4 w-4 text-[#222121]" />
                 </div>
                 New List Building Job
               </CardTitle>
@@ -246,7 +246,7 @@ const AdminListBuilder = () => {
               </div>
 
               <Button
-                className="w-full rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
+                className="w-full rounded-full bg-[#222121] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(34,33,33,0.25)] transition-all hover:bg-[#333] hover:shadow-[0_8px_24px_rgba(34,33,33,0.35)]"
                 onClick={handleStartJob}
                 disabled={isCreating}
               >
@@ -260,8 +260,8 @@ const AdminListBuilder = () => {
           <Card hover="none" className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#222121]">
-                <div className="flex size-8 items-center justify-center rounded-full bg-[#34B192]/10">
-                  <Clock className="h-4 w-4 text-[#34B192]" />
+                <div className="flex size-8 items-center justify-center rounded-full bg-[#222121]/10">
+                  <Clock className="h-4 w-4 text-[#222121]" />
                 </div>
                 Recent Jobs
               </CardTitle>
