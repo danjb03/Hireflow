@@ -147,29 +147,31 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { jobId } = await req.json();
-    if (!jobId) throw new ApplicationError('Invalid Request', 'Missing jobId in request body.');
+  let jobId: string | null = null;
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+  );
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
+  try {
+    const body = await req.json();
+    jobId = body.jobId;
+    if (!jobId) throw new ApplicationError('Invalid Request', 'Missing jobId in request body.');
 
     // Fetch job configuration
     const { data: job, error: fetchError } = await supabaseClient
       .from('list_building_jobs')
-      .select('config')
+      .select('config, airtable_client_id')
       .eq('id', jobId)
       .single();
 
     if (fetchError || !job) throw new ApplicationError('Job Not Found', 'Could not find job with the provided ID.');
 
     // Run the orchestration logic
-    await executeListBuilding(jobId, job.config, supabaseClient);
+    await executeListBuilding(jobId, { ...job.config, airtable_client_id: job.airtable_client_id }, supabaseClient);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'List building process initiated and completed (or failed) in function.' }),
+      JSON.stringify({ success: true, message: 'List building process completed.' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -178,15 +180,18 @@ Deno.serve(async (req) => {
     const isAppError = error instanceof ApplicationError;
     const status = isAppError ? 400 : 500;
     const errorMessage = isAppError ? error.message : 'Internal Server Error';
-    const errorDetails = isAppError ? error.details : error.message;
+    const errorDetails = isAppError ? error.details : (error instanceof Error ? error.message : 'Unknown error');
 
-    // Update job status to failed if possible
-    if (req.json().jobId) {
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-        );
-        await supabaseClient.from('list_building_jobs').update({ status: 'failed', error: errorMessage }).eq('id', req.json().jobId);
+    // Update job status to failed if we have a jobId
+    if (jobId) {
+      try {
+        await supabaseClient.from('list_building_jobs').update({
+          status: 'failed',
+          error: `${errorMessage}: ${errorDetails}`
+        }).eq('id', jobId);
+      } catch (updateError) {
+        console.error('Failed to update job status:', updateError);
+      }
     }
 
     return new Response(

@@ -139,38 +139,50 @@ const AdminListBuilder = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed': return <Badge className="bg-green-500">Completed</Badge>;
-      case 'failed': return <Badge variant="destructive">Failed</Badge>;
-      case 'pending': return <Badge variant="secondary">Pending</Badge>;
-      default: return <Badge className="bg-blue-500 animate-pulse">{status.replace('_', ' ')}</Badge>;
+      case 'completed': return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Completed</Badge>;
+      case 'failed': return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Failed</Badge>;
+      case 'pending': return <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-100">Pending</Badge>;
+      default: return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 animate-pulse">{status.replace('_', ' ')}</Badge>;
     }
   };
 
   return (
     <AdminLayout userEmail={userEmail}>
-      <div className="space-y-6 p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">List Builder</h1>
-            <p className="text-muted-foreground">Automated lead generation using Apollo & BetterContact</p>
+      <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+              <span className="size-2 rounded-full bg-[#34B192]" />
+              Lead generation
+            </div>
+            <h1 className="text-3xl font-semibold text-[#222121]">
+              <span className="text-[#222121]/40">Build targeted</span>{" "}
+              <span className="text-[#222121]">lead lists.</span>
+            </h1>
+            <p className="text-sm text-[#222121]/60">
+              Automated lead generation using Apollo & BetterContact.
+            </p>
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Configuration Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5" />
+          <Card hover="none" className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#222121]">
+                <div className="flex size-8 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <Search className="h-4 w-4 text-[#34B192]" />
+                </div>
                 New List Building Job
               </CardTitle>
-              <CardDescription>Configure your search criteria and hiring signals</CardDescription>
+              <CardDescription className="text-[#222121]/50">Configure your search criteria and hiring signals</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Select Client</Label>
+                <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Select Client</Label>
                 <Select onValueChange={setSelectedClient} value={selectedClient}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-[#222121]/10">
                     <SelectValue placeholder="Select a client from Airtable" />
                   </SelectTrigger>
                   <SelectContent>
@@ -183,53 +195,58 @@ const AdminListBuilder = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Target Job Titles</Label>
-                  <Input 
-                    value={targetTitles} 
+                  <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Target Job Titles</Label>
+                  <Input
+                    value={targetTitles}
                     onChange={(e) => setTargetTitles(e.target.value)}
                     placeholder="HR Director, Hiring Manager"
+                    className="border-[#222121]/10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Company Size Ranges</Label>
-                  <Input 
-                    value={companySize} 
+                  <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Company Size Ranges</Label>
+                  <Input
+                    value={companySize}
                     onChange={(e) => setCompanySize(e.target.value)}
                     placeholder="50,200"
+                    className="border-[#222121]/10"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Locations</Label>
-                  <Input 
-                    value={locations} 
+                  <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Locations</Label>
+                  <Input
+                    value={locations}
                     onChange={(e) => setLocations(e.target.value)}
                     placeholder="United States, UK"
+                    className="border-[#222121]/10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Hiring Keywords</Label>
-                  <Input 
-                    value={jobKeywords} 
+                  <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Hiring Keywords</Label>
+                  <Input
+                    value={jobKeywords}
                     onChange={(e) => setJobKeywords(e.target.value)}
                     placeholder="Sales, Tech"
+                    className="border-[#222121]/10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Result Limit</Label>
-                <Input 
-                  type="number" 
-                  value={resultLimit} 
+                <Label className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Result Limit</Label>
+                <Input
+                  type="number"
+                  value={resultLimit}
                   onChange={(e) => setResultLimit(parseInt(e.target.value))}
+                  className="border-[#222121]/10"
                 />
               </div>
 
-              <Button 
-                className="w-full bg-[#34B192] hover:bg-[#2D9A7E]" 
+              <Button
+                className="w-full rounded-full bg-[#34B192] px-6 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E] hover:shadow-[0_8px_24px_rgba(52,177,146,0.35)]"
                 onClick={handleStartJob}
                 disabled={isCreating}
               >
@@ -240,32 +257,34 @@ const AdminListBuilder = () => {
           </Card>
 
           {/* Recent Jobs Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+          <Card hover="none" className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#222121]">
+                <div className="flex size-8 items-center justify-center rounded-full bg-[#34B192]/10">
+                  <Clock className="h-4 w-4 text-[#34B192]" />
+                </div>
                 Recent Jobs
               </CardTitle>
-              <CardDescription>Monitor progress and download results</CardDescription>
+              <CardDescription className="text-[#222121]/50">Monitor progress and download results</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {jobs.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No jobs found.</p>
+                  <p className="text-center text-[#222121]/50 py-8">No jobs found.</p>
                 ) : (
                   jobs.slice(0, 5).map(job => (
-                    <div key={job.id} className="space-y-2 border-b pb-4 last:border-0">
+                    <div key={job.id} className="space-y-2 border-b border-[#222121]/5 pb-4 last:border-0 last:pb-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">{clients.find(c => c.id === job.airtable_client_id)?.name || 'Unknown Client'}</p>
-                          <p className="text-xs text-muted-foreground">{new Date(job.created_at).toLocaleString()}</p>
+                          <p className="font-medium text-[#222121]">{clients.find(c => c.id === job.airtable_client_id)?.name || 'Unknown Client'}</p>
+                          <p className="text-xs text-[#222121]/50">{new Date(job.created_at).toLocaleString()}</p>
                         </div>
                         {getStatusBadge(job.status)}
                       </div>
-                      
+
                       {job.status !== 'completed' && job.status !== 'failed' && job.progress && (
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
+                          <div className="flex justify-between text-xs text-[#222121]/50">
                             <span>{job.progress.message}</span>
                             <span>{Math.round((job.progress.step / 4) * 100)}%</span>
                           </div>
@@ -275,8 +294,8 @@ const AdminListBuilder = () => {
 
                       {job.status === 'completed' && (
                         <div className="flex justify-between items-center pt-2">
-                          <span className="text-sm text-green-600 font-medium">{job.result_count} leads found</span>
-                          <Button variant="outline" size="sm" className="h-8">
+                          <span className="text-sm text-emerald-600 font-medium">{job.result_count} leads found</span>
+                          <Button variant="outline" size="sm" className="h-8 rounded-full border-[#222121]/10 text-xs">
                             <Download className="mr-2 h-3 w-3" />
                             Export CSV
                           </Button>
@@ -295,41 +314,49 @@ const AdminListBuilder = () => {
         </div>
 
         {/* Full Jobs Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All List Building Jobs</CardTitle>
+        <Card hover="none" className="border border-[#222121]/[0.08] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-[#222121]">All List Building Jobs</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Criteria</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Results</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="border-[#222121]/5">
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Date</TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Client</TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Criteria</TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Status</TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Results</TableHead>
+                  <TableHead className="text-xs font-medium uppercase tracking-wide text-[#222121]/50">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobs.map(job => (
-                  <TableRow key={job.id}>
-                    <TableCell className="text-xs">{new Date(job.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">
-                      {clients.find(c => c.id === job.airtable_client_id)?.name || 'Unknown'}
-                    </TableCell>
-                    <TableCell className="text-xs max-w-[200px] truncate">
-                      {job.config.target_titles.join(", ")}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(job.status)}</TableCell>
-                    <TableCell>{job.result_count}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" disabled={job.status !== 'completed'}>
-                        <Download className="h-4 w-4" />
-                      </Button>
+                {jobs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-[#222121]/50 py-8">
+                      No jobs found. Create your first list building job above.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  jobs.map(job => (
+                    <TableRow key={job.id} className="border-[#222121]/5">
+                      <TableCell className="text-sm text-[#222121]/70">{new Date(job.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium text-[#222121]">
+                        {clients.find(c => c.id === job.airtable_client_id)?.name || 'Unknown'}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#222121]/70 max-w-[200px] truncate">
+                        {job.config?.target_titles?.join(", ") || '-'}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(job.status)}</TableCell>
+                      <TableCell className="font-medium text-[#222121]">{job.result_count}</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" disabled={job.status !== 'completed'} className="h-8 w-8 p-0">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
