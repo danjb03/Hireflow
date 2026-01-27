@@ -3,13 +3,12 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  UserPlus,
   BarChart3,
   PoundSterling,
   ClipboardList,
-  Headset,
   Mail,
   ListPlus,
+  Building2,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -37,12 +36,11 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
   const menuItems = [
     { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "All Leads", url: "/admin/leads", icon: FileText },
-    { title: "Clients", url: "/admin/clients", icon: Users },
+    { title: "Clients", url: "/admin/clients", icon: Building2 },
+    { title: "Users", url: "/admin/users", icon: Users },
     { title: "P&L", url: "/admin/pnl", icon: PoundSterling },
     { title: "Reporting", url: "/admin/reporting", icon: ClipboardList },
     { title: "Sentiment", url: "/admin/sentiment", icon: BarChart3 },
-    { title: "Invite Client", url: "/admin/invite", icon: UserPlus },
-    { title: "Invite Rep", url: "/admin/invite-rep", icon: Headset },
     { title: "Email Settings", url: "/admin/email-settings", icon: Mail },
     { title: "List Builder", url: "/admin/list-builder", icon: ListPlus },
   ];
