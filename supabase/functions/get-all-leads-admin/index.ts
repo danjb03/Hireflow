@@ -212,23 +212,47 @@ async function fetchAllLeads(baseUrl: string, token: string): Promise<any[]> {
 // Fetch all client names at once
 async function fetchClientNames(baseId: string, token: string): Promise<Map<string, string>> {
   const clientMap = new Map<string, string>();
-  const clientsUrl = `https://api.airtable.com/v0/${baseId}/Clients?fields%5B%5D=Client%20Name&fields%5B%5D=Name`;
+  const baseClientsUrl = `https://api.airtable.com/v0/${baseId}/Clients`;
+  const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company';
 
   let offset: string | undefined;
+  let useFields = true;
+
+  const pickName = (fields: Record<string, any>): string => {
+    return (
+      fields['Client Name'] ||
+      fields['Name'] ||
+      fields['Company Name'] ||
+      fields['Company'] ||
+      fields['Client'] ||
+      fields[Object.keys(fields)[0]] ||
+      ''
+    );
+  };
 
   do {
+    const clientsUrl = useFields ? `${baseClientsUrl}?${fieldsParam}` : baseClientsUrl;
     const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
     const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    if (!response.ok) break;
+    if (!response.ok) {
+      if (response.status === 422 && useFields) {
+        console.warn('Airtable 422 with fields param in fetchClientNames, retrying without fields filter');
+        useFields = false;
+        offset = undefined;
+        clientMap.clear();
+        continue;
+      }
+      break;
+    }
 
     const data = await response.json();
     for (const record of data.records || []) {
-      const name = record.fields['Client Name'] || record.fields['Name'] || '';
+      const name = pickName(record.fields || {});
       if (name) {
-        clientMap.set(record.id, name);
+        clientMap.set(record.id, String(name));
       }
     }
     offset = data.offset;
