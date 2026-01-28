@@ -45,9 +45,8 @@ Deno.serve(async (req) => {
     }
     if (leadData.contactLinkedIn) airtableFields['Contact LinkedIn'] = leadData.contactLinkedIn;
 
-    // Job Info
-    if (leadData.jobTitle) airtableFields['Job Title'] = leadData.jobTitle;
-    if (leadData.jobDescription) airtableFields['Job Description'] = leadData.jobDescription;
+    // Role Info
+    if (leadData.titlesOfRoles) airtableFields['Titles of Roles'] = leadData.titlesOfRoles;
 
     // Call Notes
     if (leadData.aiSummary) airtableFields['Internal Notes'] = leadData.aiSummary;

@@ -21,6 +21,7 @@ interface Lead {
   companyWebsite?: string;
   companyLinkedIn?: string;
   industry?: string;
+  industry2?: string;
   companySize?: string;
   employeeCount?: string;
   country?: string;
@@ -30,18 +31,10 @@ interface Lead {
   
   // Contact Details
   contactName?: string;
-  jobTitle?: string;
+  titlesOfRoles?: string;
   email?: string;
   phone?: string;
   linkedInProfile?: string;
-  
-  // Job Information
-  jobPostingTitle?: string;
-  jobDescription?: string;
-  jobUrl?: string;
-  activeJobsUrl?: string;
-  jobsOpen?: string;
-  jobOpenings?: any[];
 }
 
 const ClientLeads = () => {

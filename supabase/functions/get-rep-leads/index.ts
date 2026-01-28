@@ -175,20 +175,18 @@ Deno.serve(async (req) => {
         address: Array.isArray(fields['Address']) ? fields['Address'].join(', ') : (fields['Address'] || null),
         country: fields['Country'] || null,
         industry: fields['Industry'] || null,
+        industry2: fields['Industry 2'] || null,
         employeeCount: fields['Employee Count'] || null,
         companySize: fields['Company Size'] || null,
+        founded: fields['Founded'] || null,
 
-        // Job Info
-        jobTitle: fields['Job Title'] || null,
-        jobDescription: fields['Job Description'] || null,
-        jobUrl: fields['Job URL'] || null,
-        jobType: fields['Job Type'] || null,
-        jobLevel: fields['Job Level'] || null,
+        // Role Info
+        titlesOfRoles: fields['Titles of Roles'] || null,
 
         // Notes
         internalNotes: fields['Internal Notes'] || null,
         clientNotes: (() => {
-          const notes = fields['Client Notes'];
+          const notes = fields['NOTES'] ?? fields['Client Notes'];
           if (!notes) return null;
           if (typeof notes === 'string') return notes;
           if (typeof notes === 'object' && notes.value) return String(notes.value);

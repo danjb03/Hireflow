@@ -43,6 +43,8 @@ Deno.serve(async (req) => {
       fields['Company Description'] = data.company_description || data.Description || data["Company Description"];
     if (data.industry || data.Industry || data["Industry (2)"])
       fields['Industry'] = data.industry || data.Industry || data["Industry (2)"];
+    if (data.industry_2 || data["Industry 2"])
+      fields['Industry 2'] = data.industry_2 || data["Industry 2"];
     if (data.employee_count || data["Employee Count"] || data["Employee Count (2)"]) {
       const count = data.employee_count || data["Employee Count"] || data["Employee Count (2)"];
       fields['Employee Count'] = typeof count === 'number' ? count : parseInt(count) || null;
@@ -53,6 +55,8 @@ Deno.serve(async (req) => {
       fields['Country'] = data.country || data.Country || data["Country (2)"];
     if (data.address || data.Address || data["Address - Locations"])
       fields['Address'] = data.address || data.Address || data["Address - Locations"];
+    if (data.founded || data["Founded"] || data["Year Founded"])
+      fields['Founded'] = data.founded || data["Founded"] || data["Year Founded"];
 
     // Contact fields
     if (data.contact_name || data["Contact Name"])
@@ -70,17 +74,9 @@ Deno.serve(async (req) => {
     if (data.next_action || data["Next Action"])
       fields['Next Action'] = data.next_action || data["Next Action"];
 
-    // Job fields
-    if (data.job_title || data["Job Title"] || data["Job Title (2)"])
-      fields['Job Title'] = data.job_title || data["Job Title"] || data["Job Title (2)"];
-    if (data.job_level || data["Job Level"])
-      fields['Job Level'] = data.job_level || data["Job Level"];
-    if (data.job_type || data["Job Type"])
-      fields['Job Type'] = data.job_type || data["Job Type"];
-    if (data.job_description || data["Job Description"])
-      fields['Job Description'] = data.job_description || data["Job Description"];
-    if (data.job_url || data["Job Url"] || data["Job Post URL"] || data["Job URL"])
-      fields['Job URL'] = data.job_url || data["Job Url"] || data["Job Post URL"] || data["Job URL"];
+    // Role fields
+    if (data.titles_of_roles || data["Titles of Roles"])
+      fields['Titles of Roles'] = data.titles_of_roles || data["Titles of Roles"];
 
     // AI Summary
     if (data.ai_summary || data["AI Summary"])

@@ -196,16 +196,15 @@ CREATE TABLE user_roles (
 | Address | Text/Array | Location data |
 | Country | Text | |
 | Industry | Single select | |
+| Industry 2 | Single select | Fallback industry |
 | Employee Count | Number | |
 | Company Size | Single select | |
-| Job Title | Text | Role being hired |
-| Job Description | Long text | |
-| Job URL | URL | |
-| Job Type | Single select | |
-| Job Level | Single select | |
+| Titles of Roles | Text | Roles being hired |
+| Founded | Text | Year founded |
 | Status | Single select | New, Approved, Rejected, Needs work, Not Qualified |
 | Client | Linked record OR Text | Assignment |
 | AI Summary | Long text | |
+| NOTES | Long text/AI | Client-facing notes |
 | Feedback | Long text | Client feedback |
 | Availability | Text | Callback scheduling |
 | Last Contact Date | Date | |

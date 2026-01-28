@@ -475,13 +475,11 @@ for (const lead of airtableLeads) {
 | `Address` | `address` |
 | `Country` | `country` |
 | `Industry` | `industry` |
+| `Industry 2` | `industry_2` |
 | `Company Size` | `company_size` |
 | `Employee Count` | `employee_count` |
-| `Job Title` | `job_title` |
-| `Job Description` | `job_description` |
-| `Job URL` | `job_url` |
-| `Job Type` | `job_type` |
-| `Job Level` | `job_level` |
+| `Titles of Roles` | `titles_of_roles` |
+| `Founded` | `founded` |
 | `AI Summary` | `ai_summary` |
 | `Availability` | `availability` |
 | `Last Contact Date` | `last_contact_date` |
@@ -550,4 +548,3 @@ for (const lead of airtableLeads) {
 3. **Test and verify performance improvements**
 4. **Continue with Tier 1 functions**
 5. **Gradually migrate remaining functions**
-

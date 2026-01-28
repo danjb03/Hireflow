@@ -14,8 +14,9 @@ interface Lead {
   status: string;
   companyName: string;
   contactName: string;
-  jobTitle: string;
+  titlesOfRoles: string | null;
   industry: string;
+  industry2?: string;
   companySize: string;
   dateAdded: string;
 }
@@ -209,7 +210,9 @@ const Dashboard = () => {
 
         {/* Leads Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredLeads.map((lead) => (
+          {filteredLeads.map((lead) => {
+            const displayIndustry = lead.industry || lead.industry2 || "";
+            return (
             <Card key={lead.id} className="cursor-pointer border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_6px_18px_rgba(0,0,0,0.08)]" onClick={() => navigate(`/lead/${lead.id}`)}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -226,13 +229,15 @@ const Dashboard = () => {
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-[#222121]/60">
                   <Building2 className="h-4 w-4 text-[#34B192]" />
-                  <span>{lead.jobTitle}</span>
+                  <span>{lead.titlesOfRoles || "Roles not specified"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-[#222121]/60">
-                  <span className="font-medium">{lead.industry}</span>
-                  <span>•</span>
-                  <span>{lead.companySize}</span>
-                </div>
+                {(displayIndustry || lead.companySize) && (
+                  <div className="flex items-center gap-2 text-sm text-[#222121]/60">
+                    {displayIndustry && <span className="font-medium">{displayIndustry}</span>}
+                    {displayIndustry && lead.companySize && <span>•</span>}
+                    {lead.companySize && <span>{lead.companySize}</span>}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-sm text-[#222121]/60">
                   <Calendar className="h-4 w-4 text-[#34B192]" />
                   <span>{new Date(lead.dateAdded).toLocaleDateString()}</span>
@@ -246,7 +251,8 @@ const Dashboard = () => {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+          );
+          })}
         </div>
 
         {filteredLeads.length === 0 && (

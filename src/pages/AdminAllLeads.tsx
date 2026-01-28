@@ -31,14 +31,12 @@ interface Lead {
   address: string | null;
   country: string | null;
   industry: string | null;
+  industry2: string | null;
   employeeCount: number | null;
   companySize: string | null;
+  founded: string | null;
   
-  jobTitle: string | null;
-  jobDescription: string | null;
-  jobUrl: string | null;
-  jobType: string | null;
-  jobLevel: string | null;
+  titlesOfRoles: string | null;
   
   aiSummary: string | null;
   availability: string | null;

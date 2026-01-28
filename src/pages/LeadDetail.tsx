@@ -32,14 +32,15 @@ interface LeadDetail {
   location: string;
   companyDescription: string;
   contactName: string;
-  jobTitle: string;
+  titlesOfRoles: string | null;
   email: string;
   phone: string;
   linkedInProfile: string;
   callNotes: string;
-  jobOpenings: Array<{ title: string; url: string }>;
   recordingTranscript: string;
   dateAdded: string;
+  industry2?: string;
+  founded?: string;
 }
 
 const LeadDetail = () => {
@@ -108,6 +109,8 @@ const LeadDetail = () => {
     return null;
   }
 
+  const displayIndustry = lead.industry || lead.industry2 || "";
+
   return (
     <div className="min-h-screen bg-[#F7F7F7]">
       {/* Header */}
@@ -154,10 +157,18 @@ const LeadDetail = () => {
                   </a>
                 </div>
               )}
-              <div>
-                <p className="text-sm font-medium text-[#222121]/60">Industry</p>
-                <p className="text-[#222121]">{lead.industry}</p>
-              </div>
+              {displayIndustry && (
+                <div>
+                  <p className="text-sm font-medium text-[#222121]/60">Industry</p>
+                  <p className="text-[#222121]">{displayIndustry}</p>
+                </div>
+              )}
+              {lead.founded && (
+                <div>
+                  <p className="text-sm font-medium text-[#222121]/60">Founded</p>
+                  <p className="text-[#222121]">{lead.founded}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm font-medium text-[#222121]/60">Company Size</p>
                 <p className="flex items-center gap-1 text-[#222121]">
@@ -207,13 +218,15 @@ const LeadDetail = () => {
                 <p className="text-sm font-medium text-[#222121]/60">Name</p>
                 <p className="text-[#222121]">{lead.contactName}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-[#222121]/60">Job Title</p>
-                <p className="flex items-center gap-1 text-[#222121]">
-                  <Briefcase className="h-4 w-4 text-[#34B192]" />
-                  {lead.jobTitle}
-                </p>
-              </div>
+              {lead.titlesOfRoles && (
+                <div>
+                  <p className="text-sm font-medium text-[#222121]/60">Roles Hiring</p>
+                  <p className="flex items-center gap-1 text-[#222121]">
+                    <Briefcase className="h-4 w-4 text-[#34B192]" />
+                    {lead.titlesOfRoles}
+                  </p>
+                </div>
+              )}
               {lead.email && (
                 <div>
                   <p className="text-sm font-medium text-[#222121]/60">Email</p>

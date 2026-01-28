@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, Clock, Calendar, MessageSquare, StickyNote } from "lucide-react";
+import { ArrowLeft, Loader2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Linkedin, CheckCircle2, AlertCircle, XCircle, Clock, Calendar, MessageSquare, StickyNote } from "lucide-react";
 import RepLayout from "@/components/RepLayout";
 import { toast } from "sonner";
 
@@ -29,15 +29,13 @@ interface LeadData {
   address: string | null;
   country: string | null;
   industry: string | null;
+  industry2: string | null;
   employeeCount: number | null;
   companySize: string | null;
+  founded: string | null;
 
-  // Job Info
-  jobTitle: string | null;
-  jobDescription: string | null;
-  jobUrl: string | null;
-  jobType: string | null;
-  jobLevel: string | null;
+  // Role Info
+  titlesOfRoles: string | null;
 
   // Notes
   internalNotes: string | null;
@@ -199,6 +197,8 @@ const RepLeadDetail = () => {
     );
   }
 
+  const displayIndustry = lead.industry || lead.industry2;
+
   return (
     <RepLayout userEmail={userEmail}>
       <div className="-mx-4 -my-6 space-y-6 bg-[#F7F7F7] px-4 py-6 lg:-mx-6 lg:px-6">
@@ -297,6 +297,15 @@ const RepLeadDetail = () => {
                 <p className="text-sm font-medium text-[#222121]">{lead.contactTitle}</p>
               </div>
             )}
+            {lead.titlesOfRoles && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Roles Hiring</p>
+                <p className="text-sm font-medium flex items-center gap-2 text-[#222121]">
+                  <Briefcase className="h-4 w-4 text-[#34B192]" />
+                  {lead.titlesOfRoles}
+                </p>
+              </div>
+            )}
             {lead.email && (
               <div className="space-y-1">
                 <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Email</p>
@@ -356,10 +365,16 @@ const RepLeadDetail = () => {
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lead.industry && (
+                {displayIndustry && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Industry</p>
-                    <p className="text-sm font-medium text-[#222121]">{lead.industry}</p>
+                    <p className="text-sm font-medium text-[#222121]">{displayIndustry}</p>
+                  </div>
+                )}
+                {lead.founded && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Founded</p>
+                    <p className="text-sm font-medium text-[#222121]">{lead.founded}</p>
                   </div>
                 )}
                 {(lead.companySize || lead.employeeCount) && (
@@ -384,61 +399,6 @@ const RepLeadDetail = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Job Information */}
-        {(lead.jobTitle || lead.jobDescription || lead.jobUrl) && (
-          <div className="rounded-2xl border border-[#222121]/10 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-4 text-[#222121]">
-              <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
-                <Briefcase className="h-5 w-5 text-[#34B192]" />
-              </span>
-              Job Information
-            </div>
-            <div className="space-y-4">
-              {lead.jobTitle && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Role They're Hiring For</p>
-                  <p className="text-sm font-medium text-[#222121]">{lead.jobTitle}</p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lead.jobType && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Job Type</p>
-                    <p className="text-sm font-medium text-[#222121]">{lead.jobType}</p>
-                  </div>
-                )}
-                {lead.jobLevel && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Job Level</p>
-                    <p className="text-sm font-medium text-[#222121]">{lead.jobLevel}</p>
-                  </div>
-                )}
-              </div>
-              {lead.jobDescription && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide">Role Details</p>
-                  <p className="text-sm text-[#222121] whitespace-pre-wrap">{lead.jobDescription}</p>
-                </div>
-              )}
-              {lead.jobUrl && (
-                <div className="pt-2">
-                  <Button
-                    variant="outline"
-                    asChild
-                    className="h-9 gap-2 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
-                    size="sm"
-                  >
-                    <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                      View Job Posting
-                    </a>
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         )}

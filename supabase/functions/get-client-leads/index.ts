@@ -137,11 +137,26 @@ Deno.serve(async (req) => {
         console.log('Profile data for user:', JSON.stringify(profile));
 
         if (profile?.airtable_client_id) {
-          // Use the stored Airtable client ID from profile
+          // Use the stored Airtable client ID from profile, but fetch the latest name from Airtable
           clientRecordId = profile.airtable_client_id;
-          clientName = profile.client_name || '';
-          console.log('Using stored airtable_client_id from profile:', clientRecordId, 'client_name:', clientName);
-        } else {
+          console.log('Using stored airtable_client_id from profile:', clientRecordId);
+          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${clientRecordId}`;
+          const clientResponse = await fetch(clientUrl, {
+            headers: {
+              'Authorization': `Bearer ${airtableToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (clientResponse.ok) {
+            const clientData = await clientResponse.json();
+            clientName = clientData.fields['Client Name'] || clientData.fields['Name'] || '';
+            console.log('Fetched client name from Airtable by ID:', clientName);
+          } else {
+            console.warn('Failed to fetch client by ID, falling back to email lookup');
+          }
+        }
+
+        if (!clientRecordId || !clientName) {
           console.log('No airtable_client_id in profile, falling back to email lookup');
           // Fallback: lookup by email in Airtable Clients table
           const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
@@ -161,7 +176,7 @@ Deno.serve(async (req) => {
 
           if (clientRecords.length > 0) {
             clientRecordId = clientRecords[0].id;
-            clientName = clientRecords[0].fields?.Name || '';
+            clientName = clientRecords[0].fields?.['Client Name'] || clientRecords[0].fields?.Name || '';
             console.log('Found client by email lookup:', clientRecordId, clientName);
           }
         }
@@ -269,20 +284,18 @@ function transformAirtableRecords(records: any[]): any[] {
       address: Array.isArray(fields['Address']) ? fields['Address'].join(', ') : (fields['Address'] || null),
       country: fields['Country'] || null,
       industry: fields['Industry'] || null,
+      industry2: fields['Industry 2'] || null,
       employeeCount: fields['Employee Count'] || null,
       companySize: fields['Company Size'] || null,
+      founded: fields['Founded'] || null,
       
-      // Job Info
-      jobTitle: fields['Job Title'] || null,
-      jobDescription: fields['Job Description'] || null,
-      jobUrl: fields['Job URL'] || null,
-      jobType: fields['Job Type'] || null,
-      jobLevel: fields['Job Level'] || null,
+      // Role Info
+      titlesOfRoles: fields['Titles of Roles'] || null,
       
       // Internal Notes (raw rep notes) and Client Notes (AI improved)
       internalNotes: fields['Internal Notes'] || null,
       clientNotes: (() => {
-        const notes = fields['Client Notes'];
+        const notes = fields['NOTES'] ?? fields['Client Notes'];
         if (!notes) return null;
         if (typeof notes === 'string') return notes;
         if (typeof notes === 'object' && notes.value) return String(notes.value);
@@ -304,4 +317,3 @@ function transformAirtableRecords(records: any[]): any[] {
     };
   });
 }
-

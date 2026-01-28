@@ -109,7 +109,7 @@ ${internalNotes}`
       },
       body: JSON.stringify({
         fields: {
-          'Client Notes': improvedNotes
+          'NOTES': improvedNotes
         }
       })
     });

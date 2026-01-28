@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, ExternalLink, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -33,14 +33,12 @@ interface LeadData {
   address: string | null;
   country: string | null;
   industry: string | null;
+  industry2: string | null;
   employeeCount: number | null;
   companySize: string | null;
+  founded: string | null;
 
-  jobTitle: string | null;
-  jobDescription: string | null;
-  jobUrl: string | null;
-  jobType: string | null;
-  jobLevel: string | null;
+  titlesOfRoles: string | null;
 
   internalNotes: string | null;
   clientNotes: string | null;
@@ -407,6 +405,7 @@ const AdminLeadDetail = () => {
 
   // Debug: Log lead data structure
   console.log("Rendering lead:", JSON.stringify(lead, null, 2));
+  const displayIndustry = lead.industry || lead.industry2;
 
   return (
     <AdminLayout userEmail={userEmail}>
@@ -727,12 +726,12 @@ const AdminLeadDetail = () => {
                   <p className="text-base font-medium text-[#222121]">{lead.contactTitle}</p>
                 </div>
               )}
-              {lead.jobTitle && (
+              {lead.titlesOfRoles && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Job Title (Role Hiring)</p>
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Roles Hiring</p>
                   <p className="text-base font-medium flex items-center gap-2 text-[#222121]">
                     <Briefcase className="h-4 w-4 text-[#34B192]" />
-                    {lead.jobTitle}
+                    {lead.titlesOfRoles}
                   </p>
                 </div>
               )}
@@ -782,10 +781,16 @@ const AdminLeadDetail = () => {
               Company Information
             </div>
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              {lead.industry && (
+              {displayIndustry && (
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Industry</p>
-                  <p className="text-base text-[#222121]">{lead.industry}</p>
+                  <p className="text-base text-[#222121]">{displayIndustry}</p>
+                </div>
+              )}
+              {lead.founded && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Founded</p>
+                  <p className="text-base text-[#222121]">{lead.founded}</p>
                 </div>
               )}
               {lead.companySize && (

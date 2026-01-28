@@ -328,8 +328,8 @@ All tables have RLS enabled with these patterns:
 **Key fields in leads:**
 - Company Name, Status, Clients (linked), Rep (linked)
 - Contact Name, Email, Phone, Contact LinkedIn
-- Company Website, Job Title, Job Description
-- Internal Notes, Client Notes
+- Company Website, Titles of Roles, Founded, Industry 2
+- Internal Notes, NOTES
 - Callback 1/2/3, Date Created
 - AI Suggested Status, AI Reasoning, AI Confidence
 

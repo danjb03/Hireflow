@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     // Only fetch fields we need - significantly reduces response size
     const neededFields = [
       'Company Name', 'Status', 'Clients', 'Contact Name', 'Email', 'Phone',
-      'Company Website', 'Job Title', 'Date Created', 'AI Summary'
+      'Company Website', 'Titles of Roles', 'Date Created', 'AI Summary'
     ];
     const fieldsParam = neededFields.map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
 
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
         email: fields['Email'] || '',
         phone: fields['Phone'] ? String(fields['Phone']) : '',
         companyWebsite: fields['Company Website'] || '',
-        jobTitle: fields['Job Title'] || null,
+        titlesOfRoles: fields['Titles of Roles'] || null,
         aiSummary: normalizeAiSummary(fields['AI Summary']),
         dateCreated: fields['Date Created'] || record.createdTime,
       };

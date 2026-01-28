@@ -82,13 +82,11 @@ Fetches leads for the authenticated user.
     address: string | null;
     country: string | null;
     industry: string | null;
+    industry2: string | null;
     employeeCount: string | null;
     companySize: string | null;
-    jobTitle: string | null;
-    jobDescription: string | null;
-    jobUrl: string | null;
-    jobType: string | null;
-    jobLevel: string | null;
+    founded: string | null;
+    titlesOfRoles: string | null;
     status: string;
     assignedClient: string | null;
     aiSummary: string | null;
@@ -209,16 +207,14 @@ linkedInProfile  → 'Contact LinkedIn'
 companyWebsite   → 'Company Website'
 companyLinkedIn  → 'Company LinkedIn'
 industry         → 'Industry'
+industry2        → 'Industry 2'
 companySize      → 'Company Size'
 employeeCount    → 'Employee Count'
+founded          → 'Founded'
 country          → 'Country'
 address          → 'Address'
 companyDescription → 'Company Description'
-jobTitle         → 'Job Title'
-jobDescription   → 'Job Description'
-jobUrl           → 'Job URL'
-jobType          → 'Job Type'
-jobLevel         → 'Job Level'
+titlesOfRoles    → 'Titles of Roles'
 aiSummary        → 'AI Summary'
 feedback         → 'Feedback'
 availability     → 'Availability'

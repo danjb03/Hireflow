@@ -28,8 +28,7 @@ const RepSubmitLead = () => {
     companyLinkedIn: "",
     contactTitle: "",
     contactLinkedIn: "",
-    jobTitle: "",
-    jobDescription: "",
+    titlesOfRoles: "",
     aiSummary: "",
     callback1: "",
     callback2: "",
@@ -93,8 +92,7 @@ const RepSubmitLead = () => {
           companyLinkedIn: formData.companyLinkedIn,
           contactTitle: formData.contactTitle,
           contactLinkedIn: formData.contactLinkedIn,
-          jobTitle: formData.jobTitle,
-          jobDescription: formData.jobDescription,
+          titlesOfRoles: formData.titlesOfRoles,
           aiSummary: formData.aiSummary,
           repId: airtableRepId,
           callback1: formData.callback1,
@@ -120,7 +118,7 @@ const RepSubmitLead = () => {
     setFormData({
       companyName: "", contactName: "", email: "", phone: "",
       companyWebsite: "", companyLinkedIn: "", contactTitle: "",
-      contactLinkedIn: "", jobTitle: "", jobDescription: "", aiSummary: "",
+      contactLinkedIn: "", titlesOfRoles: "", aiSummary: "",
       callback1: "", callback2: "", callback3: "", closeLinkUrl: "",
     });
     setSubmitted(false);
@@ -239,31 +237,26 @@ const RepSubmitLead = () => {
             </CardContent>
           </Card>
 
-          {/* Job Information */}
+          {/* Roles Hiring */}
           <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[#222121]">
                 <Briefcase className="h-5 w-5 text-[#34B192]" />
-                Job Information
+                Roles Hiring
               </CardTitle>
               <CardDescription className="text-[#222121]/60">
-                What role(s) are they hiring for? What did they mention on the call?
+                What role(s) are they hiring for?
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="jobTitle">Job Title / Role They're Hiring For</Label>
-                <Input id="jobTitle" placeholder="e.g. Software Developer, Sales Manager" value={formData.jobTitle} onChange={e => updateField('jobTitle', e.target.value)} className="h-11 rounded-full border-[#222121]/15 bg-white text-sm" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="jobDescription">Role Details</Label>
-                <Textarea
-                  id="jobDescription"
-                  placeholder="Any details about the role they mentioned..."
-                  value={formData.jobDescription}
-                  onChange={e => updateField('jobDescription', e.target.value)}
-                  rows={2}
-                  className="resize-none rounded-2xl border-[#222121]/15 text-sm"
+                <Label htmlFor="titlesOfRoles">Titles of Roles They're Hiring For</Label>
+                <Input
+                  id="titlesOfRoles"
+                  placeholder="e.g. Software Developer, Sales Manager"
+                  value={formData.titlesOfRoles}
+                  onChange={e => updateField('titlesOfRoles', e.target.value)}
+                  className="h-11 rounded-full border-[#222121]/15 bg-white text-sm"
                 />
               </div>
             </CardContent>

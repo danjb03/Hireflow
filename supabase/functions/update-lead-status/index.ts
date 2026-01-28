@@ -12,7 +12,7 @@ async function sendApprovalEmail(
   leadDetails: {
     companyName: string;
     contactName: string | null;
-    jobTitle: string | null;
+    titlesOfRoles: string | null;
     callback1: string | null;
     callback2: string | null;
     callback3: string | null;
@@ -142,12 +142,12 @@ async function sendApprovalEmail(
                       ${leadDetails.contactName}
                     </p>
                     ` : ''}
-                    ${leadDetails.jobTitle ? `
+                    ${leadDetails.titlesOfRoles ? `
                     <p style="margin: 0 0 4px; color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                       Role They're Hiring For
                     </p>
                     <p style="margin: 0; color: #e2e8f0; font-size: 16px;">
-                      ${leadDetails.jobTitle}
+                      ${leadDetails.titlesOfRoles}
                     </p>
                     ` : ''}
                   </td>
@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
                 {
                   companyName: fields['Company Name'] || 'New Lead',
                   contactName: fields['Contact Name'] || null,
-                  jobTitle: fields['Job Title'] || null,
+                  titlesOfRoles: fields['Titles of Roles'] || null,
                   callback1: fields['Callback 1'] || null,
                   callback2: fields['Callback 2'] || null,
                   callback3: fields['Callback 3'] || null,

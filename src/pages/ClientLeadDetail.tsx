@@ -20,7 +20,6 @@ import {
   Users,
   FileText,
   Linkedin,
-  ExternalLink,
   Clock,
   Sparkles
 } from "lucide-react";
@@ -45,14 +44,12 @@ interface LeadDetail {
   address: string | null;
   country: string | null;
   industry: string | null;
+  industry2: string | null;
   employeeCount: number | null;
   companySize: string | null;
+  founded: string | null;
 
-  jobTitle: string | null;
-  jobDescription: string | null;
-  jobUrl: string | null;
-  jobType: string | null;
-  jobLevel: string | null;
+  titlesOfRoles: string | null;
 
   clientNotes: string | null;
   booking: string | null;
@@ -183,6 +180,8 @@ const ClientLeadDetail = () => {
   if (!lead) {
     return null;
   }
+
+  const displayIndustry = lead.industry || lead.industry2;
 
   return (
     <ClientLayout userEmail={user?.email}>
@@ -379,12 +378,12 @@ const ClientLeadDetail = () => {
                   <p className="text-[#222121]">{lead.contactTitle}</p>
                 </div>
               )}
-              {lead.jobTitle && (
+              {lead.titlesOfRoles && (
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#222121]/60">Job Title (Role Hiring)</p>
+                  <p className="text-sm font-medium text-[#222121]/60">Roles Hiring</p>
                   <p className="flex items-center gap-2 text-[#222121]">
                     <Briefcase className="h-4 w-4 text-[#34B192]" />
-                    {lead.jobTitle}
+                    {lead.titlesOfRoles}
                   </p>
                 </div>
               )}
@@ -433,10 +432,16 @@ const ClientLeadDetail = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3">
-                  {lead.industry && (
+                  {displayIndustry && (
                     <div>
                       <p className="text-sm font-medium text-[#222121]/60">Industry</p>
-                      <p className="text-sm text-[#222121]">{lead.industry}</p>
+                      <p className="text-sm text-[#222121]">{displayIndustry}</p>
+                    </div>
+                  )}
+                  {lead.founded && (
+                    <div>
+                      <p className="text-sm font-medium text-[#222121]/60">Founded</p>
+                      <p className="text-sm text-[#222121]">{lead.founded}</p>
                     </div>
                   )}
                   {lead.companySize && (
@@ -499,65 +504,6 @@ const ClientLeadDetail = () => {
 
           {/* Right Column - Interaction Details */}
           <div className="space-y-6">
-            {/* Job Openings */}
-            {(lead.jobTitle || lead.jobDescription || lead.jobUrl || lead.jobType || lead.jobLevel) && (
-              <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg text-[#222121]">
-                    <span className="flex size-9 items-center justify-center rounded-full bg-[#34B192]/10">
-                      <Briefcase className="h-5 w-5 text-[#34B192]" />
-                    </span>
-                    Job Openings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {lead.jobTitle && (
-                    <div>
-                      <p className="text-sm font-medium text-[#222121]/60">Job Title</p>
-                      <p className="text-sm font-medium text-[#222121]">{lead.jobTitle}</p>
-                    </div>
-                  )}
-
-                  {lead.jobType && (
-                    <div>
-                      <p className="text-sm font-medium text-[#222121]/60">Job Type</p>
-                      <p className="text-sm text-[#222121]">{lead.jobType}</p>
-                    </div>
-                  )}
-
-                  {lead.jobLevel && (
-                    <div>
-                      <p className="text-sm font-medium text-[#222121]/60">Job Level</p>
-                      <p className="text-sm text-[#222121]">{lead.jobLevel}</p>
-                    </div>
-                  )}
-
-                  {lead.jobDescription && (
-                    <div>
-                      <p className="mb-2 text-sm font-medium text-[#222121]/60">Job Description</p>
-                      <div className="max-h-40 overflow-y-auto text-sm leading-relaxed text-[#222121] whitespace-pre-wrap">
-                        {lead.jobDescription}
-                      </div>
-                    </div>
-                  )}
-
-                  {lead.jobUrl && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="h-9 gap-2 rounded-full border-[#222121]/20 bg-white text-sm font-semibold text-[#222121] hover:bg-[#F7F7F7]"
-                    >
-                      <a href={lead.jobUrl} target="_blank" rel="noopener noreferrer">
-                        View Job Posting URL
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
             {/* Client Notes (AI Improved) */}
             {lead.clientNotes && (
               <Card className="border border-[#222121]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
