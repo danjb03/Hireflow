@@ -54,13 +54,48 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Resolve linked client table name (in case the table was renamed)
+    let clientTableName = 'Clients';
+    try {
+      const metadataUrl = `https://api.airtable.com/v0/meta/bases/${airtableBaseId}/tables`;
+      const metadataResponse = await fetch(metadataUrl, {
+        headers: { 'Authorization': `Bearer ${airtableToken}` }
+      });
+      if (metadataResponse.ok) {
+        const metadata = await metadataResponse.json();
+        const tables = metadata?.tables || [];
+        const leadsTable = tables.find((table: any) => table.name === 'Qualified Lead Table');
+        const clientsField = (leadsTable?.fields || []).find((field: any) => field.name === 'Clients' && field.type === 'linkedRecord');
+        if (clientsField?.options?.linkedTableId) {
+          const linkedTable = tables.find((table: any) => table.id === clientsField.options.linkedTableId);
+          if (linkedTable?.name) {
+            clientTableName = linkedTable.name;
+          }
+        }
+      }
+    } catch {
+      // Fallback to default table name
+    }
+
     // Only fetch fields we need (retry without fields if Airtable schema changed)
-    const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
-    const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients`;
+    const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
+    const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(clientTableName)}`;
 
     let allClients: any[] = [];
     let offset: string | undefined;
     let useFields = true;
+
+    const pickName = (fields: Record<string, any>): string => {
+      return (
+        fields['Client Name'] ||
+        fields['Name'] ||
+        fields['Company Name'] ||
+        fields['Company'] ||
+        fields['Client'] ||
+        fields[Object.keys(fields)[0]] ||
+        'Unnamed Client'
+      );
+    };
 
     const fetchClientsPage = async () => {
       const clientsUrl = useFields ? `${baseClientsUrl}?${fieldsParam}` : baseClientsUrl;
@@ -89,7 +124,7 @@ Deno.serve(async (req) => {
 
       const pageClients = (data.records || []).map((record: any) => ({
         id: record.id,
-        name: record.fields['Client Name'] || record.fields['Name'] || 'Unnamed Client',
+        name: pickName(record.fields || {}),
         email: record.fields['Email'] || null,
         status: record.fields['Status'] || 'Active',
         phone: record.fields['Phone'] || null,
