@@ -54,20 +54,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Only fetch fields we need
+    // Only fetch fields we need (retry without fields if Airtable schema changed)
     const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
-    const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?${fieldsParam}`;
+    const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients`;
 
     let allClients: any[] = [];
     let offset: string | undefined;
+    let useFields = true;
 
-    do {
+    const fetchClientsPage = async () => {
+      const clientsUrl = useFields ? `${baseClientsUrl}?${fieldsParam}` : baseClientsUrl;
       const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${airtableToken}` }
       });
+      return response;
+    };
+
+    do {
+      const response = await fetchClientsPage();
 
       if (!response.ok) {
+        if (response.status === 422 && useFields) {
+          console.warn('Airtable 422 with fields param, retrying without fields filter');
+          useFields = false;
+          offset = undefined;
+          allClients = [];
+          continue;
+        }
         throw new Error(`Failed to fetch clients: ${response.status}`);
       }
 

@@ -98,12 +98,25 @@ Deno.serve(async (req) => {
     const now = Date.now();
     const needsClientCache = !clientNameCache || (now - clientCacheTime) > CACHE_TTL;
 
-    const [leadsData, clientMap] = await Promise.all([
-      fetchAllLeads(baseUrl, airtableToken),
-      needsClientCache
-        ? fetchClientNames(airtableBaseId, airtableToken)
-        : Promise.resolve(clientNameCache!)
-    ]);
+    let leadsData: any[] = [];
+    try {
+      leadsData = await fetchAllLeads(baseUrl, airtableToken);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('422')) {
+        console.warn('Airtable 422 with fields param, retrying without fields filter');
+        const baseUrlNoFields = filterFormula
+          ? `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?filterByFormula=${encodeURIComponent(filterFormula)}&sort%5B0%5D%5Bfield%5D=Date%20Created&sort%5B0%5D%5Bdirection%5D=desc`
+          : `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?sort%5B0%5D%5Bfield%5D=Date%20Created&sort%5B0%5D%5Bdirection%5D=desc`;
+        leadsData = await fetchAllLeads(baseUrlNoFields, airtableToken);
+      } else {
+        throw error;
+      }
+    }
+
+    const clientMap = needsClientCache
+      ? await fetchClientNames(airtableBaseId, airtableToken)
+      : clientNameCache!;
 
     // Update cache
     if (needsClientCache) {
