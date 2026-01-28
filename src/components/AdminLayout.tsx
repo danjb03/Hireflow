@@ -9,6 +9,7 @@ import {
   Mail,
   ListPlus,
   Building2,
+  Store,
 } from "lucide-react";
 import hireflowLogo from "@/assets/hireflow-light.svg";
 import { NavMain } from "@/components/admin/NavMain";
@@ -37,6 +38,7 @@ const AdminLayout = ({ children, userEmail }: AdminLayoutProps) => {
     { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "All Leads", url: "/admin/leads", icon: FileText },
     { title: "Clients", url: "/admin/clients", icon: Building2 },
+    { title: "Marketplace", url: "/admin/marketplace", icon: Store },
     { title: "Users", url: "/admin/users", icon: Users },
     { title: "P&L", url: "/admin/pnl", icon: PoundSterling },
     { title: "Reporting", url: "/admin/reporting", icon: ClipboardList },

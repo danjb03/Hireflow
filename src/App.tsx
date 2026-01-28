@@ -43,6 +43,8 @@ const AdminInviteRep = lazyRetry(() => import("./pages/AdminInviteRep"), "AdminI
 const AdminEmailSettings = lazyRetry(() => import("./pages/AdminEmailSettings"), "AdminEmailSettings");
 const AdminListBuilder = lazyRetry(() => import("./pages/AdminListBuilder"), "AdminListBuilder");
 const AdminUsers = lazyRetry(() => import("./pages/AdminUsers"), "AdminUsers");
+const AdminMarketplace = lazyRetry(() => import("./pages/AdminMarketplace"), "AdminMarketplace");
+const Marketplace = lazyRetry(() => import("./pages/Marketplace"), "Marketplace");
 
 const App = () => (
   <TooltipProvider>
@@ -84,6 +86,7 @@ const App = () => (
           <Route path="/admin/email-settings" element={<AdminEmailSettings />} />
           <Route path="/admin/list-builder" element={<AdminListBuilder />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/marketplace" element={<AdminMarketplace />} />
           {/* Rep portal routes */}
           <Route path="/rep/dashboard" element={<RepDashboard />} />
           <Route path="/rep/leads" element={<RepLeads />} />
@@ -93,6 +96,7 @@ const App = () => (
           <Route path="/rep/settings" element={<RepSettings />} />
           {/* Public routes */}
           <Route path="/rep-report" element={<RepReport />} />
+          <Route path="/marketplace" element={<Marketplace />} />
           {/* Authenticated routes */}
           <Route path="/submit-lead" element={<SubmitLead />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
