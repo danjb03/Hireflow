@@ -92,22 +92,39 @@ Deno.serve(async (req) => {
       // fallback to default
     }
 
-    const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
+    const fields = [
+      'Client Name',
+      'Name',
+      'Company Name',
+      'Company',
+      'Email',
+      'Status',
+      'Phone',
+      'Contact Person',
+      'Leads Purchased',
+      'Campaign Start Date',
+      'Target End Date'
+    ];
+
+    const fieldsParam = fields
+      .map((field) => `fields[]=${encodeURIComponent(field)}`)
+      .join('&');
+
     const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(clientTableName)}`;
 
     let allClients = [];
     let offset = undefined;
     let useFields = true;
 
-    const pickName = (fields) => {
-      if (!fields || typeof fields !== 'object') return 'Unnamed Client';
+    const pickName = (fieldsObj) => {
+      if (!fieldsObj || typeof fieldsObj !== 'object') return 'Unnamed Client';
       return (
-        fields['Client Name'] ||
-        fields['Name'] ||
-        fields['Company Name'] ||
-        fields['Company'] ||
-        fields['Client'] ||
-        fields[Object.keys(fields)[0]] ||
+        fieldsObj['Client Name'] ||
+        fieldsObj['Name'] ||
+        fieldsObj['Company Name'] ||
+        fieldsObj['Company'] ||
+        fieldsObj['Client'] ||
+        fieldsObj[Object.keys(fieldsObj)[0]] ||
         'Unnamed Client'
       );
     };
@@ -134,17 +151,17 @@ Deno.serve(async (req) => {
       const data = await response.json();
       const records = data && data.records ? data.records : [];
       for (const record of records) {
-        const fields = record.fields || {};
+        const fieldsObj = record.fields || {};
         allClients.push({
           id: record.id,
-          name: pickName(fields),
-          email: fields['Email'] || null,
-          status: fields['Status'] || 'Active',
-          phone: fields['Phone'] || null,
-          contactPerson: fields['Contact Person'] || null,
-          leadsPurchased: fields['Leads Purchased'] || 0,
-          campaignStartDate: fields['Campaign Start Date'] || null,
-          targetEndDate: fields['Target End Date'] || null,
+          name: pickName(fieldsObj),
+          email: fieldsObj['Email'] || null,
+          status: fieldsObj['Status'] || 'Active',
+          phone: fieldsObj['Phone'] || null,
+          contactPerson: fieldsObj['Contact Person'] || null,
+          leadsPurchased: fieldsObj['Leads Purchased'] || 0,
+          campaignStartDate: fieldsObj['Campaign Start Date'] || null,
+          targetEndDate: fieldsObj['Target End Date'] || null,
           leadsDelivered: 0,
           leadsRemaining: 0,
           leadStats: null,
@@ -157,7 +174,10 @@ Deno.serve(async (req) => {
     }
 
     if (includeStats) {
-      const leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Date%20Created`;
+      const leadsFields = ['Clients', 'Status', 'Date Created']
+        .map((field) => `fields[]=${encodeURIComponent(field)}`)
+        .join('&');
+      const leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?${leadsFields}`;
       let allLeads = [];
       let leadsOffset = undefined;
       let keepFetchingLeads = true;
@@ -177,10 +197,10 @@ Deno.serve(async (req) => {
 
       const clientLeadStats = {};
       for (const lead of allLeads) {
-        const fields = lead.fields || {};
-        const clientIds = fields['Clients'] || [];
-        const status = (fields['Status'] || 'New').toLowerCase().trim();
-        const dateCreated = fields['Date Created'] || null;
+        const fieldsObj = lead.fields || {};
+        const clientIds = fieldsObj['Clients'] || [];
+        const status = (fieldsObj['Status'] || 'New').toLowerCase().trim();
+        const dateCreated = fieldsObj['Date Created'] || null;
         const ids = Array.isArray(clientIds) ? clientIds : [clientIds];
 
         for (const clientId of ids) {

@@ -213,8 +213,10 @@ const AdminClients = () => {
         body: { includeStats: true }
       });
 
-      if (error) {
-        console.error("Error loading Airtable clients with stats:", error);
+      if (error || data?.error) {
+        const message = error?.message || data?.error || "Failed to load Airtable clients with stats";
+        console.error("Error loading Airtable clients with stats:", error || data?.error);
+        toast.error(message);
         return;
       }
 
@@ -234,14 +236,17 @@ const AdminClients = () => {
       // Load clients from Airtable (source of truth)
       const { data, error } = await supabase.functions.invoke("get-airtable-clients");
 
-      if (error) {
-        console.warn("Airtable function error:", error);
+      if (error || data?.error) {
+        const message = error?.message || data?.error || "Failed to load Airtable clients";
+        console.warn("Airtable function error:", error || data?.error);
+        toast.error(message);
         setAirtableClients([]);
         return;
       }
 
       if (!data || !data.clients) {
         console.warn("No clients data returned from Airtable");
+        toast.error("No clients data returned from Airtable");
         setAirtableClients([]);
         return;
       }
@@ -249,6 +254,7 @@ const AdminClients = () => {
       setAirtableClients(data.clients || []);
     } catch (error: any) {
       console.warn("Failed to load clients from Airtable:", error);
+      toast.error(error?.message || "Failed to load clients from Airtable");
       setAirtableClients([]);
     } finally {
       setLoadingOptions(false);

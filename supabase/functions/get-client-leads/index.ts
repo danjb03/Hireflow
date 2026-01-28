@@ -34,6 +34,9 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    const airtableClientsTable = Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients';
+    const airtableLeadsTable = Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table';
+    const airtableClientLinkField = Deno.env.get('AIRTABLE_CLIENT_LINK_FIELD') || 'Clients';
 
     if (!airtableToken || !airtableBaseId) {
       throw new Error('Airtable configuration missing');
@@ -60,7 +63,7 @@ Deno.serve(async (req) => {
       // Admin: Fetch all leads from Airtable
       console.log('Admin fetching all leads');
 
-      const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table`;
+      const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}`;
 
       const response = await fetch(airtableUrl, {
         headers: {
@@ -103,7 +106,7 @@ Deno.serve(async (req) => {
         console.log('Found rep:', repName, 'with ID:', repRecordId);
 
         const filterFormula = `FIND('${repRecordId}', ARRAYJOIN({Rep}))`;
-        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
+        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
         const response = await fetch(airtableUrl, {
           headers: {
@@ -140,7 +143,7 @@ Deno.serve(async (req) => {
           // Use the stored Airtable client ID from profile, but fetch the latest name from Airtable
           clientRecordId = profile.airtable_client_id;
           console.log('Using stored airtable_client_id from profile:', clientRecordId);
-          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${clientRecordId}`;
+          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableClientsTable)}/${clientRecordId}`;
           const clientResponse = await fetch(clientUrl, {
             headers: {
               'Authorization': `Bearer ${airtableToken}`,
@@ -159,7 +162,7 @@ Deno.serve(async (req) => {
         if (!clientRecordId || !clientName) {
           console.log('No airtable_client_id in profile, falling back to email lookup');
           // Fallback: lookup by email in Airtable Clients table
-          const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
+          const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableClientsTable)}?filterByFormula=${encodeURIComponent(`{Email} = '${user.email}'`)}`;
           const clientsResponse = await fetch(clientsUrl, {
             headers: {
               'Authorization': `Bearer ${airtableToken}`,
@@ -191,7 +194,7 @@ Deno.serve(async (req) => {
 
         // If we don't have client name yet, fetch it from Airtable
         if (!clientName && clientRecordId) {
-          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${clientRecordId}`;
+          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableClientsTable)}/${clientRecordId}`;
           const clientResponse = await fetch(clientUrl, {
             headers: {
               'Authorization': `Bearer ${airtableToken}`,
@@ -218,8 +221,8 @@ Deno.serve(async (req) => {
         // SECURITY: Clients only see leads assigned to them AND with Status = "Approved"
         // Note: ARRAYJOIN on linked fields returns names, not record IDs, so we search by name
         const escapedClientName = clientName.replace(/'/g, "\\'");
-        const filterFormula = `AND(FIND('${escapedClientName}', ARRAYJOIN({Clients})), LOWER({Status}) = 'approved')`;
-        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
+        const filterFormula = `AND(FIND('${escapedClientName}', ARRAYJOIN({${airtableClientLinkField}})), LOWER({Status}) = 'approved')`;
+        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
         console.log('Client name being searched:', clientName);
         console.log('Filter formula:', filterFormula);
@@ -251,7 +254,14 @@ Deno.serve(async (req) => {
     console.error('Error in get-client-leads:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({
+        error: errorMessage,
+        context: {
+          clientsTable: Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients',
+          leadsTable: Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table',
+          clientLinkField: Deno.env.get('AIRTABLE_CLIENT_LINK_FIELD') || 'Clients',
+        }
+      }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

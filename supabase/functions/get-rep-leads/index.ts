@@ -66,6 +66,8 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    const airtableClientsTable = Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients';
+    const airtableLeadsTable = Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table';
 
     if (!airtableToken || !airtableBaseId) {
       throw new Error('Airtable configuration missing');
@@ -75,7 +77,7 @@ Deno.serve(async (req) => {
     // Escape single quotes in rep name for Airtable formula
     const escapedRepName = repName.replace(/'/g, "\\'").trim();
     const filterFormula = `AND(FIND('${escapedRepName}', ARRAYJOIN({Rep})) > 0, {Status} != 'Not Qualified')`;
-    const tableName = 'Qualified Lead Table';
+    const tableName = airtableLeadsTable;
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Date%20Created&sort[0][direction]=desc`;
 
     console.log('Filter formula:', filterFormula);
@@ -119,7 +121,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < clientIdsArray.length; i += 10) {
         const batch = clientIdsArray.slice(i, i + 10);
         const recordFilter = batch.map(id => `RECORD_ID() = '${id}'`).join(',');
-        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=OR(${recordFilter})`;
+        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableClientsTable)}?filterByFormula=OR(${recordFilter})`;
 
         try {
           const clientsResponse = await fetch(clientsUrl, {
@@ -218,7 +220,13 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        context: {
+          clientsTable: Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients',
+          leadsTable: Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table',
+        }
+      }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

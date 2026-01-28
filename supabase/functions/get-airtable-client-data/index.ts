@@ -43,10 +43,11 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    const airtableClientsTable = Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients';
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
     // Fetch client record from Airtable Clients table
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${airtableClientId}`;
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableClientsTable)}/${airtableClientId}`;
     const response = await fetch(airtableUrl, {
       headers: {
         'Authorization': `Bearer ${airtableToken}`,
@@ -74,9 +75,13 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        context: {
+          clientsTable: Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients',
+        }
+      }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-

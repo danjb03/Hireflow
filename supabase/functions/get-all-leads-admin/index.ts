@@ -48,6 +48,9 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    const airtableClientsTable = Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients';
+    const airtableLeadsTable = Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table';
+    const airtableClientLinkField = Deno.env.get('AIRTABLE_CLIENT_LINK_FIELD') || 'Clients';
 
     if (!airtableToken || !airtableBaseId) {
       throw new Error('Airtable configuration missing');
@@ -67,9 +70,9 @@ Deno.serve(async (req) => {
 
     if (clientFilter) {
       if (clientFilter === 'unassigned') {
-        filterParts.push(`OR({Clients} = '', {Clients} = BLANK())`);
+        filterParts.push(`OR({${airtableClientLinkField}} = '', {${airtableClientLinkField}} = BLANK())`);
       } else {
-        filterParts.push(`{Clients} = '${clientFilter.replace(/'/g, "\\'")}'`);
+        filterParts.push(`{${airtableClientLinkField}} = '${clientFilter.replace(/'/g, "\\'")}'`);
       }
     }
 
@@ -81,12 +84,12 @@ Deno.serve(async (req) => {
 
     // Only fetch fields we need - significantly reduces response size
     const neededFields = [
-      'Company Name', 'Status', 'Clients', 'Contact Name', 'Email', 'Phone',
+      'Company Name', 'Status', airtableClientLinkField, 'Contact Name', 'Email', 'Phone',
       'Company Website', 'Titles of Roles', 'Date Created', 'AI Summary'
     ];
     const fieldsParam = neededFields.map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
 
-    const tableName = 'Qualified Lead Table';
+    const tableName = airtableLeadsTable;
     let baseUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?${fieldsParam}`;
     if (filterFormula) {
       baseUrl += `&filterByFormula=${encodeURIComponent(filterFormula)}`;
@@ -115,11 +118,11 @@ Deno.serve(async (req) => {
     }
 
     const clientTableName = needsClientCache
-      ? await resolveLinkedClientTableName(airtableBaseId, airtableToken)
+      ? await resolveLinkedClientTableName(airtableBaseId, airtableToken, airtableLeadsTable, airtableClientLinkField)
       : null;
 
     const clientMap = needsClientCache
-      ? await fetchClientNames(airtableBaseId, airtableToken, clientTableName || 'Clients')
+      ? await fetchClientNames(airtableBaseId, airtableToken, clientTableName || airtableClientsTable)
       : clientNameCache!;
 
     // Update cache
@@ -134,7 +137,7 @@ Deno.serve(async (req) => {
 
       // Resolve client name
       let assignedClient = 'Unassigned';
-      const clientField = fields['Clients'];
+      const clientField = fields[airtableClientLinkField];
 
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {
@@ -173,7 +176,14 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        context: {
+          clientsTable: Deno.env.get('AIRTABLE_CLIENTS_TABLE') || 'Clients',
+          leadsTable: Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table',
+          clientLinkField: Deno.env.get('AIRTABLE_CLIENT_LINK_FIELD') || 'Clients',
+        }
+      }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -214,7 +224,12 @@ async function fetchAllLeads(baseUrl: string, token: string): Promise<any[]> {
 }
 
 // Fetch all client names at once
-async function resolveLinkedClientTableName(baseId: string, token: string): Promise<string | null> {
+async function resolveLinkedClientTableName(
+  baseId: string,
+  token: string,
+  leadsTableName: string,
+  clientLinkField: string
+): Promise<string | null> {
   try {
     const metadataUrl = `https://api.airtable.com/v0/meta/bases/${baseId}/tables`;
     const response = await fetch(metadataUrl, {
@@ -224,10 +239,10 @@ async function resolveLinkedClientTableName(baseId: string, token: string): Prom
 
     const data = await response.json();
     const tables = data?.tables || [];
-    const leadsTable = tables.find((table: any) => table.name === 'Qualified Lead Table');
+    const leadsTable = tables.find((table: any) => table.name === leadsTableName);
     if (!leadsTable) return null;
 
-    const clientsField = (leadsTable.fields || []).find((field: any) => field.name === 'Clients' && field.type === 'linkedRecord');
+    const clientsField = (leadsTable.fields || []).find((field: any) => field.name === clientLinkField && field.type === 'linkedRecord');
     if (!clientsField?.options?.linkedTableId) return null;
 
     const linkedTable = tables.find((table: any) => table.id === clientsField.options.linkedTableId);

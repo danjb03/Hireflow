@@ -111,8 +111,14 @@ const AdminAllLeads = () => {
         }
 
         // Handle Airtable clients response
-        if (clientsResponse.error) {
-          console.error('Error fetching Airtable clients:', clientsResponse.error);
+        if (clientsResponse.error || clientsResponse.data?.error) {
+          const message = clientsResponse.error?.message || clientsResponse.data?.error || "Failed to load Airtable clients";
+          console.error('Error fetching Airtable clients:', clientsResponse.error || clientsResponse.data?.error);
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive",
+          });
           setClients([]);
         } else if (clientsResponse.data?.clients && Array.isArray(clientsResponse.data.clients)) {
           setClients(clientsResponse.data.clients);
