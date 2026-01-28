@@ -230,7 +230,8 @@ async function fetchClientNames(baseId: string, token: string): Promise<Map<stri
     );
   };
 
-  do {
+  let keepFetching = true;
+  while (keepFetching) {
     const clientsUrl = useFields ? `${baseClientsUrl}?${fieldsParam}` : baseClientsUrl;
     const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
     const response = await fetch(url, {
@@ -256,7 +257,8 @@ async function fetchClientNames(baseId: string, token: string): Promise<Map<stri
       }
     }
     offset = data.offset;
-  } while (offset);
+    keepFetching = Boolean(offset);
+  }
 
   return clientMap;
 }
