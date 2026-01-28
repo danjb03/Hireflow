@@ -114,8 +114,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    const clientTableName = needsClientCache
+      ? await resolveLinkedClientTableName(airtableBaseId, airtableToken)
+      : null;
+
     const clientMap = needsClientCache
-      ? await fetchClientNames(airtableBaseId, airtableToken)
+      ? await fetchClientNames(airtableBaseId, airtableToken, clientTableName || 'Clients')
       : clientNameCache!;
 
     // Update cache
@@ -210,9 +214,32 @@ async function fetchAllLeads(baseUrl: string, token: string): Promise<any[]> {
 }
 
 // Fetch all client names at once
-async function fetchClientNames(baseId: string, token: string): Promise<Map<string, string>> {
+async function resolveLinkedClientTableName(baseId: string, token: string): Promise<string | null> {
+  try {
+    const metadataUrl = `https://api.airtable.com/v0/meta/bases/${baseId}/tables`;
+    const response = await fetch(metadataUrl, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const tables = data?.tables || [];
+    const leadsTable = tables.find((table: any) => table.name === 'Qualified Lead Table');
+    if (!leadsTable) return null;
+
+    const clientsField = (leadsTable.fields || []).find((field: any) => field.name === 'Clients' && field.type === 'linkedRecord');
+    if (!clientsField?.options?.linkedTableId) return null;
+
+    const linkedTable = tables.find((table: any) => table.id === clientsField.options.linkedTableId);
+    return linkedTable?.name || null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchClientNames(baseId: string, token: string, tableName: string): Promise<Map<string, string>> {
   const clientMap = new Map<string, string>();
-  const baseClientsUrl = `https://api.airtable.com/v0/${baseId}/Clients`;
+  const baseClientsUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`;
   const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company';
 
   let offset: string | undefined;
