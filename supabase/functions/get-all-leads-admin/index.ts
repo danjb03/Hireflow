@@ -5,6 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Cache client names for 5 minutes
+let clientNameCache: Map<string, string> | null = null;
+let clientCacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -23,7 +28,7 @@ Deno.serve(async (req) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
+
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
@@ -48,20 +53,18 @@ Deno.serve(async (req) => {
       throw new Error('Airtable configuration missing');
     }
 
+    // Build filter formula
     let filterParts: string[] = [];
-    
-    // Exclude "Not Qualified" leads by default unless specifically filtering for them
+
     if (statusFilter === 'Not Qualified') {
       filterParts.push(`{Status} = 'Not Qualified'`);
     } else {
-      // Exclude "Not Qualified" from all other views
       filterParts.push(`{Status} != 'Not Qualified'`);
-      
       if (statusFilter) {
         filterParts.push(`{Status} = '${statusFilter.replace(/'/g, "\\'")}'`);
       }
     }
-    
+
     if (clientFilter) {
       if (clientFilter === 'unassigned') {
         filterParts.push(`OR({Clients} = '', {Clients} = BLANK())`);
@@ -69,237 +72,78 @@ Deno.serve(async (req) => {
         filterParts.push(`{Clients} = '${clientFilter.replace(/'/g, "\\'")}'`);
       }
     }
-    
+
     if (searchTerm) {
       filterParts.push(`SEARCH(LOWER('${searchTerm.replace(/'/g, "\\'")}'), LOWER({Company Name})) > 0`);
     }
 
     const filterFormula = filterParts.length > 0 ? `AND(${filterParts.join(', ')})` : '';
+
+    // Only fetch fields we need - significantly reduces response size
+    const neededFields = [
+      'Company Name', 'Status', 'Clients', 'Contact Name', 'Email', 'Phone',
+      'Company Website', 'Job Title', 'Date Created', 'AI Summary'
+    ];
+    const fieldsParam = neededFields.map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
+
     const tableName = 'Qualified Lead Table';
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}${
-      filterFormula ? `?filterByFormula=${encodeURIComponent(filterFormula)}` : ''
-    }`;
+    let baseUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(tableName)}?${fieldsParam}`;
+    if (filterFormula) {
+      baseUrl += `&filterByFormula=${encodeURIComponent(filterFormula)}`;
+    }
+    // Sort by created time descending for most recent first
+    baseUrl += `&sort%5B0%5D%5Bfield%5D=Date%20Created&sort%5B0%5D%5Bdirection%5D=desc`;
 
-    console.log('Fetching all leads from Airtable');
-    console.log('Base ID:', airtableBaseId);
-    console.log('URL:', airtableUrl);
+    // Fetch client names in parallel with first batch of leads (or use cache)
+    const now = Date.now();
+    const needsClientCache = !clientNameCache || (now - clientCacheTime) > CACHE_TTL;
 
-    const response = await fetch(airtableUrl, {
-      headers: {
-        'Authorization': `Bearer ${airtableToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    const [leadsData, clientMap] = await Promise.all([
+      fetchAllLeads(baseUrl, airtableToken),
+      needsClientCache
+        ? fetchClientNames(airtableBaseId, airtableToken)
+        : Promise.resolve(clientNameCache!)
+    ]);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Airtable API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorBody,
-        baseId: airtableBaseId,
-        tableName: tableName
-      });
-      throw new Error(`Airtable API error: ${response.status} - ${errorBody}`);
+    // Update cache
+    if (needsClientCache) {
+      clientNameCache = clientMap;
+      clientCacheTime = now;
     }
 
-    const data = await response.json();
-    
-    // Collect all unique client identifiers (record IDs or names) to fetch client names
-    const clientRecordIds = new Set<string>();
-    const clientNames = new Set<string>();
-    data.records.forEach((record: any) => {
-      const clientField = record.fields['Clients'];
-      if (clientField) {
-        if (Array.isArray(clientField) && clientField.length > 0) {
-          // Linked record field - extract record IDs
-          clientField.forEach((id: string) => {
-            if (typeof id === 'string' && id.startsWith('rec')) {
-              clientRecordIds.add(id);
-            } else if (typeof id === 'string') {
-              clientNames.add(id);
-            }
-          });
-        } else if (typeof clientField === 'string') {
-          if (clientField.startsWith('rec')) {
-            // Single record ID
-            clientRecordIds.add(clientField);
-          } else {
-            // It's already a name
-            clientNames.add(clientField);
-          }
-        }
-      }
-    });
-
-    // Fetch client names from Clients table for record IDs
-    const clientNameMap = new Map<string, string>();
-    
-    // First, add any client names we already have
-    clientNames.forEach(name => clientNameMap.set(name, name));
-    
-    console.log(`Found ${clientRecordIds.size} client record IDs and ${clientNames.size} client names to resolve`);
-    
-    // Then fetch names for record IDs
-    if (clientRecordIds.size > 0) {
-      const clientIdsArray = Array.from(clientRecordIds);
-      // Fetch in batches of 10 (Airtable limit)
-      for (let i = 0; i < clientIdsArray.length; i += 10) {
-        const batch = clientIdsArray.slice(i, i + 10);
-        const recordFilter = batch.map(id => `RECORD_ID() = '${id}'`).join(',');
-        const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?filterByFormula=OR(${recordFilter})`;
-        
-        try {
-          const clientsResponse = await fetch(clientsUrl, {
-            headers: {
-              'Authorization': `Bearer ${airtableToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          
-          if (clientsResponse.ok) {
-            const clientsData = await clientsResponse.json();
-            clientsData.records.forEach((clientRecord: any) => {
-              const clientName = clientRecord.fields['Client Name'] || clientRecord.fields['Name'] || '';
-              if (clientName) {
-                clientNameMap.set(clientRecord.id, clientName);
-                console.log(`Mapped client record ${clientRecord.id} to name: ${clientName}`);
-              } else {
-                console.warn(`Client record ${clientRecord.id} has no name field`);
-              }
-            });
-          } else {
-            console.error('Failed to fetch clients:', clientsResponse.status, await clientsResponse.text());
-          }
-        } catch (error) {
-          console.error('Error fetching client names:', error);
-        }
-      }
-    }
-    
-    // Also try to get client names from Supabase profiles as fallback
-    // This helps if Airtable lookup fails or if client_name was set directly
-    try {
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      
-      const { data: profiles } = await supabaseAdmin
-        .from('profiles')
-        .select('client_name, airtable_client_id')
-        .not('client_name', 'is', null)
-        .neq('client_name', '');
-      
-      if (profiles) {
-        profiles.forEach((profile: any) => {
-          if (profile.client_name) {
-            // Map by airtable_client_id if available
-            if (profile.airtable_client_id) {
-              clientNameMap.set(profile.airtable_client_id, profile.client_name);
-            }
-            // Also create reverse lookup: if the Client field contains the client_name, use it
-            // This handles cases where Client field is set to the name string
-            clientNameMap.set(profile.client_name, profile.client_name);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching client names from Supabase (non-critical):', error);
-      // Don't throw - this is just a fallback
-    }
-
-    const leads = data.records.map((record: any) => {
+    // Transform leads with client names
+    const leads = leadsData.map((record: any) => {
       const fields = record.fields;
-      
-      // Resolve client name from Client field
-      let assignedClient: string = 'Unassigned';
-      let assignedClientId: string | null = null;
+
+      // Resolve client name
+      let assignedClient = 'Unassigned';
       const clientField = fields['Clients'];
-      
+
       if (clientField) {
         if (Array.isArray(clientField) && clientField.length > 0) {
-          // Linked record - get name from first record ID
           const clientId = clientField[0];
-          assignedClientId = clientId;
-          // Try to get name from map
-          assignedClient = clientNameMap.get(clientId) || 'Unassigned';
-          
-          // If not found, it's a record ID we couldn't resolve
-          if (!assignedClient) {
-            if (clientId.startsWith('rec')) {
-              console.warn(`Client name not found for record ID: ${clientId}`);
-              assignedClient = 'Unknown Client';
-            } else {
-              assignedClient = 'Unassigned';
-            }
-          }
+          assignedClient = clientMap.get(clientId) || 'Unknown Client';
         } else if (typeof clientField === 'string') {
           if (clientField.startsWith('rec')) {
-            // It's a record ID, look it up
-            assignedClientId = clientField;
-            assignedClient = clientNameMap.get(clientField) || 'Unassigned';
-            
-            // If not found, show "Unknown Client" instead of the ID
-            if (!assignedClient) {
-              console.warn(`Client name not found for record ID: ${clientField}`);
-              assignedClient = 'Unknown Client';
-            }
+            assignedClient = clientMap.get(clientField) || 'Unknown Client';
           } else {
-            // It's already a name
             assignedClient = clientField;
           }
         }
       }
-      
-      // Final safety check: never show a record ID
-      if (assignedClient && assignedClient.startsWith('rec')) {
-        console.warn(`Client field contains record ID instead of name: ${assignedClient}, showing 'Unknown Client'`);
-        assignedClient = 'Unknown Client';
-      }
-      
+
       return {
         id: record.id,
         companyName: fields['Company Name'] || '',
         status: fields['Status'] || 'New',
-        assignedClient: assignedClient,
-        assignedClientId: Array.isArray(clientField) ? clientField[0] : (typeof clientField === 'string' && clientField.startsWith('rec') ? clientField : null),
-        
-        // Contact Info
+        assignedClient,
+        assignedClientId: Array.isArray(clientField) ? clientField[0] : null,
         contactName: fields['Contact Name'] || null,
-        contactTitle: fields['Contact Title'] || null,
         email: fields['Email'] || '',
         phone: fields['Phone'] ? String(fields['Phone']) : '',
-        contactLinkedIn: fields['Contact LinkedIn'] || null,
-        
-        // Company Info
         companyWebsite: fields['Company Website'] || '',
-        companyLinkedIn: fields['Company LinkedIn'] || null,
-        companyDescription: fields['Company Description'] || null,
-        address: Array.isArray(fields['Address']) ? fields['Address'].join(', ') : (fields['Address'] || null),
-        country: fields['Country'] || null,
-        industry: fields['Industry'] || null,
-        employeeCount: fields['Employee Count'] || null,
-        companySize: fields['Company Size'] || null,
-        
-        // Job Info
         jobTitle: fields['Job Title'] || null,
-        jobDescription: fields['Job Description'] || null,
-        jobUrl: fields['Job URL'] || null,
-        jobType: fields['Job Type'] || null,
-        jobLevel: fields['Job Level'] || null,
-        
-        // AI & Dates - normalize aiSummary which may be an object {state, value, isStale} or a string
-        aiSummary: (() => {
-          const summary = fields['AI Summary'];
-          if (!summary) return null;
-          if (typeof summary === 'string') return summary;
-          if (typeof summary === 'object' && summary.value) return String(summary.value);
-          return null;
-        })(),
-        availability: fields['Availability'] || null,
-        lastContactDate: fields['Last Contact Date'] || null,
-        nextAction: fields['Next Action'] || null,
+        aiSummary: normalizeAiSummary(fields['AI Summary']),
         dateCreated: fields['Date Created'] || record.createdTime,
       };
     });
@@ -317,3 +161,72 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// Fetch all leads with pagination (parallel batches)
+async function fetchAllLeads(baseUrl: string, token: string): Promise<any[]> {
+  const allRecords: any[] = [];
+  let offset: string | undefined;
+
+  // Fetch first page
+  const firstResponse = await fetch(baseUrl, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (!firstResponse.ok) {
+    throw new Error(`Airtable API error: ${firstResponse.status}`);
+  }
+
+  const firstData = await firstResponse.json();
+  allRecords.push(...(firstData.records || []));
+  offset = firstData.offset;
+
+  // Fetch remaining pages
+  while (offset) {
+    const response = await fetch(`${baseUrl}&offset=${offset}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) break;
+
+    const data = await response.json();
+    allRecords.push(...(data.records || []));
+    offset = data.offset;
+  }
+
+  return allRecords;
+}
+
+// Fetch all client names at once
+async function fetchClientNames(baseId: string, token: string): Promise<Map<string, string>> {
+  const clientMap = new Map<string, string>();
+  const clientsUrl = `https://api.airtable.com/v0/${baseId}/Clients?fields%5B%5D=Client%20Name&fields%5B%5D=Name`;
+
+  let offset: string | undefined;
+
+  do {
+    const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) break;
+
+    const data = await response.json();
+    for (const record of data.records || []) {
+      const name = record.fields['Client Name'] || record.fields['Name'] || '';
+      if (name) {
+        clientMap.set(record.id, name);
+      }
+    }
+    offset = data.offset;
+  } while (offset);
+
+  return clientMap;
+}
+
+function normalizeAiSummary(summary: any): string | null {
+  if (!summary) return null;
+  if (typeof summary === 'string') return summary;
+  if (typeof summary === 'object' && summary.value) return String(summary.value);
+  return null;
+}

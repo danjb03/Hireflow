@@ -5,6 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Cache clients for 2 minutes
+let clientsCache: any[] | null = null;
+let clientsCacheTime = 0;
+const CACHE_TTL = 2 * 60 * 1000;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -39,143 +44,102 @@ Deno.serve(async (req) => {
       // No body or invalid JSON, that's fine
     }
 
-    // Fetch actual client records from Clients table
-    const tableName = encodeURIComponent('Clients');
-    let clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${tableName}`;
-    let allClients: any[] = [];
-    let offset: string | undefined = undefined;
+    const now = Date.now();
+    const useCache = !includeStats && clientsCache && (now - clientsCacheTime) < CACHE_TTL;
 
-    // Handle pagination - Airtable returns max 100 records per request
+    if (useCache) {
+      return new Response(
+        JSON.stringify({ clients: clientsCache }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only fetch fields we need
+    const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
+    const clientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients?${fieldsParam}`;
+
+    let allClients: any[] = [];
+    let offset: string | undefined;
+
     do {
-      const urlWithOffset: string = offset ? `${clientsUrl}?offset=${offset}` : clientsUrl;
-      const response: Response = await fetch(urlWithOffset, {
-        headers: {
-          'Authorization': `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        }
+      const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${airtableToken}` }
       });
 
       if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('Airtable API Error:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorBody,
-          url: urlWithOffset
-        });
-        throw new Error(`Failed to fetch clients from Airtable: ${response.status} - ${errorBody}`);
+        throw new Error(`Failed to fetch clients: ${response.status}`);
       }
 
-      const data: { records: any[]; offset?: string } = await response.json();
+      const data = await response.json();
 
-      // Map clients with more fields
       const pageClients = (data.records || []).map((record: any) => ({
         id: record.id,
         name: record.fields['Client Name'] || record.fields['Name'] || 'Unnamed Client',
         email: record.fields['Email'] || null,
         status: record.fields['Status'] || 'Active',
         phone: record.fields['Phone'] || null,
-        companyName: record.fields['Company Name'] || null,
         contactPerson: record.fields['Contact Person'] || null,
         leadsPurchased: record.fields['Leads Purchased'] || 0,
-        // Campaign dates from Airtable
-        campaignStartDate: record.fields['Campaign Start Date'] || record.fields['Start Date'] || null,
-        targetEndDate: record.fields['Target End Date'] || record.fields['End Date'] || null,
-        // Stats will be populated below if includeStats is true
+        campaignStartDate: record.fields['Campaign Start Date'] || null,
+        targetEndDate: record.fields['Target End Date'] || null,
         leadsDelivered: 0,
         leadsRemaining: 0,
         leadStats: null,
-        firstLeadDate: null // Will be populated from leads if includeStats is true
+        firstLeadDate: null
       }));
 
-      allClients = allClients.concat(pageClients);
+      allClients.push(...pageClients);
       offset = data.offset;
     } while (offset);
 
-    // If includeStats is true, fetch lead counts for each client
+    // If includeStats, fetch lead counts
     if (includeStats) {
-      // Fetch all leads to count per client
-      const leadsTableName = encodeURIComponent('Qualified Lead Table');
-      let leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${leadsTableName}`;
+      // Only fetch needed fields for counting
+      const leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Date%20Created`;
       let allLeads: any[] = [];
-      let leadsOffset: string | undefined = undefined;
+      let leadsOffset: string | undefined;
 
       do {
-        const urlWithOffset: string = leadsOffset
-          ? `${leadsUrl}?offset=${leadsOffset}&fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`
-          : `${leadsUrl}?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Client%20Feedback&fields%5B%5D=Date%20Created`;
-
-        const response: Response = await fetch(urlWithOffset, {
-          headers: {
-            'Authorization': `Bearer ${airtableToken}`,
-            'Content-Type': 'application/json'
-          }
+        const url = leadsOffset ? `${leadsUrl}&offset=${leadsOffset}` : leadsUrl;
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${airtableToken}` }
         });
 
-        if (response.ok) {
-          const data: { records: any[]; offset?: string } = await response.json();
-          allLeads = allLeads.concat(data.records || []);
-          leadsOffset = data.offset;
-        } else {
-          console.error('Failed to fetch leads for stats');
-          break;
-        }
+        if (!response.ok) break;
+
+        const data = await response.json();
+        allLeads.push(...(data.records || []));
+        leadsOffset = data.offset;
       } while (leadsOffset);
 
-      // Build a map of client ID -> lead stats
-      const clientLeadStats: Record<string, {
-        total: number;
-        new: number;
-        approved: number;
-        rejected: number;
-        needsWork: number;
-        booked: number;
-        firstLeadDate: string | null;
-      }> = {};
+      // Build stats map
+      const clientLeadStats: Record<string, any> = {};
 
       for (const lead of allLeads) {
         const clientIds = lead.fields['Clients'] || [];
-        const status = lead.fields['Status'] || 'New';
+        const status = (lead.fields['Status'] || 'New').toLowerCase().trim();
         const dateCreated = lead.fields['Date Created'] || null;
 
         for (const clientId of clientIds) {
           if (!clientLeadStats[clientId]) {
             clientLeadStats[clientId] = {
-              total: 0,
-              new: 0,
-              approved: 0,
-              rejected: 0,
-              needsWork: 0,
-              booked: 0,
-              firstLeadDate: null
+              total: 0, new: 0, approved: 0, rejected: 0, needsWork: 0, booked: 0, firstLeadDate: null
             };
           }
 
-          clientLeadStats[clientId].total++;
+          const stats = clientLeadStats[clientId];
+          stats.total++;
 
-          // Track earliest lead date for this client
-          if (dateCreated) {
-            if (!clientLeadStats[clientId].firstLeadDate ||
-                new Date(dateCreated) < new Date(clientLeadStats[clientId].firstLeadDate!)) {
-              clientLeadStats[clientId].firstLeadDate = dateCreated;
-            }
+          if (dateCreated && (!stats.firstLeadDate || new Date(dateCreated) < new Date(stats.firstLeadDate))) {
+            stats.firstLeadDate = dateCreated;
           }
 
-          // Categorize by Status field (primary)
-          const statusLower = status.toLowerCase().trim();
-
-          if (statusLower === 'booked' || statusLower === 'meeting booked') {
-            clientLeadStats[clientId].booked++;
-          } else if (statusLower === 'approved') {
-            clientLeadStats[clientId].approved++;
-          } else if (statusLower === 'rejected') {
-            clientLeadStats[clientId].rejected++;
-          } else if (statusLower === 'needs work') {
-            clientLeadStats[clientId].needsWork++;
-          } else {
-            // New, Lead, or any other status = new
-            clientLeadStats[clientId].new++;
-          }
+          if (status === 'booked' || status === 'meeting booked') stats.booked++;
+          else if (status === 'approved') stats.approved++;
+          else if (status === 'rejected') stats.rejected++;
+          else if (status === 'needs work') stats.needsWork++;
+          else stats.new++;
         }
       }
 
@@ -183,11 +147,9 @@ Deno.serve(async (req) => {
       for (const client of allClients) {
         const stats = clientLeadStats[client.id];
         if (stats) {
-          // Leads delivered = approved + booked (leads that were passed to client)
           client.leadsDelivered = stats.approved + stats.booked;
           client.leadsRemaining = Math.max(0, (client.leadsPurchased || 0) - client.leadsDelivered);
           client.leadStats = stats;
-          // Use first lead date as campaign start if no explicit start date
           client.firstLeadDate = stats.firstLeadDate;
           if (!client.campaignStartDate && stats.firstLeadDate) {
             client.campaignStartDate = stats.firstLeadDate;
@@ -200,6 +162,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Update cache (only for non-stats requests)
+    if (!includeStats) {
+      clientsCache = allClients;
+      clientsCacheTime = now;
+    }
+
     return new Response(
       JSON.stringify({ clients: allClients }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -207,14 +175,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error fetching Airtable clients:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ 
-        error: errorMessage,
-        details: error instanceof Error ? error.stack : undefined
-      }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-
