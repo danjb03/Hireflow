@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Loader2, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import MarketplaceHero from "@/components/marketplace/MarketplaceHero";
 import MarketplaceLeadCard from "@/components/marketplace/MarketplaceLeadCard";
 import InterestForm from "@/components/marketplace/InterestForm";
+import hireflowLogo from "@/assets/hireflow-light.svg";
 
 interface MarketplaceLead {
   id: string;
@@ -117,23 +119,15 @@ const Marketplace = () => {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-[#222121]/10 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href="/" className="text-xl font-bold text-violet-600">
-            Hireflow
-          </a>
-          <div className="flex items-center gap-4">
-            <a
-              href="/login"
-              className="text-sm font-medium text-[#222121]/60 transition-colors hover:text-[#222121]"
-            >
-              Sign In
-            </a>
-            <a
-              href="/login"
-              className="rounded-full bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-violet-700"
-            >
-              Get Started
-            </a>
-          </div>
+          <Link to="/" className="flex items-center">
+            <img src={hireflowLogo} alt="Hireflow" className="h-8" />
+          </Link>
+          <Link
+            to="/"
+            className="text-sm font-medium text-[#222121]/60 transition-colors hover:text-[#34B192]"
+          >
+            Back to Home
+          </Link>
         </div>
       </nav>
 
@@ -188,12 +182,12 @@ const Marketplace = () => {
         {/* Leads grid */}
         {loading ? (
           <div className="flex min-h-[40vh] items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#34B192]" />
           </div>
         ) : filteredLeads.length === 0 ? (
           <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
-            <div className="mb-4 h-16 w-16 rounded-full bg-violet-100 flex items-center justify-center">
-              <Search className="h-8 w-8 text-violet-400" />
+            <div className="mb-4 h-16 w-16 rounded-full bg-[#34B192]/10 flex items-center justify-center">
+              <Search className="h-8 w-8 text-[#34B192]" />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-[#222121]">
               No opportunities found

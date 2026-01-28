@@ -127,8 +127,8 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center py-8 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#34B192]/10">
+              <CheckCircle2 className="h-8 w-8 text-[#34B192]" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-[#222121]">
               Thank You!
@@ -138,7 +138,7 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
             </p>
             <Button
               onClick={handleClose}
-              className="rounded-full bg-violet-600 px-8 text-white hover:bg-violet-700"
+              className="rounded-full bg-[#34B192] px-8 text-white hover:bg-[#2D9A7E]"
             >
               Close
             </Button>
@@ -153,7 +153,7 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-[#222121]">
-            Express Your Interest
+            Register Your Interest
           </DialogTitle>
           <DialogDescription className="text-sm text-[#222121]/60">
             {lead && (
@@ -240,7 +240,7 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
             <Button
               type="submit"
               disabled={submitting}
-              className="flex-1 rounded-full bg-violet-600 text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)] hover:bg-violet-700"
+              className="flex-1 rounded-full bg-[#34B192] text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] hover:bg-[#2D9A7E]"
             >
               {submitting ? (
                 <>

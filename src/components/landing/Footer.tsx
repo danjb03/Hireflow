@@ -36,7 +36,7 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <Link to="/marketplace" className="transition-colors hover:text-violet-600">
+                <Link to="/marketplace" className="transition-colors hover:text-[#34B192]">
                   Lead Marketplace
                 </Link>
               </li>
