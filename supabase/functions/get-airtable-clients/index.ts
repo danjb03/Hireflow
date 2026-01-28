@@ -106,7 +106,8 @@ Deno.serve(async (req) => {
       return response;
     };
 
-    do {
+    let keepFetching = true;
+    while (keepFetching) {
       const response = await fetchClientsPage();
 
       if (!response.ok) {
@@ -140,7 +141,8 @@ Deno.serve(async (req) => {
 
       allClients.push(...pageClients);
       offset = data.offset;
-    } while (offset);
+      keepFetching = Boolean(offset);
+    }
 
     // If includeStats, fetch lead counts
     if (includeStats) {
@@ -149,7 +151,8 @@ Deno.serve(async (req) => {
       let allLeads: any[] = [];
       let leadsOffset: string | undefined;
 
-      do {
+      let keepFetchingLeads = true;
+      while (keepFetchingLeads) {
         const url = leadsOffset ? `${leadsUrl}&offset=${leadsOffset}` : leadsUrl;
         const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${airtableToken}` }
@@ -160,7 +163,8 @@ Deno.serve(async (req) => {
         const data = await response.json();
         allLeads.push(...(data.records || []));
         leadsOffset = data.offset;
-      } while (leadsOffset);
+        keepFetchingLeads = Boolean(leadsOffset);
+      }
 
       // Build stats map
       const clientLeadStats: Record<string, any> = {};
