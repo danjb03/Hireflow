@@ -154,13 +154,13 @@ const Marketplace = () => {
             />
           </div>
 
-          <Select value={industryFilter} onValueChange={setIndustryFilter}>
+          <Select value={industryFilter || "all"} onValueChange={(v) => setIndustryFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/10 bg-white text-sm sm:w-48">
               <Filter className="mr-2 h-4 w-4 text-[#222121]/40" />
               <SelectValue placeholder="All Industries" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Industries</SelectItem>
+              <SelectItem value="all">All Industries</SelectItem>
               {industries.map((industry) => (
                 <SelectItem key={industry} value={industry}>
                   {industry}

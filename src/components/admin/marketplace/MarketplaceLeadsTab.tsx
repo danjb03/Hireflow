@@ -160,12 +160,12 @@ const MarketplaceLeadsTab = ({ leads, loading, onRefresh }: MarketplaceLeadsTabP
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
           <SelectTrigger className="h-11 w-48 rounded-full border-[#222121]/10 bg-white text-sm">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="none">No Status</SelectItem>
             {MARKETPLACE_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>

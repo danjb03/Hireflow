@@ -164,12 +164,12 @@ const MarketplaceTicketsTab = ({ tickets, loading, onRefresh }: MarketplaceTicke
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
           <SelectTrigger className="h-11 w-48 rounded-full border-[#222121]/10 bg-white text-sm">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             {TICKET_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
