@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Sparkles, Store } from "lucide-react";
 
 import hireflowLightLogo from "@/assets/hireflow-light.svg";
 import hireflowWhiteLogo from "@/assets/hireflowwhite.png";
@@ -30,6 +30,16 @@ export const HeroSection = () => {
               <img src={hireflowLightLogo} alt="Hireflow" className="h-8" />
             </Link>
             <div className="flex items-center gap-3">
+              <Button
+                asChild
+                variant="ghost"
+                className="h-11 rounded-full bg-violet-100 px-5 text-sm font-semibold text-violet-700 transition-all hover:bg-violet-200"
+              >
+                <Link to="/marketplace" className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  Marketplace
+                </Link>
+              </Button>
               <Button
                 asChild
                 variant="outline"

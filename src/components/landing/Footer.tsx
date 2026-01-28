@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Mail, Phone } from "lucide-react";
 
 import hireflowLightLogo from "@/assets/hireflow-light.svg";
@@ -35,13 +36,13 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="transition-colors hover:text-[#34B192]">
-                  Case Studies
-                </a>
+                <Link to="/marketplace" className="transition-colors hover:text-violet-600">
+                  Lead Marketplace
+                </Link>
               </li>
               <li>
                 <a href="#" className="transition-colors hover:text-[#34B192]">
-                  Pricing
+                  Case Studies
                 </a>
               </li>
             </ul>
