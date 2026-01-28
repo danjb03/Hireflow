@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
           }
         }
       }
-    } catch {
+    } catch (error) {
       // Fallback to default table name
     }
 
@@ -81,11 +81,11 @@ Deno.serve(async (req) => {
     const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
     const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(clientTableName)}`;
 
-    let allClients: any[] = [];
-    let offset: string | undefined;
+    let allClients = [];
+    let offset = undefined;
     let useFields = true;
 
-    const pickName = (fields: Record<string, any>): string => {
+    const pickName = (fields: any) => {
       return (
         fields['Client Name'] ||
         fields['Name'] ||
@@ -148,8 +148,8 @@ Deno.serve(async (req) => {
     if (includeStats) {
       // Only fetch needed fields for counting
       const leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Date%20Created`;
-      let allLeads: any[] = [];
-      let leadsOffset: string | undefined;
+      let allLeads = [];
+      let leadsOffset = undefined;
 
       let keepFetchingLeads = true;
       while (keepFetchingLeads) {
