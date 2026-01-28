@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // Cache clients for 2 minutes
-let clientsCache: any[] | null = null;
+let clientsCache = null;
 let clientsCacheTime = 0;
 const CACHE_TTL = 2 * 60 * 1000;
 
@@ -39,14 +39,13 @@ Deno.serve(async (req) => {
     let includeStats = false;
     try {
       const body = await req.json();
-      includeStats = body?.includeStats === true;
+      includeStats = body && body.includeStats === true;
     } catch {
-      // No body or invalid JSON, that's fine
+      // no body
     }
 
     const now = Date.now();
     const useCache = !includeStats && clientsCache && (now - clientsCacheTime) < CACHE_TTL;
-
     if (useCache) {
       return new Response(
         JSON.stringify({ clients: clientsCache }),
@@ -54,7 +53,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Resolve linked client table name (in case the table was renamed)
+    // Resolve linked client table name from Airtable metadata
     let clientTableName = 'Clients';
     try {
       const metadataUrl = `https://api.airtable.com/v0/meta/bases/${airtableBaseId}/tables`;
@@ -63,21 +62,36 @@ Deno.serve(async (req) => {
       });
       if (metadataResponse.ok) {
         const metadata = await metadataResponse.json();
-        const tables = metadata?.tables || [];
-        const leadsTable = tables.find((table: any) => table.name === 'Qualified Lead Table');
-        const clientsField = (leadsTable?.fields || []).find((field: any) => field.name === 'Clients' && field.type === 'linkedRecord');
-        if (clientsField?.options?.linkedTableId) {
-          const linkedTable = tables.find((table: any) => table.id === clientsField.options.linkedTableId);
-          if (linkedTable?.name) {
-            clientTableName = linkedTable.name;
+        const tables = metadata && metadata.tables ? metadata.tables : [];
+        let leadsTable = null;
+        for (const table of tables) {
+          if (table.name === 'Qualified Lead Table') {
+            leadsTable = table;
+            break;
+          }
+        }
+        if (leadsTable && Array.isArray(leadsTable.fields)) {
+          let clientsField = null;
+          for (const field of leadsTable.fields) {
+            if (field.name === 'Clients' && field.type === 'linkedRecord') {
+              clientsField = field;
+              break;
+            }
+          }
+          if (clientsField && clientsField.options && clientsField.options.linkedTableId) {
+            for (const table of tables) {
+              if (table.id === clientsField.options.linkedTableId && table.name) {
+                clientTableName = table.name;
+                break;
+              }
+            }
           }
         }
       }
-    } catch (error) {
-      // Fallback to default table name
+    } catch {
+      // fallback to default
     }
 
-    // Only fetch fields we need (retry without fields if Airtable schema changed)
     const fieldsParam = 'fields%5B%5D=Client%20Name&fields%5B%5D=Name&fields%5B%5D=Company%20Name&fields%5B%5D=Company&fields%5B%5D=Email&fields%5B%5D=Status&fields%5B%5D=Phone&fields%5B%5D=Contact%20Person&fields%5B%5D=Leads%20Purchased&fields%5B%5D=Campaign%20Start%20Date&fields%5B%5D=Target%20End%20Date';
     const baseClientsUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(clientTableName)}`;
 
@@ -85,7 +99,8 @@ Deno.serve(async (req) => {
     let offset = undefined;
     let useFields = true;
 
-    const pickName = (fields: any) => {
+    const pickName = (fields) => {
+      if (!fields || typeof fields !== 'object') return 'Unnamed Client';
       return (
         fields['Client Name'] ||
         fields['Name'] ||
@@ -97,18 +112,13 @@ Deno.serve(async (req) => {
       );
     };
 
-    const fetchClientsPage = async () => {
+    let keepFetching = true;
+    while (keepFetching) {
       const clientsUrl = useFields ? `${baseClientsUrl}?${fieldsParam}` : baseClientsUrl;
       const url = offset ? `${clientsUrl}&offset=${offset}` : clientsUrl;
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${airtableToken}` }
       });
-      return response;
-    };
-
-    let keepFetching = true;
-    while (keepFetching) {
-      const response = await fetchClientsPage();
 
       if (!response.ok) {
         if (response.status === 422 && useFields) {
@@ -122,65 +132,63 @@ Deno.serve(async (req) => {
       }
 
       const data = await response.json();
+      const records = data && data.records ? data.records : [];
+      for (const record of records) {
+        const fields = record.fields || {};
+        allClients.push({
+          id: record.id,
+          name: pickName(fields),
+          email: fields['Email'] || null,
+          status: fields['Status'] || 'Active',
+          phone: fields['Phone'] || null,
+          contactPerson: fields['Contact Person'] || null,
+          leadsPurchased: fields['Leads Purchased'] || 0,
+          campaignStartDate: fields['Campaign Start Date'] || null,
+          targetEndDate: fields['Target End Date'] || null,
+          leadsDelivered: 0,
+          leadsRemaining: 0,
+          leadStats: null,
+          firstLeadDate: null
+        });
+      }
 
-      const pageClients = (data.records || []).map((record: any) => ({
-        id: record.id,
-        name: pickName(record.fields || {}),
-        email: record.fields['Email'] || null,
-        status: record.fields['Status'] || 'Active',
-        phone: record.fields['Phone'] || null,
-        contactPerson: record.fields['Contact Person'] || null,
-        leadsPurchased: record.fields['Leads Purchased'] || 0,
-        campaignStartDate: record.fields['Campaign Start Date'] || null,
-        targetEndDate: record.fields['Target End Date'] || null,
-        leadsDelivered: 0,
-        leadsRemaining: 0,
-        leadStats: null,
-        firstLeadDate: null
-      }));
-
-      allClients.push(...pageClients);
-      offset = data.offset;
+      offset = data ? data.offset : undefined;
       keepFetching = Boolean(offset);
     }
 
-    // If includeStats, fetch lead counts
     if (includeStats) {
-      // Only fetch needed fields for counting
       const leadsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?fields%5B%5D=Clients&fields%5B%5D=Status&fields%5B%5D=Date%20Created`;
       let allLeads = [];
       let leadsOffset = undefined;
-
       let keepFetchingLeads = true;
+
       while (keepFetchingLeads) {
         const url = leadsOffset ? `${leadsUrl}&offset=${leadsOffset}` : leadsUrl;
         const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${airtableToken}` }
         });
-
         if (!response.ok) break;
-
         const data = await response.json();
-        allLeads.push(...(data.records || []));
-        leadsOffset = data.offset;
+        const records = data && data.records ? data.records : [];
+        allLeads = allLeads.concat(records);
+        leadsOffset = data ? data.offset : undefined;
         keepFetchingLeads = Boolean(leadsOffset);
       }
 
-      // Build stats map
-      const clientLeadStats: Record<string, any> = {};
-
+      const clientLeadStats = {};
       for (const lead of allLeads) {
-        const clientIds = lead.fields['Clients'] || [];
-        const status = (lead.fields['Status'] || 'New').toLowerCase().trim();
-        const dateCreated = lead.fields['Date Created'] || null;
+        const fields = lead.fields || {};
+        const clientIds = fields['Clients'] || [];
+        const status = (fields['Status'] || 'New').toLowerCase().trim();
+        const dateCreated = fields['Date Created'] || null;
+        const ids = Array.isArray(clientIds) ? clientIds : [clientIds];
 
-        for (const clientId of clientIds) {
+        for (const clientId of ids) {
           if (!clientLeadStats[clientId]) {
             clientLeadStats[clientId] = {
               total: 0, new: 0, approved: 0, rejected: 0, needsWork: 0, booked: 0, firstLeadDate: null
             };
           }
-
           const stats = clientLeadStats[clientId];
           stats.total++;
 
@@ -196,7 +204,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Attach stats to clients
       for (const client of allClients) {
         const stats = clientLeadStats[client.id];
         if (stats) {
@@ -215,7 +222,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update cache (only for non-stats requests)
     if (!includeStats) {
       clientsCache = allClients;
       clientsCacheTime = now;
