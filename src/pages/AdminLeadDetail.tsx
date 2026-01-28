@@ -49,12 +49,9 @@ interface LeadData {
   feedback: string | null;
 
   // Callback appointment slots
-  callbackDate1: string | null;
-  callbackTime1: string | null;
-  callbackDate2: string | null;
-  callbackTime2: string | null;
-  callbackDate3: string | null;
-  callbackTime3: string | null;
+  callback1: string | null;
+  callback2: string | null;
+  callback3: string | null;
 
   // Task completion status
   tasks: {
@@ -434,7 +431,7 @@ const AdminLeadDetail = () => {
         </Breadcrumb>
 
         {/* Callback Appointment Slots */}
-        {(lead.callbackDate1 || lead.callbackDate2 || lead.callbackDate3 || lead.availability) ? (
+        {(lead.callback1 || lead.callback2 || lead.callback3 || lead.availability) ? (
           <Card className="mb-6 border border-[#34B192]/30 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-[#222121]">
@@ -448,7 +445,7 @@ const AdminLeadDetail = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {lead.callbackDate1 && lead.callbackTime1 && (
+              {lead.callback1 && (
                 <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
                   <div className="rounded-full bg-[#34B192]/10 p-2">
                     <Clock className="h-4 w-4 text-[#34B192]" />
@@ -456,12 +453,12 @@ const AdminLeadDetail = () => {
                   <div>
                     <p className="text-xs font-medium text-[#34B192]">Option 1 (Primary)</p>
                     <p className="text-base font-semibold text-[#222121]/70">
-                      {new Date(lead.callbackDate1).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime1}
+                      {new Date(lead.callback1).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback1).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
-              {lead.callbackDate2 && lead.callbackTime2 && (
+              {lead.callback2 && (
                 <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
                   <div className="rounded-full bg-[#34B192]/10 p-2">
                     <Clock className="h-4 w-4 text-[#34B192]" />
@@ -469,12 +466,12 @@ const AdminLeadDetail = () => {
                   <div>
                     <p className="text-xs font-medium text-[#34B192]">Option 2 (Alternative)</p>
                     <p className="text-base font-semibold text-[#222121]/70">
-                      {new Date(lead.callbackDate2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime2}
+                      {new Date(lead.callback2).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback2).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
-              {lead.callbackDate3 && lead.callbackTime3 && (
+              {lead.callback3 && (
                 <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
                   <div className="rounded-full bg-[#34B192]/10 p-2">
                     <Clock className="h-4 w-4 text-[#34B192]" />
@@ -482,12 +479,12 @@ const AdminLeadDetail = () => {
                   <div>
                     <p className="text-xs font-medium text-[#34B192]">Option 3 (Alternative)</p>
                     <p className="text-base font-semibold text-[#222121]/70">
-                      {new Date(lead.callbackDate3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {lead.callbackTime3}
+                      {new Date(lead.callback3).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(lead.callback3).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
               )}
-              {lead.availability && !lead.callbackDate1 && (
+              {lead.availability && !lead.callback1 && (
                 <div className="flex items-center gap-3 rounded-xl border border-[#34B192]/20 bg-[#F7F7F7] p-3">
                   <div className="rounded-full bg-[#34B192]/10 p-2">
                     <Clock className="h-4 w-4 text-[#34B192]" />
@@ -519,6 +516,12 @@ const AdminLeadDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <label className="mb-2 block text-sm font-medium text-[#222121]/60">Assign to Client</label>
+              <div className="text-xs text-[#222121]/60">
+                Assigned:{" "}
+                {lead.clients && lead.clients !== "Unassigned"
+                  ? (clients.find((client) => client.id === lead.clients)?.name || "Assigned (name unavailable)")
+                  : "Unassigned"}
+              </div>
               {clients.length > 0 ? (
                 <div className="space-y-3">
                   <Select
