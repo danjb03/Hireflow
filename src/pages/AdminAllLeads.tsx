@@ -200,8 +200,13 @@ const AdminAllLeads = () => {
   // Client-side filtering - instant!
   const filteredLeads = useMemo(() => {
     return allLeads.filter(lead => {
-      // Status filter (case-insensitive)
-      if (statusFilter) {
+      // Special marketplace filter
+      if (statusFilter === "marketplace") {
+        if (lead.marketplaceStatus !== "Active") {
+          return false;
+        }
+      } else if (statusFilter) {
+        // Status filter (case-insensitive)
         const filterLower = statusFilter.toLowerCase();
         const statusLower = (lead.status || '').toLowerCase();
         if (statusLower !== filterLower) {
@@ -534,14 +539,18 @@ const AdminAllLeads = () => {
               className="w-full sm:w-auto"
             >
               <TabsList className="rounded-full border border-[#222121]/10 bg-white p-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                {["all", "NEW", "Lead", "Approved", "Needs Work", "Rejected"].map(
+                {["all", "NEW", "Lead", "Approved", "Needs Work", "Rejected", "marketplace"].map(
                   (value) => (
                     <TabsTrigger
                       key={value}
                       value={value}
-                      className="rounded-full px-4 py-2 text-xs font-semibold text-[#222121]/60 transition data-[state=active]:bg-[#34B192] data-[state=active]:text-white"
+                      className={`rounded-full px-4 py-2 text-xs font-semibold transition data-[state=active]:text-white ${
+                        value === "marketplace"
+                          ? "text-[#34B192] data-[state=active]:bg-[#34B192]"
+                          : "text-[#222121]/60 data-[state=active]:bg-[#34B192]"
+                      }`}
                     >
-                      {value === "all" ? "All" : value}
+                      {value === "all" ? "All" : value === "marketplace" ? "Marketplace" : value}
                     </TabsTrigger>
                   )
                 )}

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +35,7 @@ interface InterestFormProps {
 const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formData, setFormData] = useState({
     contactName: "",
     contactEmail: "",
@@ -48,6 +51,14 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lead) return;
+    if (!acceptedTerms) {
+      toast({
+        title: "Terms required",
+        description: "Please accept the Terms & Conditions to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setSubmitting(true);
 
@@ -119,6 +130,7 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
         companyName: "",
         message: "",
       });
+      setAcceptedTerms(false);
     }, 200);
   };
 
@@ -226,6 +238,33 @@ const InterestForm = ({ lead, open, onOpenChange }: InterestFormProps) => {
               rows={3}
               className="resize-none rounded-xl border-[#222121]/15"
             />
+          </div>
+
+          <div className="rounded-xl border border-[#222121]/10 bg-[#F7F7F7] p-4">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="termsAccepted"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(Boolean(checked))}
+                className="mt-1"
+              />
+              <div className="space-y-1 text-sm text-[#222121]/70">
+                <Label htmlFor="termsAccepted" className="text-sm font-medium text-[#222121]">
+                  I agree to the Terms &amp; Conditions *
+                </Label>
+                <p>
+                  You must accept before submitting.{" "}
+                  <Link
+                    to="/marketplace/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-[#34B192] hover:underline"
+                  >
+                    View Terms &amp; Conditions
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">

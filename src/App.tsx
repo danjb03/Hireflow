@@ -45,6 +45,7 @@ const AdminListBuilder = lazyRetry(() => import("./pages/AdminListBuilder"), "Ad
 const AdminUsers = lazyRetry(() => import("./pages/AdminUsers"), "AdminUsers");
 const AdminMarketplace = lazyRetry(() => import("./pages/AdminMarketplace"), "AdminMarketplace");
 const Marketplace = lazyRetry(() => import("./pages/Marketplace"), "Marketplace");
+const MarketplaceTerms = lazyRetry(() => import("./pages/MarketplaceTerms"), "MarketplaceTerms");
 
 const App = () => (
   <TooltipProvider>
@@ -97,6 +98,7 @@ const App = () => (
           {/* Public routes */}
           <Route path="/rep-report" element={<RepReport />} />
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/terms" element={<MarketplaceTerms />} />
           {/* Authenticated routes */}
           <Route path="/submit-lead" element={<SubmitLead />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
