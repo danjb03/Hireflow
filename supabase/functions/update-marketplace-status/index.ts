@@ -32,9 +32,10 @@ Deno.serve(async (req) => {
     if (!marketplaceStatus) throw new Error('Marketplace status is required');
 
     // Validate status
-    const normalizedStatus = String(marketplaceStatus).trim();
+    const rawStatus = String(marketplaceStatus ?? '');
+    const cleanedStatus = rawStatus.trim();
     const validStatuses = ['Pending Review', 'Active', 'Sold', 'Hidden', 'Hidden '];
-    if (!validStatuses.includes(normalizedStatus)) {
+    if (!validStatuses.includes(cleanedStatus) && !validStatuses.includes(rawStatus)) {
       throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
 
@@ -46,8 +47,31 @@ Deno.serve(async (req) => {
     // Update Airtable record
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}/${leadId}`;
 
+    let statusFieldName = Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD') || '';
+    const statusFieldId = Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD_ID') || '';
+
+    if (!statusFieldName && statusFieldId) {
+      try {
+        const metadataUrl = `https://api.airtable.com/v0/meta/bases/${airtableBaseId}/tables`;
+        const metadataResponse = await fetch(metadataUrl, {
+          headers: { 'Authorization': `Bearer ${airtableToken}` }
+        });
+        if (metadataResponse.ok) {
+          const metadata = await metadataResponse.json();
+          const tables = metadata?.tables || [];
+          const leadsTable = tables.find((table: any) => table.name === airtableLeadsTable);
+          const field = (leadsTable?.fields || []).find((f: any) => f.id === statusFieldId);
+          if (field?.name) {
+            statusFieldName = field.name;
+          }
+        }
+      } catch {
+        // ignore and fall back
+      }
+    }
+
     const statusFieldCandidates = [
-      Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD'),
+      statusFieldName,
       'Marketplace Status',
       'marketplace status',
       'Marketplace status',
@@ -55,6 +79,9 @@ Deno.serve(async (req) => {
 
     let response: Response | null = null;
     let lastErrorText = '';
+
+    // If the UI passes "Hidden" but Airtable option has trailing space, map it
+    const statusToSend = cleanedStatus === 'Hidden' ? 'Hidden ' : cleanedStatus || rawStatus;
 
     for (const fieldName of statusFieldCandidates) {
       response = await fetch(airtableUrl, {
@@ -65,7 +92,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           fields: {
-            [fieldName as string]: normalizedStatus
+            [fieldName as string]: statusToSend
           },
           typecast: true
         })
