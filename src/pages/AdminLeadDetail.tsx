@@ -633,15 +633,12 @@ const AdminLeadDetail = () => {
             <div className="space-y-2">
               <label className="mb-2 block text-sm font-medium text-[#222121]/60">Marketplace</label>
               <Select
-                value={isApproved ? (marketplaceStatus || "") : ""}
-                onValueChange={(value) => {
-                  if (!isApproved) return;
-                  handleUpdateMarketplaceStatus(value);
-                }}
-                disabled={!isApproved || isTogglingMarketplace}
+                value={marketplaceStatus || ""}
+                onValueChange={handleUpdateMarketplaceStatus}
+                disabled={isTogglingMarketplace}
               >
                 <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/20 bg-white text-sm">
-                  <SelectValue placeholder={isApproved ? "Set marketplace status" : "Approve lead first"} />
+                  <SelectValue placeholder="Set marketplace status" />
                 </SelectTrigger>
                 <SelectContent className="z-50">
                   {["Pending Review", "Active", "Sold", "Hidden"].map((status) => (
@@ -652,10 +649,7 @@ const AdminLeadDetail = () => {
                 </SelectContent>
               </Select>
               <p className="text-xs text-[#222121]/50">
-                {isApproved
-                  ? "Select a marketplace status for this lead"
-                  : "Approve the lead to list it on the marketplace"
-                }
+                Set to "Active" to list on the public marketplace
               </p>
             </div>
           </div>

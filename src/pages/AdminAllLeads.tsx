@@ -756,15 +756,13 @@ const AdminAllLeads = () => {
                       <TableCell className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Select
-                            value={String(lead.status || "").toLowerCase() === "approved" ? (lead.marketplaceStatus || "") : ""}
+                            value={lead.marketplaceStatus || ""}
                             onValueChange={(value) => {
-                              if (String(lead.status || "").toLowerCase() !== "approved") return;
                               handleUpdateMarketplaceStatus(lead.id, value);
                             }}
-                            disabled={String(lead.status || "").toLowerCase() !== "approved"}
                           >
                             <SelectTrigger className="h-8 w-[140px] rounded-full border-[#222121]/15 bg-white text-xs">
-                              <SelectValue placeholder={String(lead.status || "").toLowerCase() === "approved" ? "Set status" : "Approve first"} />
+                              <SelectValue placeholder="Marketplace" />
                             </SelectTrigger>
                             <SelectContent className="z-50">
                               {["Pending Review", "Active", "Sold", "Hidden"].map((status) => (
