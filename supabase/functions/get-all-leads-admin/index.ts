@@ -83,9 +83,10 @@ Deno.serve(async (req) => {
     const filterFormula = filterParts.length > 0 ? `AND(${filterParts.join(', ')})` : '';
 
     // Only fetch fields we need - significantly reduces response size
+    // Note: Marketplace Status is optional - don't include in required fields to avoid 422 if missing
     const neededFields = [
       'Company Name', 'Status', airtableClientLinkField, 'Contact Name', 'Email', 'Phone',
-      'Company Website', 'Titles of Roles', 'Date Created', 'AI Summary', 'Marketplace Status'
+      'Company Website', 'Titles of Roles', 'Date Created', 'AI Summary'
     ];
     const fieldsParam = neededFields.map(f => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');
 
