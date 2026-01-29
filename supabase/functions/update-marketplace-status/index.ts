@@ -59,6 +59,10 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
+      // 422 usually means the field doesn't exist
+      if (response.status === 422) {
+        throw new Error('Marketplace Status field not found in Airtable. Please add a Single Select field named "Marketplace Status" with options: Pending Review, Active, Sold, Hidden');
+      }
       throw new Error(`Airtable update error: ${response.status} - ${errorText}`);
     }
 

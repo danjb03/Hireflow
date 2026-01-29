@@ -48,6 +48,14 @@ Deno.serve(async (req) => {
       });
 
       if (!response.ok) {
+        // 422 means the Marketplace Status field doesn't exist yet - return empty array
+        if (response.status === 422) {
+          console.log('Marketplace Status field not found in Airtable - returning empty leads');
+          return new Response(
+            JSON.stringify({ leads: [], message: 'Marketplace not configured yet' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         throw new Error(`Airtable API error: ${response.status}`);
       }
 
