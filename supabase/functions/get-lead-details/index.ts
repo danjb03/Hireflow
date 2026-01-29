@@ -203,6 +203,9 @@ Deno.serve(async (req) => {
       aiConfidence: fields['AI Confidence'] || null,
       aiAnalyzedAt: fields['AI Analyzed At'] || null,
       closeLeadId: fields['Close Lead ID'] || null,
+
+      // Marketplace
+      marketplaceStatus: fields['Marketplace Status'] || null,
     };
 
     return new Response(

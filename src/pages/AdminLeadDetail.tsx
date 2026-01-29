@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -70,6 +70,9 @@ interface LeadData {
   aiConfidence: number | null;
   aiAnalyzedAt: string | null;
   closeLeadId: string | null;
+
+  // Marketplace
+  marketplaceStatus: string | null;
 }
 
 interface AirtableClient {
@@ -87,10 +90,11 @@ const AdminLeadDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [availability, setAvailability] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [marketplaceStatus, setMarketplaceStatus] = useState<string | null>(null);
+  const [isTogglingMarketplace, setIsTogglingMarketplace] = useState(false);
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -154,8 +158,8 @@ const AdminLeadDetail = () => {
 
       setLead(sanitizedLead);
       setSelectedStatus(sanitizedLead.status);
-      setAvailability(String(leadData.availability || ""));
       setFeedback(String(leadData.feedback || ""));
+      setMarketplaceStatus(leadData.marketplaceStatus || null);
     } catch (error) {
       console.error("Error loading lead:", error);
       toast({
@@ -258,32 +262,39 @@ const AdminLeadDetail = () => {
     }
   };
 
-  const handleUpdateAvailability = async () => {
+  const handleToggleMarketplace = async () => {
+    const newStatus = marketplaceStatus === "Active" ? "Hidden" : "Active";
+    setIsTogglingMarketplace(true);
+
     try {
-      const { error } = await supabase.functions.invoke("update-lead", {
-        body: { 
-          leadId: id, 
-          updates: { 
-            availability: availability 
-          } 
-        },
+      const { data, error } = await supabase.functions.invoke("update-marketplace-status", {
+        body: { leadId: id, marketplaceStatus: newStatus },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Failed to update marketplace status");
+      }
 
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      setMarketplaceStatus(newStatus);
       toast({
-        title: "Success",
-        description: "Availability updated successfully",
+        title: newStatus === "Active" ? "Added to Marketplace" : "Removed from Marketplace",
+        description: newStatus === "Active"
+          ? "Lead is now visible on the public marketplace"
+          : "Lead has been hidden from the marketplace",
       });
-
-      loadLead();
-    } catch (error) {
-      console.error("Error updating availability:", error);
+    } catch (error: any) {
+      console.error("Error updating marketplace status:", error);
       toast({
         title: "Error",
-        description: "Failed to update availability",
+        description: error?.message || "Failed to update marketplace status",
         variant: "destructive",
       });
+    } finally {
+      setIsTogglingMarketplace(false);
     }
   };
 
@@ -621,22 +632,30 @@ const AdminLeadDetail = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="mb-2 block text-sm font-medium text-[#222121]/60">Availability</label>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="e.g. Mon-Fri 9am-5pm, Weekends after 2pm" 
-                  value={availability}
-                  onChange={(e) => setAvailability(e.target.value)}
-                  className="flex-1 rounded-full border-[#222121]/15 bg-white text-sm"
-                />
-                <Button 
-                  onClick={handleUpdateAvailability}
-                  variant="ghost"
-                  className="h-11 rounded-full bg-[#34B192] px-5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] transition-all hover:bg-[#2D9A7E]"
-                >
-                  Update
-                </Button>
-              </div>
+              <label className="mb-2 block text-sm font-medium text-[#222121]/60">Marketplace</label>
+              <Button
+                onClick={handleToggleMarketplace}
+                disabled={isTogglingMarketplace}
+                className={`h-11 w-full rounded-full text-sm font-semibold transition-all ${
+                  marketplaceStatus === "Active"
+                    ? "bg-[#34B192] text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] hover:bg-[#2D9A7E]"
+                    : "border border-[#222121]/20 bg-white text-[#222121] hover:border-[#34B192] hover:text-[#34B192]"
+                }`}
+              >
+                <Store className="mr-2 h-4 w-4" />
+                {isTogglingMarketplace
+                  ? "Updating..."
+                  : marketplaceStatus === "Active"
+                    ? "Listed on Marketplace"
+                    : "Add to Marketplace"
+                }
+              </Button>
+              <p className="text-xs text-[#222121]/50">
+                {marketplaceStatus === "Active"
+                  ? "This lead is visible on the public marketplace"
+                  : "Click to list this lead on the public marketplace"
+                }
+              </p>
             </div>
           </div>
         </div>
@@ -895,12 +914,6 @@ const AdminLeadDetail = () => {
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Date Created</p>
                   <p className="text-base text-[#222121]">{new Date(lead.dateCreated).toLocaleDateString()}</p>
-                </div>
-              )}
-              {lead.availability && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-[#222121]/50 uppercase tracking-wide mb-1">Availability</p>
-                  <p className="text-base text-[#222121]">{lead.availability}</p>
                 </div>
               )}
             </div>
