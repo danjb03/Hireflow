@@ -765,14 +765,17 @@ const AdminAllLeads = () => {
                               e.stopPropagation();
                               handleToggleMarketplace(lead.id, lead.marketplaceStatus);
                             }}
-                            className={`h-8 w-8 p-0 ${
+                            className={`h-8 px-2 gap-1 ${
                               lead.marketplaceStatus === "Active"
-                                ? "bg-[#34B192]/10 text-[#34B192] hover:bg-[#34B192]/20"
-                                : "text-[#222121]/40 hover:bg-[#34B192]/10 hover:text-[#34B192]"
+                                ? "bg-[#34B192] text-white hover:bg-[#2D9A7E]"
+                                : "border border-[#222121]/20 text-[#222121]/60 hover:border-[#34B192] hover:text-[#34B192]"
                             }`}
                             title={lead.marketplaceStatus === "Active" ? "Remove from Marketplace" : "Add to Marketplace"}
                           >
-                            <Store className="h-4 w-4" />
+                            <Store className="h-3.5 w-3.5" />
+                            <span className="text-xs font-medium">
+                              {lead.marketplaceStatus === "Active" ? "Listed" : "List"}
+                            </span>
                           </Button>
                           <Button
                             variant="ghost"
