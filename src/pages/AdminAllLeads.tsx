@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, ExternalLink, RefreshCw } from "lucide-react";
+import { Search, Loader2, ExternalLink, RefreshCw, Store } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -43,6 +43,7 @@ interface Lead {
   lastContactDate: string | null;
   nextAction: string | null;
   dateCreated: string;
+  marketplaceStatus?: string | null;
 }
 
 interface AirtableClient {
@@ -353,6 +354,44 @@ const AdminAllLeads = () => {
       toast({
         title: "Error",
         description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleMarketplace = async (leadId: string, currentStatus: string | null | undefined) => {
+    // Toggle between Active and Hidden
+    const newStatus = currentStatus === "Active" ? "Hidden" : "Active";
+
+    try {
+      const { data, error } = await supabase.functions.invoke("update-marketplace-status", {
+        body: { leadId, marketplaceStatus: newStatus },
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to update marketplace status");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      // Update local state immediately
+      setAllLeads(prev => prev.map(lead =>
+        lead.id === leadId ? { ...lead, marketplaceStatus: newStatus } : lead
+      ));
+
+      toast({
+        title: newStatus === "Active" ? "Added to Marketplace" : "Removed from Marketplace",
+        description: newStatus === "Active"
+          ? "Lead is now visible on the public marketplace"
+          : "Lead has been hidden from the marketplace",
+      });
+    } catch (error: any) {
+      console.error("Error updating marketplace status:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update marketplace status",
         variant: "destructive",
       });
     }
@@ -709,17 +748,35 @@ const AdminAllLeads = () => {
                         {new Date(lead.dateCreated).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/admin/leads/${lead.id}`);
-                          }}
-                          className="hover:bg-[#34B192]/10"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleMarketplace(lead.id, lead.marketplaceStatus);
+                            }}
+                            className={`h-8 w-8 p-0 ${
+                              lead.marketplaceStatus === "Active"
+                                ? "bg-[#34B192]/10 text-[#34B192] hover:bg-[#34B192]/20"
+                                : "text-[#222121]/40 hover:bg-[#34B192]/10 hover:text-[#34B192]"
+                            }`}
+                            title={lead.marketplaceStatus === "Active" ? "Remove from Marketplace" : "Add to Marketplace"}
+                          >
+                            <Store className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/admin/leads/${lead.id}`);
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-[#34B192]/10"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
