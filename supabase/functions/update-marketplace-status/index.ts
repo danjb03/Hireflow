@@ -32,8 +32,9 @@ Deno.serve(async (req) => {
     if (!marketplaceStatus) throw new Error('Marketplace status is required');
 
     // Validate status
-    const validStatuses = ['Pending Review', 'Active', 'Sold', 'Hidden'];
-    if (!validStatuses.includes(marketplaceStatus)) {
+    const normalizedStatus = String(marketplaceStatus).trim();
+    const validStatuses = ['Pending Review', 'Active', 'Sold', 'Hidden', 'Hidden '];
+    if (!validStatuses.includes(normalizedStatus)) {
       throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
 
@@ -64,8 +65,9 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           fields: {
-            [fieldName as string]: marketplaceStatus
-          }
+            [fieldName as string]: normalizedStatus
+          },
+          typecast: true
         })
       });
 
