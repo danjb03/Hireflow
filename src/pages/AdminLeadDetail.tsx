@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles, Store } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Building2, User, Mail, Phone, Globe, MapPin, Briefcase, Users, FileText, Linkedin, CheckCircle2, AlertCircle, XCircle, X, Clock, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -262,8 +262,8 @@ const AdminLeadDetail = () => {
     }
   };
 
-  const handleToggleMarketplace = async () => {
-    const newStatus = marketplaceStatus === "Active" ? "Hidden" : "Active";
+  const handleUpdateMarketplaceStatus = async (newStatus: string) => {
+    if (!newStatus) return;
     setIsTogglingMarketplace(true);
 
     try {
@@ -281,10 +281,8 @@ const AdminLeadDetail = () => {
 
       setMarketplaceStatus(newStatus);
       toast({
-        title: newStatus === "Active" ? "Added to Marketplace" : "Removed from Marketplace",
-        description: newStatus === "Active"
-          ? "Lead is now visible on the public marketplace"
-          : "Lead has been hidden from the marketplace",
+        title: "Marketplace status updated",
+        description: `Status set to ${newStatus}`,
       });
     } catch (error: any) {
       console.error("Error updating marketplace status:", error);
@@ -414,6 +412,7 @@ const AdminLeadDetail = () => {
   // Debug: Log lead data structure
   console.log("Rendering lead:", JSON.stringify(lead, null, 2));
   const displayIndustry = lead.industry || lead.industry2;
+  const isApproved = String(lead.status || "").toLowerCase() === "approved";
 
   return (
     <AdminLayout userEmail={userEmail}>
@@ -633,27 +632,29 @@ const AdminLeadDetail = () => {
 
             <div className="space-y-2">
               <label className="mb-2 block text-sm font-medium text-[#222121]/60">Marketplace</label>
-              <Button
-                onClick={handleToggleMarketplace}
-                disabled={isTogglingMarketplace}
-                className={`h-11 w-full rounded-full text-sm font-semibold transition-all ${
-                  marketplaceStatus === "Active"
-                    ? "bg-[#34B192] text-white shadow-[0_4px_12px_rgba(52,177,146,0.25)] hover:bg-[#2D9A7E]"
-                    : "border border-[#222121]/20 bg-white text-[#222121] hover:border-[#34B192] hover:text-[#34B192]"
-                }`}
+              <Select
+                value={isApproved ? (marketplaceStatus || "") : ""}
+                onValueChange={(value) => {
+                  if (!isApproved) return;
+                  handleUpdateMarketplaceStatus(value);
+                }}
+                disabled={!isApproved || isTogglingMarketplace}
               >
-                <Store className="mr-2 h-4 w-4" />
-                {isTogglingMarketplace
-                  ? "Updating..."
-                  : marketplaceStatus === "Active"
-                    ? "Listed on Marketplace"
-                    : "Add to Marketplace"
-                }
-              </Button>
+                <SelectTrigger className="h-11 w-full rounded-full border-[#222121]/20 bg-white text-sm">
+                  <SelectValue placeholder={isApproved ? "Set marketplace status" : "Approve lead first"} />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  {["Pending Review", "Active", "Sold", "Hidden"].map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-[#222121]/50">
-                {marketplaceStatus === "Active"
-                  ? "This lead is visible on the public marketplace"
-                  : "Click to list this lead on the public marketplace"
+                {isApproved
+                  ? "Select a marketplace status for this lead"
+                  : "Approve the lead to list it on the marketplace"
                 }
               </p>
             </div>

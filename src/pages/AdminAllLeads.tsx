@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Loader2, ExternalLink, RefreshCw, Store } from "lucide-react";
+import { Search, Loader2, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -364,9 +364,8 @@ const AdminAllLeads = () => {
     }
   };
 
-  const handleToggleMarketplace = async (leadId: string, currentStatus: string | null | undefined) => {
-    // Toggle between Active and Hidden
-    const newStatus = currentStatus === "Active" ? "Hidden" : "Active";
+  const handleUpdateMarketplaceStatus = async (leadId: string, newStatus: string) => {
+    if (!newStatus) return;
 
     try {
       const { data, error } = await supabase.functions.invoke("update-marketplace-status", {
@@ -387,10 +386,8 @@ const AdminAllLeads = () => {
       ));
 
       toast({
-        title: newStatus === "Active" ? "Added to Marketplace" : "Removed from Marketplace",
-        description: newStatus === "Active"
-          ? "Lead is now visible on the public marketplace"
-          : "Lead has been hidden from the marketplace",
+        title: "Marketplace status updated",
+        description: `Status set to ${newStatus}`,
       });
     } catch (error: any) {
       console.error("Error updating marketplace status:", error);
@@ -757,26 +754,26 @@ const AdminAllLeads = () => {
                         {new Date(lead.dateCreated).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleMarketplace(lead.id, lead.marketplaceStatus);
+                        <div className="flex items-center justify-end gap-2">
+                          <Select
+                            value={String(lead.status || "").toLowerCase() === "approved" ? (lead.marketplaceStatus || "") : ""}
+                            onValueChange={(value) => {
+                              if (String(lead.status || "").toLowerCase() !== "approved") return;
+                              handleUpdateMarketplaceStatus(lead.id, value);
                             }}
-                            className={`h-8 px-2 gap-1 ${
-                              lead.marketplaceStatus === "Active"
-                                ? "bg-[#34B192] text-white hover:bg-[#2D9A7E]"
-                                : "border border-[#222121]/20 text-[#222121]/60 hover:border-[#34B192] hover:text-[#34B192]"
-                            }`}
-                            title={lead.marketplaceStatus === "Active" ? "Remove from Marketplace" : "Add to Marketplace"}
+                            disabled={String(lead.status || "").toLowerCase() !== "approved"}
                           >
-                            <Store className="h-3.5 w-3.5" />
-                            <span className="text-xs font-medium">
-                              {lead.marketplaceStatus === "Active" ? "Listed" : "List"}
-                            </span>
-                          </Button>
+                            <SelectTrigger className="h-8 w-[140px] rounded-full border-[#222121]/15 bg-white text-xs">
+                              <SelectValue placeholder={String(lead.status || "").toLowerCase() === "approved" ? "Set status" : "Approve first"} />
+                            </SelectTrigger>
+                            <SelectContent className="z-50">
+                              {["Pending Review", "Active", "Sold", "Hidden"].map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Button
                             variant="ghost"
                             size="sm"
