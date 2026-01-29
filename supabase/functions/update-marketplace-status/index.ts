@@ -45,23 +45,42 @@ Deno.serve(async (req) => {
     // Update Airtable record
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}/${leadId}`;
 
-    const response = await fetch(airtableUrl, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${airtableToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        fields: {
-          'marketplace status': marketplaceStatus
-        }
-      })
-    });
+    const statusFieldCandidates = [
+      Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD'),
+      'Marketplace Status',
+      'marketplace status',
+      'Marketplace status',
+    ].filter(Boolean);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Airtable error:', response.status, errorText);
-      throw new Error(`Airtable error (${response.status}): ${errorText}`);
+    let response: Response | null = null;
+    let lastErrorText = '';
+
+    for (const fieldName of statusFieldCandidates) {
+      response = await fetch(airtableUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: {
+            [fieldName as string]: marketplaceStatus
+          }
+        })
+      });
+
+      if (response.ok) break;
+
+      lastErrorText = await response.text();
+      if (!lastErrorText.includes('UNKNOWN_FIELD_NAME')) {
+        break;
+      }
+    }
+
+    if (!response || !response.ok) {
+      const errorText = lastErrorText || (response ? await response.text() : '');
+      console.error('Airtable error:', response?.status, errorText);
+      throw new Error(`Airtable error (${response?.status ?? 'unknown'}): ${errorText}`);
     }
 
     const updatedRecord = await response.json();
