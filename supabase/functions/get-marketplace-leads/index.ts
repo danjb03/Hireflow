@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch leads with Marketplace Status = "Active"
-    const filterFormula = `{Marketplace Status} = 'Active'`;
+    // Fetch leads with marketplace status = "Active"
+    const filterFormula = `{marketplace status} = 'Active'`;
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
     const allLeads: any[] = [];

@@ -40,13 +40,13 @@ Deno.serve(async (req) => {
     }
 
     // Build filter formula
-    // Marketplace-eligible: Rejected, Needs Work, or already has a Marketplace Status
+    // Marketplace-eligible: Rejected, Needs Work, or already has a marketplace status
     let filterFormula: string;
     if (statusFilter) {
-      filterFormula = `{Marketplace Status} = '${statusFilter}'`;
+      filterFormula = `{marketplace status} = '${statusFilter}'`;
     } else {
       // Fetch leads that are rejected, needs work, or have any marketplace status
-      filterFormula = `OR(LOWER({Status}) = 'rejected', LOWER({Status}) = 'needs work', {Marketplace Status} != '')`;
+      filterFormula = `OR(LOWER({Status}) = 'rejected', LOWER({Status}) = 'needs work', {marketplace status} != '')`;
     }
 
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
           id: record.id,
           companyName: fields['Company Name'] || '',
           status: fields['Status'] || 'New',
-          marketplaceStatus: fields['Marketplace Status'] || null,
+          marketplaceStatus: fields['marketplace status'] || null,
           marketplaceWriteup: fields['Marketplace Write-up'] || null,
           clients: fields['Clients'] || 'Unassigned',
           // Contact Info (for admin view)

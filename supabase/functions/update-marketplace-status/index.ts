@@ -39,10 +39,11 @@ Deno.serve(async (req) => {
 
     const airtableToken = Deno.env.get('AIRTABLE_API_TOKEN');
     const airtableBaseId = Deno.env.get('AIRTABLE_BASE_ID');
+    const airtableLeadsTable = Deno.env.get('AIRTABLE_LEADS_TABLE') || 'Qualified Lead Table';
     if (!airtableToken || !airtableBaseId) throw new Error('Airtable configuration missing');
 
     // Update Airtable record
-    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table/${leadId}`;
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableLeadsTable)}/${leadId}`;
 
     const response = await fetch(airtableUrl, {
       method: 'PATCH',
@@ -52,18 +53,15 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         fields: {
-          'Marketplace Status': marketplaceStatus
+          'marketplace status': marketplaceStatus
         }
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      // 422 usually means the field doesn't exist
-      if (response.status === 422) {
-        throw new Error('Marketplace Status field not found in Airtable. Please add a Single Select field named "Marketplace Status" with options: Pending Review, Active, Sold, Hidden');
-      }
-      throw new Error(`Airtable update error: ${response.status} - ${errorText}`);
+      console.error('Airtable error:', response.status, errorText);
+      throw new Error(`Airtable error (${response.status}): ${errorText}`);
     }
 
     const updatedRecord = await response.json();

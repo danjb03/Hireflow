@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
       closeLeadId: fields['Close Lead ID'] || null,
 
       // Marketplace
-      marketplaceStatus: fields['Marketplace Status'] || null,
+      marketplaceStatus: fields['marketplace status'] || null,
     };
 
     return new Response(
