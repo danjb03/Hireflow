@@ -229,6 +229,16 @@ Deno.serve(async (req) => {
 
     // Only send email notification when assigning (not unassigning)
     if (!isUnassigning) {
+      // Only notify if lead is approved
+      const leadStatus = String(result.fields?.['Status'] || '').toLowerCase().trim();
+      if (leadStatus !== 'approved') {
+        console.log('Lead assigned but not approved, skipping email:', leadStatus);
+        return new Response(
+          JSON.stringify({ success: true, unassigned: isUnassigning, emailed: false }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Get lead details for the email (company name)
       const companyName = result.fields?.['Company Name'] || 'New Lead';
 
@@ -238,10 +248,35 @@ Deno.serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      const { data: clientProfiles } = await supabaseAdmin
+      let { data: clientProfiles } = await supabaseAdmin
         .from('profiles')
         .select('id, client_name')
         .eq('airtable_client_id', airtableClientId);
+
+      if (!clientProfiles || clientProfiles.length === 0) {
+        // Fallback: try matching by client name if linkage is missing
+        let clientName = null;
+        try {
+          const clientUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clients/${airtableClientId}`;
+          const clientResponse = await fetch(clientUrl, {
+            headers: { 'Authorization': `Bearer ${airtableToken}` }
+          });
+          if (clientResponse.ok) {
+            const clientData = await clientResponse.json();
+            clientName = clientData.fields?.['Client Name'] || clientData.fields?.['Name'] || null;
+          }
+        } catch {
+          // ignore
+        }
+
+        if (clientName) {
+          const { data: fallbackProfiles } = await supabaseAdmin
+            .from('profiles')
+            .select('id, client_name')
+            .ilike('client_name', String(clientName));
+          clientProfiles = fallbackProfiles || [];
+        }
+      }
 
       if (clientProfiles && clientProfiles.length > 0) {
         // Get notification preferences for these users

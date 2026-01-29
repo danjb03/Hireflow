@@ -263,9 +263,11 @@ Deno.serve(async (req) => {
     console.log(`Successfully updated lead ${leadId} status to ${status}`);
 
     // Send email notification when status changes to "Approved"
-    if (status === 'Approved') {
+    const normalizedStatus = String(status || '').toLowerCase().trim();
+    if (normalizedStatus === 'approved') {
       const fields = updatedRecord.fields || {};
-      const clientIds = fields['Clients'] || [];
+      const rawClients = fields['Clients'] || [];
+      const clientIds = Array.isArray(rawClients) ? rawClients : (rawClients ? [rawClients] : []);
 
       if (clientIds.length > 0) {
         const airtableClientId = clientIds[0];
@@ -277,10 +279,22 @@ Deno.serve(async (req) => {
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        const { data: clientProfiles } = await supabaseAdmin
+        let { data: clientProfiles } = await supabaseAdmin
           .from('profiles')
           .select('id, client_name')
           .eq('airtable_client_id', airtableClientId);
+
+        if (!clientProfiles || clientProfiles.length === 0) {
+          // Fallback: try matching by client name if linkage is missing
+          const clientName = fields['Client Name'] || fields['Clients']?.[0] || null;
+          if (clientName) {
+            const { data: fallbackProfiles } = await supabaseAdmin
+              .from('profiles')
+              .select('id, client_name')
+              .ilike('client_name', String(clientName));
+            clientProfiles = fallbackProfiles || [];
+          }
+        }
 
         if (clientProfiles && clientProfiles.length > 0) {
           // Get notification preferences for these users
