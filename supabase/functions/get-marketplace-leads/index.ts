@@ -30,8 +30,39 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch leads with marketplace status = "Active"
-    const filterFormula = `{marketplace status} = 'Active'`;
+    // Resolve Marketplace Status field name (from env or Airtable metadata)
+    let marketplaceStatusField = Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD') || '';
+    const marketplaceStatusFieldId = Deno.env.get('AIRTABLE_MARKETPLACE_STATUS_FIELD_ID') || '';
+
+    if (!marketplaceStatusField && marketplaceStatusFieldId) {
+      try {
+        const metadataUrl = `https://api.airtable.com/v0/meta/bases/${airtableBaseId}/tables`;
+        const metadataResponse = await fetch(metadataUrl, {
+          headers: { 'Authorization': `Bearer ${airtableToken}` }
+        });
+        if (metadataResponse.ok) {
+          const metadata = await metadataResponse.json();
+          const tables = metadata?.tables || [];
+          const leadsTable = tables.find((table: any) => table.name === 'Qualified Lead Table');
+          const field = (leadsTable?.fields || []).find((f: any) => f.id === marketplaceStatusFieldId);
+          if (field?.name) {
+            marketplaceStatusField = field.name;
+          }
+        }
+      } catch {
+        // fallback to defaults below
+      }
+    }
+
+    const statusFieldCandidates = [
+      marketplaceStatusField,
+      'Marketplace Status',
+      'marketplace status',
+      'Marketplace status',
+    ].filter(Boolean);
+
+    const statusFieldName = statusFieldCandidates[0] as string;
+    const filterFormula = `LOWER(TRIM({${statusFieldName}})) = 'active'`;
     const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Qualified%20Lead%20Table?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
     const allLeads: any[] = [];
