@@ -51,6 +51,18 @@ export const TestimonialsSection = () => {
       dsdEmbedScript.type = "module";
       document.body.appendChild(dsdEmbedScript);
     }
+
+    // Square Logic testimonial video
+    const existingSquareLogicEmbed = document.querySelector(
+      "script[src=\"https://fast.wistia.com/embed/lz51ll085q.js\"]"
+    );
+    if (!existingSquareLogicEmbed) {
+      const squareLogicEmbedScript = document.createElement("script");
+      squareLogicEmbedScript.src = "https://fast.wistia.com/embed/lz51ll085q.js";
+      squareLogicEmbedScript.async = true;
+      squareLogicEmbedScript.type = "module";
+      document.body.appendChild(squareLogicEmbedScript);
+    }
   }, []);
 
   return (
@@ -171,6 +183,61 @@ export const TestimonialsSection = () => {
                 `}</style>
                 <div className="aspect-video w-full overflow-hidden rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
                   <wistia-player media-id="20jpmcshz5" aspect="1.7777777777777777"></wistia-player>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Square Logic Testimonial Section */}
+          <div className="mt-20 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#222121]/10 bg-white px-4 py-2 text-sm font-medium text-[#34B192]">
+                <span className="size-2 rounded-full bg-[#34B192]" />
+                Marketplace outcomes
+              </div>
+              <h2 className="mt-6 text-4xl font-semibold text-[#222121] md:text-5xl">
+                <span className="text-[#222121]/40">Delivery-first</span>{" "}
+                <span className="text-[#222121]">growth with Hireflow.</span>
+              </h2>
+              <p className="mt-5 text-base text-[#222121]/70">
+                Yaseen from Square Logic sat down with Connor to share how Hireflow helped the team focus on delivery
+                while driving consistent sales conversations.
+              </p>
+              <div className="mt-8 grid grid-cols-2 gap-6">
+                <div>
+                  <div className="text-4xl font-semibold text-[#34B192]">42</div>
+                  <p className="mt-2 text-sm text-[#222121]/50">
+                    Conversations booked
+                  </p>
+                </div>
+                <div>
+                  <div className="text-4xl font-semibold text-[#222121]">30/50</div>
+                  <p className="mt-2 text-sm text-[#222121]/50">
+                    Sales calls from leads
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 flex items-center gap-3 rounded-xl border border-[#222121]/10 bg-white px-4 py-3">
+                <img src="/logos/squarelogik.svg" alt="Squarelogik" className="h-6 w-auto" />
+                <div>
+                  <p className="text-sm font-semibold text-[#222121]">Yaseen</p>
+                  <p className="text-xs text-[#222121]/60">Square Logic</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="mt-12 rounded-2xl border border-[#222121]/[0.08] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <style>{`
+                  wistia-player[media-id='lz51ll085q']:not(:defined) {
+                    background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/lz51ll085q/swatch');
+                    display: block;
+                    filter: blur(5px);
+                    padding-top: 56.25%;
+                  }
+                `}</style>
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-[#222121]/10 bg-[#F7F7F7]">
+                  <wistia-player media-id="lz51ll085q" aspect="1.7777777777777777"></wistia-player>
                 </div>
               </div>
             </div>
