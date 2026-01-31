@@ -148,6 +148,87 @@ async function sendNotificationEmail(interest: {
   return { success: true, emailId: result.id };
 }
 
+// Send confirmation email to the person who registered interest
+async function sendConfirmationEmail(interest: {
+  contactName: string;
+  contactEmail: string;
+  companyName: string;
+  leadSummary: string;
+}) {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+  if (!resendApiKey) {
+    console.error('RESEND_API_KEY not configured, skipping confirmation email');
+    return { success: false, error: 'Email not configured' };
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Hireflow <team@app.hireflow.uk>',
+      to: [interest.contactEmail],
+      subject: 'Thanks for your interest in this lead',
+      html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 32px 20px;">
+        <table role="presentation" style="width: 100%; max-width: 560px; border-collapse: collapse;">
+          <tr>
+            <td style="background: #0f172a; padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 700;">Thanks for your interest</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #ffffff; padding: 24px; border: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 16px; color: #475569; font-size: 15px; line-height: 1.6;">
+                Hi ${interest.contactName}, thanks for registering interest in the lead below. One of our team will be in touch shortly to help you with next steps.
+              </p>
+              <div style="padding: 16px; background: #f8fafc; border-radius: 10px;">
+                <p style="margin: 0 0 6px; color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: 600;">Lead</p>
+                <p style="margin: 0; color: #1e293b; font-size: 15px; font-weight: 600;">${interest.leadSummary}</p>
+                <p style="margin: 6px 0 0; color: #475569; font-size: 14px;">${interest.companyName}</p>
+              </div>
+              <p style="margin: 16px 0 0; color: #64748b; font-size: 12px;">
+                If you have any questions, just reply to this email.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #1e293b; padding: 16px; border-radius: 0 0 16px 16px; text-align: center;">
+              <p style="margin: 0; color: #94a3b8; font-size: 12px;">Hireflow Marketplace</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+      `,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error('Resend confirmation error:', response.status, errorBody);
+    return { success: false, error: errorBody };
+  }
+
+  const result = await response.json();
+  return { success: true, emailId: result.id };
+}
+
 // Create opportunity in Close.com
 async function createCloseOpportunity(interest: {
   contactName: string;
@@ -304,11 +385,19 @@ Deno.serve(async (req) => {
       leadSummary: leadSummary || 'Marketplace Lead'
     });
 
+    const confirmationResult = await sendConfirmationEmail({
+      contactName,
+      contactEmail,
+      companyName,
+      leadSummary: leadSummary || 'Marketplace Lead'
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
         interestId: interestData.id,
         emailSent: emailResult.success,
+        confirmationSent: confirmationResult.success,
         closeCreated: closeResult.success,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
